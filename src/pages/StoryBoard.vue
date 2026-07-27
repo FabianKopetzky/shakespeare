@@ -10,6 +10,11 @@
     @onsave="onNodeContentChange"
     :story-node-id="currentStoryNode"
     v-model:is-open="storyNodeEditorOpen" />
+
+  <BranchNodeEditor
+    @onsave="onNodeContentChange"
+    :branch-node-id="currentBranchNode"
+    v-model:is-open="branchNodeEditorOpen" />
 </template>
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
@@ -18,6 +23,7 @@ import type { AnyStoryNode, Story, StoryNode } from "../types/schema";
 import { useContentStore } from "../stores/content";
 import StoryGraph from "../components/story/StoryGraph.vue";
 import StoryNodeEditor from "../components/story/editor/StoryNodeEditor.vue";
+import BranchNodeEditor from "../components/story/editor/BranchNodeEditor.vue";
 
 const route = useRoute();
 const story = ref<Story>(undefined);
@@ -39,8 +45,9 @@ watch(
 const currentStoryNode = ref<string>("");
 const storyNodeEditorOpen = ref<boolean>(false);
 
-// The dialogue / branch editor UI isn't built yet - this is the hook point
-// for it. For now it just logs which node was clicked.
+const currentBranchNode = ref<string>("");
+const branchNodeEditorOpen = ref<boolean>(false);
+
 function onOpenNode(node: AnyStoryNode) {
   // reset all var
   resetOpenNodes();
@@ -48,12 +55,18 @@ function onOpenNode(node: AnyStoryNode) {
   if (node.type === "story") {
     currentStoryNode.value = node.id;
     storyNodeEditorOpen.value = true;
+  } else if (node.type === "branch") {
+    currentBranchNode.value = node.id;
+    branchNodeEditorOpen.value = true;
   }
 }
 
 function resetOpenNodes() {
   currentStoryNode.value = "";
   storyNodeEditorOpen.value = false;
+
+  currentBranchNode.value = "";
+  branchNodeEditorOpen.value = false;
 }
 
 function onNodeContentChange() {}

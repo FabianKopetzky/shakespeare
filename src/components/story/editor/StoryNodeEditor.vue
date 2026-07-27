@@ -33,11 +33,6 @@
             }}</span>
             <UButton variant="subtle" class="mt-2">Open</UButton>
           </div>
-          <USeparator
-            class="h-4"
-            orientation="horizontal"
-            type="solid"
-            size="sm" />
         </div>
         <div class="flex flex-col justify-start items-start">
           <span class="font-bold mb-2">Change dialogue to play</span>
@@ -121,7 +116,5 @@ function close(): void {
 function updateStoryNode() {
   (storyNodes[props.storyNodeId] as StoryNode).dialogueId =
     dialogueNodeId.value;
-
-  console.log(dialogueNodeId.value);
 }
 </script>

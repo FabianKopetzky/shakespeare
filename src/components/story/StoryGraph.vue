@@ -1,5 +1,11 @@
 <template>
-  <div class="story-editor rounded-3xl overflow-hidden">
+  <div class="story-editor relative rounded-3xl overflow-hidden">
+    <!-- <div
+      v-if="story"
+      class="absolute top-4 left-4 p-4 z-20 bg-muted rounded-2xl">
+      <h3>{{ story.id }}</h3>
+      <span>{{ story.description }}</span>
+    </div> -->
     <VueFlow
       :nodes="flowNodes"
       :edges="flowEdges"
