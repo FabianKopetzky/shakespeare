@@ -84,9 +84,9 @@ registerNodeType<BranchNode>({
       ? "1 choice"
       : `${node.branches.length} choices`,
   getOutputs: (node) =>
-    node.branches.map((branch) => ({
+    node.branches.map((branch, index) => ({
       id: branch.id,
-      label: branch.labels?.en || "(no label)",
+      label: `Branch ${index + 1}`,
     })),
   getTargetId: (node, handleId) =>
     node.branches.find((b) => b.id === handleId)?.targetId ?? null,

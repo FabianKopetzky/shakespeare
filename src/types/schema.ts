@@ -57,7 +57,7 @@ export type Branch = {
   id: string, // random uuid of the branch
   labels: Record<string, string>, // labels for the different languages for the choice
   targetId: string | null, // the dialogue target
-  condition: Condition // condition that this branch will be rendered
+  condition: Condition | null // condition that this branch will be rendered
 }
 
 export type StoryVariable = {

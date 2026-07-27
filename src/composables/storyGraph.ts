@@ -1,8 +1,18 @@
 import { computed, ref, watch } from "vue";
-import type { Node as FlowNode, Edge as FlowEdge } from "@vue-flow/core";
+import type { Node as VFNode, Edge as FlowEdge } from "@vue-flow/core";
 import { useContentStore } from "../stores/content";
 import { useNodeRegistry } from "./nodeRegistry";
 import type { AnyStoryNode, Story } from "../types/schema";
+
+// @nuxt/ui pulls in `motion-v`, which globally augments Vue's HTMLAttributes
+// with its own animation props (dragControls, animate, ...). vue-flow's own
+// Node.domAttributes field is typed as `Omit<HTMLAttributes, ...>`, so once
+// both packages are in the same project, TS sees two incompatible shapes
+// for that one field - even though we never set domAttributes ourselves.
+// Re-typing it as `any` here is a type-only patch; it changes nothing about
+// how vue-flow actually renders. If you don't use @nuxt/ui (or ever remove
+// it), you can drop this and import Node directly from '@vue-flow/core'.
+type FlowNode<T> = Omit<VFNode<T>, "domAttributes"> & { domAttributes?: any };
 
 export type StoryNodeCardData = {
   node: AnyStoryNode;

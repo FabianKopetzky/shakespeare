@@ -58,6 +58,46 @@ watch(isOpen, (open) => {
     node.value = n;
 
     // pre fill fields
+
+    //! TEMP ADD BRANCH
+    (storyNodes[props.branchNodeId] as BranchNode).branches = [
+      {
+        id: "xxx",
+        labels: { default: "Option 1" },
+        targetId: null,
+        condition: null,
+      },
+      {
+        id: "yyy",
+        labels: { default: "Option 2" },
+        targetId: null,
+        condition: null,
+      },
+      {
+        id: "zzz",
+        labels: { default: "Option 3" },
+        targetId: null,
+        condition: null,
+      },
+      {
+        id: "wert",
+        labels: { default: "Option 4" },
+        targetId: null,
+        condition: null,
+      },
+      {
+        id: "zuio",
+        labels: { default: "Option 5" },
+        targetId: null,
+        condition: null,
+      },
+      {
+        id: "cvb",
+        labels: { default: "Option 6" },
+        targetId: null,
+        condition: null,
+      },
+    ];
   }
 });
 
