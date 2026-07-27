@@ -1,0 +1,130 @@
+@layer base {
+  h1 {
+    font-size: var(--h1-size);
+    font-weight: var(--h1-weight);
+    line-height: var(--h1-line-height);
+    letter-spacing: var(--h1-letter-spacing);
+  }
+
+  h2 {
+    font-size: var(--h2-size);
+    font-weight: var(--h2-weight);
+    line-height: var(--h2-line-height);
+    letter-spacing: var(--h2-letter-spacing);
+  }
+
+  h3 {
+    font-size: var(--h3-size);
+    font-weight: var(--h3-weight);
+    line-height: var(--h3-line-height);
+    letter-spacing: var(--h3-letter-spacing);
+  }
+
+  h4 {
+    font-size: var(--h4-size);
+    font-weight: var(--h4-weight);
+    line-height: var(--h4-line-height);
+    letter-spacing: var(--h4-letter-spacing);
+  }
+
+  h5 {
+    font-size: var(--h5-size);
+    font-weight: var(--h5-weight);
+    line-height: var(--h5-line-height);
+    letter-spacing: var(--h5-letter-spacing);
+  }
+
+  h6 {
+    font-size: var(--h6-size);
+    font-weight: var(--h6-weight);
+    line-height: var(--h6-line-height);
+    letter-spacing: var(--h6-letter-spacing);
+  }
+
+  p {
+    font-size: var(--body-size);
+    font-weight: var(--body-weight);
+    line-height: var(--body-line-height);
+    letter-spacing: var(--body-letter-spacing);
+  }
+  @theme {
+    /* --font-sans: "Spline Sans", system-ui, sans-serif;
+    --font-mono: "Google Sans Code", monospace; */
+
+    /* Type Scale */
+    --display-lg-size: clamp(1.959rem, calc(1.577rem + 1.909vw), 3.008rem);
+    --display-lg-weight: 800;
+    --display-lg-line-height: 1.47;
+    --display-lg-letter-spacing: 0.015em;
+
+    --display-md-size: clamp(1.801rem, calc(1.502rem + 1.492vw), 2.622rem);
+    --display-md-weight: 800;
+    --display-md-line-height: 1.47;
+    --display-md-letter-spacing: 0.015em;
+
+    --h1-size: clamp(1.656rem, calc(1.427rem + 1.143vw), 2.284rem);
+    --h1-weight: 700;
+    --h1-line-height: 1.47;
+    --h1-letter-spacing: 0.02em;
+
+    --h2-size: clamp(1.399rem, calc(1.278rem + 0.609vw), 1.734rem);
+    --h2-weight: 600;
+    --h2-line-height: 1.47;
+    --h2-letter-spacing: 0.02em;
+
+    --h3-size: clamp(1.287rem, calc(1.205rem + 0.409vw), 1.511rem);
+    --h3-weight: 600;
+    --h3-line-height: 1.52;
+    --h3-letter-spacing: 0.025em;
+
+    --h4-size: clamp(1.183rem, calc(1.134rem + 0.244vw), 1.317rem);
+    --h4-weight: 500;
+    --h4-line-height: 1.52;
+    --h4-letter-spacing: 0.025em;
+
+    --h5-size: clamp(1.134rem, calc(1.1rem + 0.173vw), 1.229rem);
+    --h5-weight: 500;
+    --h5-line-height: 1.52;
+    --h5-letter-spacing: 0.03em;
+
+    --h6-size: clamp(1.088rem, calc(1.066rem + 0.109vw), 1.148rem);
+    --h6-weight: 500;
+    --h6-line-height: 1.52;
+    --h6-letter-spacing: 0.03em;
+
+    --body-xl-size: clamp(1.043rem, calc(1.033rem + 0.052vw), 1.071rem);
+    --body-xl-weight: 400;
+    --body-xl-line-height: 1.52;
+    --body-xl-letter-spacing: 0.03em;
+
+    --body-size: clamp(1rem, calc(1rem + 0vw), 1rem);
+    --body-weight: 400;
+    --body-line-height: 1.52;
+    --body-letter-spacing: 0.03em;
+
+    --body-sm-size: clamp(0.959rem, calc(0.968rem + -0.046vw), 0.933rem);
+    --body-sm-weight: 400;
+    --body-sm-line-height: 1.57;
+    --body-sm-letter-spacing: 0.03em;
+
+    --caption-lg-size: clamp(0.919rem, calc(0.937rem + -0.087vw), 0.871rem);
+    --caption-lg-weight: 400;
+    --caption-lg-line-height: 1.57;
+    --caption-lg-letter-spacing: 0.03em;
+
+    --caption-size: clamp(0.882rem, calc(0.906rem + -0.124vw), 0.813rem);
+    --caption-weight: 400;
+    --caption-line-height: 1.57;
+    --caption-letter-spacing: 0.03em;
+
+    --caption-sm-size: clamp(0.845rem, calc(0.877rem + -0.156vw), 0.759rem);
+    --caption-sm-weight: 300;
+    --caption-sm-line-height: 1.57;
+    --caption-sm-letter-spacing: 0.03em;
+
+    --overline-size: clamp(0.811rem, calc(0.848rem + -0.185vw), 0.709rem);
+    --overline-weight: 500;
+    --overline-line-height: 1.57;
+    --overline-letter-spacing: 0.03em;
+  }
+}

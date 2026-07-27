@@ -1,0 +1,301 @@
+<template>
+  <USlideover v-model:open="isOpen" :dismissible="false" :ui="slideoverUi">
+    <template #header>
+      <div class="flex flex-row justify-between items-center w-full">
+        <p class="text-lg font-bold">{{ editorTitle }}</p>
+        <div class="flex flex-row gap-2">
+          <UButton
+            color="neutral"
+            class="rounded-full h-10 w-10 flex justify-center items-center"
+            @click="close">
+            <UIcon class="size-12" name="material-symbols:close" />
+          </UButton>
+          <UButton
+            v-if="props.mode !== 'Read'"
+            class="rounded-full h-10 w-10 flex justify-center items-center"
+            @click="save">
+            <UIcon class="size-12" name="material-symbols:check" />
+          </UButton>
+        </div>
+      </div>
+    </template>
+    <template #body>
+      <div class="h-full">
+        <div class="mb-4">
+          <span class="font-bold">Dialogue Node ID</span>
+          <UInput
+            v-model="nodeKey"
+            icon="material-symbols:key-rounded"
+            :leading="true"
+            :maxlength="64"
+            :disabled="props.mode !== 'Create'"
+            class="w-full mt-2"
+            :class="{ 'opacity-40': props.mode === 'Update' }" />
+        </div>
+        <div class="mb-4">
+          <span class="font-bold"
+            >Description<span class="text-sm opacity-50">
+              (internal)</span
+            ></span
+          >
+          <UTextarea
+            v-model="nodeDescription"
+            maxlength="400"
+            class="w-full mt-2" />
+        </div>
+
+        <USeparator
+          class="h-4"
+          orientation="horizontal"
+          type="solid"
+          size="sm" />
+
+        <div class="flex flex-row gap-4 items-end justify-between mt-2">
+          <div class="flex flex-row gap-4 items-end">
+            <UFormField label="Editing language">
+              <USelectMenu
+                v-model="currentLanguageCode"
+                :items="languageMenuItems"
+                value-key="value"
+                class="w-52" />
+            </UFormField>
+            <UFormField v-if="isSplit" label="Reference language">
+              <USelectMenu
+                v-model="referenceLanguageCode"
+                :items="referenceLanguageMenuItems"
+                value-key="value"
+                class="w-52" />
+            </UFormField>
+          </div>
+
+          <div class="flex flex-row justify-center gap-2">
+            <UButton
+              :variant="viewMode === 'edit' ? 'solid' : 'outline'"
+              color="neutral"
+              size="sm"
+              @click="viewMode = 'edit'">
+              Edit
+            </UButton>
+            <UButton
+              :variant="viewMode === 'preview' ? 'solid' : 'outline'"
+              color="neutral"
+              size="sm"
+              @click="viewMode = 'preview'">
+              Preview
+            </UButton>
+          </div>
+        </div>
+
+        <div class="mb-4 pl-8 mt-4">
+          <span class="font-bold"
+            >Sentences ({{ nodeSentences.length ?? 0 }})</span
+          >
+
+          <DialogueSentenceEditor
+            v-for="(sentence, index) in nodeSentences"
+            :key="sentence.key"
+            :sentence="sentence"
+            :current-language="currentLanguageCode"
+            :reference-language="isSplit ? referenceLanguageCode : null"
+            :is-split="isSplit"
+            :variables="templatingVariables"
+            :colors="textColors"
+            :view-mode="viewMode"
+            @remove="removeSentence(index)" />
+
+          <div class="w-full flex flex-row justify-end gap-2">
+            <UButton
+              @click="createDialogueSentence()"
+              class="flex items-center justify-center mt-2"
+              variant="outline"
+              color="neutral"
+              leading-icon="basil:add-solid"
+              >Add sentence</UButton
+            >
+          </div>
+        </div>
+      </div>
+    </template>
+  </USlideover>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, watch } from "vue";
+import type {
+  DialogueNode,
+  DialogueSentence,
+  FormMode,
+} from "../../types/schema";
+import { useContentStore } from "../../stores/content";
+import { useWidget } from "../../composables/widget.ts";
+import { validateContent } from "../../utils/dialogueContent";
+import DialogueSentenceEditor from "./DialogueSentenceEditor.vue";
+
+const { displayError } = useWidget();
+
+interface Props {
+  node?: DialogueNode;
+  mode: FormMode;
+}
+const props = defineProps<Props>();
+
+const isOpen = defineModel<boolean>("isOpen", { required: true });
+
+const { dialogues, languages, templatingVariables, textColors } =
+  useContentStore();
+
+const defaultLanguage = computed(() => languages.find((l) => l.isDefault));
+
+const nodeKey = ref<string>("");
+const nodeDescription = ref<string>("");
+const nodeSentences = ref<DialogueSentence[]>([]);
+
+const currentLanguageCode = ref<string>("");
+const referenceLanguageCode = ref<string>("");
+const viewMode = ref<"edit" | "preview">("edit");
+
+const isSplit = computed(
+  () =>
+    !!defaultLanguage.value &&
+    currentLanguageCode.value !== defaultLanguage.value.code,
+);
+
+const slideoverUi = computed(() => ({
+  content: isSplit.value
+    ? "w-[65vw] min-w-160 max-w-none"
+    : "w-[40vw] min-w-100 max-w-none",
+}));
+
+const languageMenuItems = computed(() =>
+  languages.map((l) => ({ label: `${l.code} — ${l.display}`, value: l.code })),
+);
+const referenceLanguageMenuItems = computed(() =>
+  languages
+    .filter((l) => l.code !== currentLanguageCode.value)
+    .map((l) => ({ label: `${l.code} — ${l.display}`, value: l.code })),
+);
+
+watch(isOpen, (open) => {
+  if (!open) return;
+  nodeKey.value = props.node?.id ?? "";
+  nodeDescription.value = props.node?.description ?? "";
+  nodeSentences.value = (props.node?.sentences ?? []).map((s) => ({
+    key: s.key,
+    translations: { ...s.translations },
+  }));
+
+  currentLanguageCode.value =
+    defaultLanguage.value?.code ?? languages[0]?.code ?? "";
+  referenceLanguageCode.value =
+    defaultLanguage.value?.code ?? languages[0]?.code ?? "";
+  viewMode.value = "edit"; // reset each time the node is opened
+});
+
+watch(currentLanguageCode, (code) => {
+  if (referenceLanguageCode.value !== code) return;
+  referenceLanguageCode.value =
+    defaultLanguage.value && defaultLanguage.value.code !== code
+      ? defaultLanguage.value.code
+      : (languages.find((l) => l.code !== code)?.code ?? code);
+});
+
+const editorTitle = computed(() => {
+  switch (props.mode) {
+    case "Create":
+      return "Create new node";
+    case "Read":
+      return `Node ${props.node?.id}`;
+    case "Update":
+      return `Update ${props.node?.id}`;
+  }
+});
+
+function createDialogueSentence() {
+  nodeSentences.value.push({
+    key: crypto.randomUUID(),
+    translations: { [currentLanguageCode.value]: "" },
+  });
+}
+function removeSentence(index: number) {
+  nodeSentences.value.splice(index, 1);
+}
+
+function validateAllSentences(): string[] {
+  const errors: string[] = [];
+  const defaultCode = defaultLanguage.value?.code;
+
+  nodeSentences.value.forEach((sentence, index) => {
+    if (defaultCode) {
+      const defaultContent = sentence.translations[defaultCode] ?? "";
+      if (!defaultContent.trim()) {
+        errors.push(
+          `Sentence ${index + 1} is missing content for the default language.`,
+        );
+      }
+    }
+    Object.entries(sentence.translations).forEach(([code, content]) => {
+      if (!content) return;
+      validateContent(content, templatingVariables).forEach((err) =>
+        errors.push(`Sentence ${index + 1} (${code}): ${err}`),
+      );
+    });
+  });
+
+  return errors;
+}
+
+function save(): void {
+  if (!nodeKey.value || nodeKey.value.length <= 0) {
+    displayError("The ID of a dialogue node cannot be null!");
+    return;
+  }
+  if (
+    props.mode === "Create" &&
+    dialogues.find((n) => n?.id === nodeKey.value)
+  ) {
+    displayError(
+      `A dialogue node with the ID "${nodeKey.value}" already exists!`,
+    );
+    return;
+  }
+  if (nodeSentences.value.length === 0) {
+    displayError("Add at least one sentence before saving.");
+    return;
+  }
+
+  const contentErrors = validateAllSentences();
+  if (contentErrors.length > 0) {
+    displayError(
+      contentErrors.length === 1
+        ? contentErrors[0]
+        : `${contentErrors[0]} (+${contentErrors.length - 1} more issue${
+            contentErrors.length > 2 ? "s" : ""
+          })`,
+    );
+    return;
+  }
+
+  upsertDialogueNode();
+  isOpen.value = false;
+}
+function close(): void {
+  isOpen.value = false;
+}
+
+function upsertDialogueNode() {
+  const newNode: DialogueNode = {
+    id: nodeKey.value,
+    description: nodeDescription.value,
+    sentences: nodeSentences.value,
+  };
+
+  if (props.mode === "Update" && props.node) {
+    const index = dialogues.findIndex((n) => n?.id === props.node!.id);
+    if (index !== -1) {
+      dialogues[index] = newNode;
+      return;
+    }
+  }
+  dialogues.push(newNode);
+}
+</script>
