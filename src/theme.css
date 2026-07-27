@@ -41,7 +41,8 @@
     letter-spacing: var(--h6-letter-spacing);
   }
 
-  p {
+  p,
+  span {
     font-size: var(--body-size);
     font-weight: var(--body-weight);
     line-height: var(--body-line-height);

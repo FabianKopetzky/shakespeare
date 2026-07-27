@@ -120,6 +120,7 @@ async function upsertStory() {
   const newStory: Story = {
     id: storyKey.value,
     description: storyDescription.value,
+    entryNodeId: null,
     nodes: [],
   };
 

@@ -5,6 +5,9 @@ import ui from '@nuxt/ui/vue-plugin'
 import { createPinia } from 'pinia'
 import { createRouter, createWebHashHistory } from 'vue-router';
 
+import "@vue-flow/core/dist/style.css";
+import "@vue-flow/core/dist/theme-default.css";
+
 import Main from './pages/Main.vue';
 import Dialogues from './pages/Dialogues.vue'
 import Stories from './pages/Stories.vue'

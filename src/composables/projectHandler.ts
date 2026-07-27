@@ -1,7 +1,9 @@
+import { useAppStore } from "../stores/app";
 import { useContentStore } from "../stores/content";
 
 export function useProjectHandler() {
     const contentStore = useContentStore();
+    const appStore = useAppStore();
 
     function exportProject(): void {
         const data = {
@@ -10,6 +12,7 @@ export function useProjectHandler() {
 
             dialogues: contentStore.dialogues,
             stories: contentStore.stories,
+            storyNodes: contentStore.storyNodes,
 
             colors: contentStore.textColors,
             templating: contentStore.templatingVariables,
@@ -37,11 +40,13 @@ export function useProjectHandler() {
 
             contentStore.dialogues = project.dialogues;
             contentStore.stories = project.stories;
+            contentStore.storyNodes = project.storyNodes;
             
             contentStore.textColors = project.colors;
             contentStore.templatingVariables = project.templating;
             contentStore.languages = project.languages;
-
+            
+            appStore.projectLoaded = true;
             return true;
         } catch(err) {
             console.error(`Error importing data: ${err}`);
@@ -54,10 +59,13 @@ export function useProjectHandler() {
 
         contentStore.dialogues = [];
         contentStore.stories = [];
+        contentStore.storyNodes = {};
         
         contentStore.languages = [{code: 'default', display: 'English', isDefault: true}];
         contentStore.templatingVariables = [];
         contentStore.textColors = [];
+
+        appStore.projectLoaded = true;
     }
 
     return {

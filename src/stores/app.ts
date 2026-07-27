@@ -4,5 +4,6 @@ import { ref } from "vue"
 export const useAppStore = defineStore('app', () => {
     
   const isLoading = ref<boolean>(false);
-  return { isLoading }
+  const projectLoaded = ref<boolean>(false);
+  return { isLoading, projectLoaded }
 })

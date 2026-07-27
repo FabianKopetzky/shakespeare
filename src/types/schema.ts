@@ -14,36 +14,49 @@ export type DialogueNode = {
 export type Story = {
   id: string, // created by player, must be unique
   description: string, // internal editor description
+  entryNodeId: string | null,
   nodes: string[] // array of all uuids of the nodes in a story
 } | undefined;
 //* STORY NODE TYPES
 
-// default story node, contains a dialogue node
-export type StoryNode = {
+export type AnyStoryNode = StoryNode | BranchNode | ConditionNode; // unison of all node types
+
+export type StoryNodeBase = {
   id: string, // random uuid of the node
+  type: string,
+  position: NodePosition,
+}
+
+// default story node, contains a dialogue node
+export type StoryNode = StoryNodeBase & {
+  type: "story",
   dialogueId: string, // id of the dialogue node to reference
-  targetId: string // references another node in the story
+  targetId: string | null // references another node in the story
 }
 
 // node where players get prompted choices. contains a list of branches reflecting the available choices of the player
-export type BranchNode = {
-  id: string, // random uuid of the node
+export type BranchNode = StoryNodeBase & {
+  type: "branch",
   branches: Branch[] // list of answer possibilities
 }
 
 // a node that contains a condition and has two paths that can emerge from it - a true and false path. The node itself does not contain any dialogue information
-export type ConditionNode = {
-  id: string, // random uuid of the node
+export type ConditionNode = StoryNodeBase & {
+  type: "condition"
   condition: Condition, // condition of the node
-  targetIdTrue: string, // references another node in the story for the "true" path
-  targetIdFalse: string // references another node in the story for the "false" path
+  targetIdTrue: string | null, // references another node in the story for the "true" path
+  targetIdFalse: string | null // references another node in the story for the "false" path
 }
 //* STORY UTILS
+export type NodePosition = {
+  x: number,
+  y: number
+}
 // reflects a choice of the player in a Branch node
 export type Branch = {
   id: string, // random uuid of the branch
   labels: Record<string, string>, // labels for the different languages for the choice
-  targetId: string, // the dialogue target
+  targetId: string | null, // the dialogue target
   condition: Condition // condition that this branch will be rendered
 }
 
