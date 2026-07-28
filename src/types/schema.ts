@@ -43,7 +43,7 @@ export type BranchNode = StoryNodeBase & {
 // a node that contains a condition and has two paths that can emerge from it - a true and false path. The node itself does not contain any dialogue information
 export type ConditionNode = StoryNodeBase & {
   type: "condition"
-  condition: Condition, // condition of the node
+  condition: Condition | null, // condition of the node
   targetIdTrue: string | null, // references another node in the story for the "true" path
   targetIdFalse: string | null // references another node in the story for the "false" path
 }
@@ -62,15 +62,35 @@ export type Branch = {
 
 export type StoryVariable = {
   name: string, // unique identifier
-  addedOnDefault: boolean,
   type: StoryVariableType,
   defaultValue: number | string | boolean
 }
 export type StoryVariableType = 'Integer' | 'String' | 'Boolean'
 
-export type Condition = {
+//* CONDITION UTILS
+export type ComparisonOperator = '==' | '!=' | '<' | '>' | '<=' | '>='
+export type LogicalOperator = 'AND' | 'OR'
 
+// An operand is either a literal value or a reference to another StoryVariable
+export type Operand =
+  | { kind: 'literal'; value: number | string | boolean }
+  | { kind: 'variable'; name: string }
+
+export type Comparison = {
+  left: Operand
+  operator: ComparisonOperator
+  right: Operand
 }
+
+// Each clause pairs a comparison with the operator that links it to the NEXT clause.
+// The last clause in the array has no connector.
+export type ConditionClause = {
+  comparison: Comparison
+  connector?: LogicalOperator
+}
+
+export type Condition = ConditionClause[]
+
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened
 
 //* DATA  MODEL

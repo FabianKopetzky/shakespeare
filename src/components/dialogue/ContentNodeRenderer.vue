@@ -18,7 +18,7 @@ defineProps<Props>();
     <span v-else-if="node.type === 'variable'" class="dialogue-variable-chip">
       {{ placeholderForVariable(node.name, variables) }}
     </span>
-    <strong v-else-if="node.type === 'bold'">
+    <strong class="font-bold" v-else-if="node.type === 'bold'">
       <ContentNodeRenderer :nodes="node.children" :variables="variables" />
     </strong>
     <em v-else-if="node.type === 'italic'">

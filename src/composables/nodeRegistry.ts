@@ -1,4 +1,4 @@
-import type { AnyStoryNode, StoryNode, BranchNode } from "../types/schema";
+import type { AnyStoryNode, StoryNode, BranchNode, ConditionNode } from "../types/schema";
 
 export type OutputPin = {
   id: string; // unique per node, used as the vue-flow source handle id
@@ -93,5 +93,26 @@ registerNodeType<BranchNode>({
   setTargetId: (node, handleId, targetId) => {
     const branch = node.branches.find((b) => b.id === handleId);
     if (branch) branch.targetId = targetId;
+  },
+});
+
+registerNodeType<ConditionNode>({
+  type: "condition",
+  label: "Condition",
+  color: "#59B774",
+  createDefault: (id, position) => ({
+    id,
+    type: "condition",
+    position,
+    condition: null,
+    targetIdTrue: null,
+    targetIdFalse: null
+  }),
+  getTitle: (node) => 'No condition assigned',
+  getOutputs: () => [{ id: "true", label: "On True" }, { id: "false", label: "On False" }],
+  getTargetId: (node, handleId) => handleId === 'true' ? node.targetIdTrue : node.targetIdFalse,
+  setTargetId: (node, handleId, targetId) => {
+    if(handleId === 'true') node.targetIdTrue = targetId;
+    else node.targetIdFalse = targetId;
   },
 });
