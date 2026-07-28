@@ -52,7 +52,7 @@ export function useNodeRegistry() {
 
 registerNodeType<StoryNode>({
   type: "story",
-  label: "Story",
+  label: "Dialogue",
   color: "#4c7ef3",
   createDefault: (id, position) => ({
     id,
@@ -87,7 +87,7 @@ registerNodeType<BranchNode>({
     node.branches.map((branch, index) => ({
       id: branch.id,
       label: `Branch ${index + 1}`,
-    })),
+    } as OutputPin)),
   getTargetId: (node, handleId) =>
     node.branches.find((b) => b.id === handleId)?.targetId ?? null,
   setTargetId: (node, handleId, targetId) => {

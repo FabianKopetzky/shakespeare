@@ -70,6 +70,7 @@ const { applyNodeChanges, applyEdgeChanges, screenToFlowCoordinate } =
   useVueFlow();
 
 const { flowNodes, flowEdges, availableNodeTypes } = graph;
+defineExpose({ updateNodeContent: graph.updateNodeContent });
 
 // every registered node type renders through the same generic card -
 // adding a new node type never requires touching this map.
@@ -96,8 +97,6 @@ provide(STORY_EDITOR_ACTIONS_KEY, {
   setEntryNode: graph.setEntryNode,
   disconnect: graph.disconnect,
 });
-
-// --- node / edge interaction -------------------------------------------
 
 function onNodesChange(changes: NodeChange[]) {
   const passthrough: NodeChange[] = [];

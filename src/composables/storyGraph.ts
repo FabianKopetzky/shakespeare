@@ -120,6 +120,34 @@ export function useStoryGraph(getStory: () => Story) {
     const node = contentStore.storyNodes[id];
     if (node) node.position = position;
   }
+  function updateNodeContent(id: string, content: Partial<AnyStoryNode>) {
+    const node = contentStore.storyNodes[id];
+    if (!node) return;
+
+    Object.assign(node, content);
+
+    console.log("called, patched node: " + JSON.stringify(node));
+
+    // node identity didn't change, so the id-based watch won't fire -
+    // patch this one flow node's derived data in place instead of a full rebuild
+    flowNodes.value = flowNodes.value.map((n) => {
+        if(n.id === id) {
+          const def = getNodeType(contentStore.storyNodes[id].type);
+          return {
+            ...n,
+            data: {
+              node,
+              title: def.getTitle(node),
+              typeLabel: def.label,
+              color: def.color,
+              outputs: def.getOutputs(node),
+            },
+          }
+        }
+        return n;
+      }
+    );
+  }
 
   function connect(sourceId: string, sourceHandle: string, targetId: string) {
     const source = contentStore.storyNodes[sourceId];
@@ -165,6 +193,7 @@ export function useStoryGraph(getStory: () => Story) {
     availableNodeTypes: allNodeTypes(),
     addNode,
     updateNodePosition,
+    updateNodeContent,
     connect,
     disconnect,
     deleteNode,

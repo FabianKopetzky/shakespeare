@@ -3,7 +3,7 @@
     <h1>A story with the id {{ route.params.id }} does not exist!</h1>
   </template>
   <template v-else>
-    <StoryGraph :story="story" @open-node="onOpenNode" />
+    <StoryGraph ref="storyGraphRef" :story="story" @open-node="onOpenNode" />
   </template>
   <!-- EDITOR OVERLAYS -->
   <StoryNodeEditor
@@ -27,7 +27,7 @@ import BranchNodeEditor from "../components/story/editor/BranchNodeEditor.vue";
 
 const route = useRoute();
 const story = ref<Story>(undefined);
-const { stories } = useContentStore();
+const { stories, storyNodes } = useContentStore();
 
 onMounted(() => {
   const id = route.params.id;
@@ -69,7 +69,16 @@ function resetOpenNodes() {
   branchNodeEditorOpen.value = false;
 }
 
-function onNodeContentChange() {}
+const storyGraphRef = ref<InstanceType<typeof StoryGraph> | null>(null);
+
+function onNodeContentChange(id: string) {
+  console.log("CHANGE " + id);
+  if (!id) return;
+  const content = storyNodes[id];
+  if (!content) return;
+  console.log("CONTENT " + JSON.stringify(content));
+  storyGraphRef.value?.updateNodeContent(id, content);
+}
 </script>
 
 <style scoped>

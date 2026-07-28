@@ -54,7 +54,7 @@ export type NodePosition = {
 }
 // reflects a choice of the player in a Branch node
 export type Branch = {
-  id: string, // random uuid of the branch
+  id: string | number, // random uuid of the branch
   labels: Record<string, string>, // labels for the different languages for the choice
   targetId: string | null, // the dialogue target
   condition: Condition | null // condition that this branch will be rendered

@@ -30,26 +30,28 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import type {
-  StoryNode,
   AnyStoryNode,
   BranchNode,
+  Branch,
 } from "../../../types/schema.ts";
 import { useContentStore } from "../../../stores/content.ts";
 import { useWidget } from "../../../composables/widget.ts";
 
 const { displayError } = useWidget();
-const { storyNodes, dialogues } = useContentStore();
+const { storyNodes } = useContentStore();
 
 interface Props {
   branchNodeId: string;
 }
 const props = defineProps<Props>();
 const emit = defineEmits<{
-  (e: "onsave"): void;
+  (e: "onsave", id: string): void;
 }>();
 const isOpen = defineModel<boolean>("isOpen", { required: true });
 
 const node = ref<BranchNode>();
+
+const branches = ref<Branch[]>([]);
 
 watch(isOpen, (open) => {
   if (!open) return;
@@ -58,46 +60,7 @@ watch(isOpen, (open) => {
     node.value = n;
 
     // pre fill fields
-
-    //! TEMP ADD BRANCH
-    (storyNodes[props.branchNodeId] as BranchNode).branches = [
-      {
-        id: "xxx",
-        labels: { default: "Option 1" },
-        targetId: null,
-        condition: null,
-      },
-      {
-        id: "yyy",
-        labels: { default: "Option 2" },
-        targetId: null,
-        condition: null,
-      },
-      {
-        id: "zzz",
-        labels: { default: "Option 3" },
-        targetId: null,
-        condition: null,
-      },
-      {
-        id: "wert",
-        labels: { default: "Option 4" },
-        targetId: null,
-        condition: null,
-      },
-      {
-        id: "zuio",
-        labels: { default: "Option 5" },
-        targetId: null,
-        condition: null,
-      },
-      {
-        id: "cvb",
-        labels: { default: "Option 6" },
-        targetId: null,
-        condition: null,
-      },
-    ];
+    branches.value = n.branches;
   }
 });
 
@@ -111,7 +74,7 @@ function save(): void {
   }
 
   updateBranchNode();
-  emit("onsave");
+  emit("onsave", props.branchNodeId);
   isOpen.value = false;
 }
 function close(): void {
@@ -119,6 +82,6 @@ function close(): void {
 }
 
 function updateBranchNode() {
-  // (storyNodes[props.branchNodeId] as BranchNode).branches =
+  (storyNodes[props.branchNodeId] as BranchNode).branches = branches.value;
 }
 </script>

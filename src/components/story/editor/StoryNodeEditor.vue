@@ -5,7 +5,7 @@
     class="w-[40vw] min-w-100 max-w-none">
     <template #header>
       <div class="flex flex-row justify-between items-center w-full">
-        <p class="text-lg font-bold">Edit story node</p>
+        <p class="text-lg font-bold">Edit dialogue node</p>
         <div class="flex flex-row gap-2">
           <UButton
             color="neutral"
@@ -66,7 +66,7 @@ interface Props {
 }
 const props = defineProps<Props>();
 const emit = defineEmits<{
-  (e: "onsave"): void;
+  (e: "onsave", id: string): void;
 }>();
 const isOpen = defineModel<boolean>("isOpen", { required: true });
 
@@ -106,7 +106,7 @@ function save(): void {
   }
 
   updateStoryNode();
-  emit("onsave");
+  emit("onsave", props.storyNodeId);
   isOpen.value = false;
 }
 function close(): void {
