@@ -106,7 +106,9 @@
             :view-mode="viewMode"
             @remove="removeSentence(index)" />
 
-          <div class="w-full flex flex-row justify-end gap-2">
+          <div
+            v-if="props.mode !== 'Read'"
+            class="w-full flex flex-row justify-end gap-2">
             <UButton
               @click="createDialogueSentence()"
               class="flex items-center justify-center mt-2"
@@ -143,6 +145,10 @@ interface Props {
 const props = defineProps<Props>();
 
 const isOpen = defineModel<boolean>("isOpen", { required: true });
+
+const emit = defineEmits<{
+  (e: "onsave", id: string): void;
+}>();
 
 const { dialogues, languages, templatingVariables, textColors } =
   useContentStore();
@@ -283,6 +289,7 @@ function save(): void {
   }
 
   upsertDialogueNode();
+  emit("onsave", nodeKey.value);
   isOpen.value = false;
 }
 function close(): void {
