@@ -1,10 +1,13 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { useContentStore } from "../../stores/content";
 import type { TemplatingVariable } from "../../types/schema";
 import TemplatingVariableInput from "./TemplatingVariableInput.vue";
 import TemplatingVariableItem from "./TemplatingVariableItem.vue";
 
 const { templatingVariables } = useContentStore();
+
+const addVariableModalOpen = ref<boolean>(false);
 
 function addNewVariable(variable: TemplatingVariable) {
   templatingVariables.push(variable);
@@ -40,7 +43,10 @@ function deleteVariable(name: string) {
 
   <USeparator class="my-8" />
 
+  <UButton @click="addVariableModalOpen = true">Create new</UButton>
+
   <TemplatingVariableInput
+    v-model:open="addVariableModalOpen"
     @submit="addNewVariable"
     :variable="undefined"
     mode="Create" />

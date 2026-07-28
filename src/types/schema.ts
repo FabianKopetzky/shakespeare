@@ -19,7 +19,7 @@ export type Story = {
 } | undefined;
 //* STORY NODE TYPES
 
-export type AnyStoryNode = StoryNode | BranchNode | ConditionNode; // unison of all node types
+export type AnyStoryNode = StoryNode | BranchNode | ConditionNode | RandomNode; // unison of all node types
 
 export type StoryNodeBase = {
   id: string, // random uuid of the node
@@ -40,6 +40,11 @@ export type BranchNode = StoryNodeBase & {
   branches: Branch[] // list of answer possibilities
 }
 
+export type RandomNode = StoryNodeBase & {
+  type: "random",
+  branches: RandomBranch[] // list of random possibilities
+}
+
 // a node that contains a condition and has two paths that can emerge from it - a true and false path. The node itself does not contain any dialogue information
 export type ConditionNode = StoryNodeBase & {
   type: "condition"
@@ -58,6 +63,12 @@ export type Branch = {
   labels: Record<string, string>, // labels for the different languages for the choice
   targetId: string | null, // the dialogue target
   condition: Condition | null // condition that this branch will be rendered
+}
+
+export type RandomBranch = {
+  id: string | number, // random uuid of the branch
+  chance: number, // chance of this branch activating
+  targetId: string | null, // the dialogue target
 }
 
 export type StoryVariable = {
@@ -106,6 +117,5 @@ export type TemplatingVariable = {
 }
 export type TextColor = {
   name: string, // color variable name identifier
-  display: string, // display name of the color
   hex: string // hex of the color
 }

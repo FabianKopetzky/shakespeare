@@ -4,7 +4,7 @@ import type { TemplatingVariable } from "../../types/schema";
 import TemplatingVariableInput from "./TemplatingVariableInput.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
 
-const isEditing = ref<boolean>(false);
+const editorOpen = ref<boolean>(false);
 const showDeleteConfirm = ref<boolean>(false);
 
 interface Props {
@@ -16,12 +16,7 @@ const emit = defineEmits<{
   (e: "delete", name: string): void;
 }>();
 
-function enableEdit(): void {
-  isEditing.value = true;
-}
-
-function editVariable(variable: TemplatingVariable): void {
-  isEditing.value = false;
+function confirmEdit(variable: TemplatingVariable): void {
   emit("edit", variable);
 }
 
@@ -31,28 +26,29 @@ function confirmDelete(): void {
 </script>
 
 <template>
-  <div v-if="!isEditing" class="flex flex-row gap-4 justify-start items-center">
+  <div class="flex flex-row gap-4 justify-start items-center">
     <p>
       <span class="font-bold mr-4">{{ props.variable.name }}</span
       ><code class="mr-4">{{ props.variable.csharpExpression }}</code
       ><span class="text-gray-500">{{ props.variable.placeholder }}</span>
     </p>
-    <UButton @click="enableEdit" icon="material-symbols:edit" />
+    <UButton @click="editorOpen = true" icon="material-symbols:edit" />
     <UButton
       @click="showDeleteConfirm = true"
       icon="material-symbols:delete"
       color="error" />
   </div>
+
   <TemplatingVariableInput
-    v-else
+    v-model:open="editorOpen"
     mode="Update"
     :variable="props.variable"
-    @submit="editVariable" />
+    @submit="confirmEdit" />
 
   <ConfirmDialog
     v-model:open="showDeleteConfirm"
     title="Delete templating variable"
-    :description="`Are you sure you want to delete '${props.variable.name}'? This cannot be undone.`"
+    :description="`Are you sure you want to delete '${props.variable.name}'? All references of this variable will be replaced with the current placeholder. This cannot be undone.`"
     confirm-label="Delete"
     color="error"
     icon="material-symbols:delete-outline"

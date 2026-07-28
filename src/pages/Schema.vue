@@ -13,8 +13,14 @@
         <p>Model</p>
       </template>
       <template #templating>
-        <TemplatingVariableEditor />
-        <TextColorEditor />
+        <div class="flex flex-row justify-evenly items-start">
+          <div>
+            <TemplatingVariableEditor />
+          </div>
+          <div>
+            <TextColorEditor />
+          </div>
+        </div>
       </template>
       <template #languages>
         <LanguageEditor />

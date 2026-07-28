@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import { useContentStore } from "../../stores/content";
 import type { TextColor } from "../../types/schema";
 import TextColorInput from "./TextColorInput.vue";
 import TextColorItem from "./TextColorItem.vue";
 
 const { textColors } = useContentStore();
+const addTextColorModalOpen = ref<boolean>(false);
 
 function addNewColor(color: TextColor) {
   textColors.push(color);
@@ -37,5 +39,11 @@ function deleteColor(name: string) {
 
   <USeparator class="my-8" />
 
-  <TextColorInput @submit="addNewColor" :color="undefined" mode="Create" />
+  <UButton @click="addTextColorModalOpen = true">Create new</UButton>
+
+  <TextColorInput
+    v-model:open="addTextColorModalOpen"
+    @submit="addNewColor"
+    :color="undefined"
+    mode="Create" />
 </template>

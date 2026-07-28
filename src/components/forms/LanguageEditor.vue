@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useContentStore } from "../../stores/content";
 import type { Language } from "../../types/schema";
 import LanguageInput from "./LanguageInput.vue";
@@ -13,6 +13,8 @@ const defaultLanguage = computed<Language | undefined>(() => {
 const otherLanguages = computed<Language[]>(() => {
   return languages.filter((l) => !l.isDefault);
 });
+
+const addLanguageModalOpen = ref<boolean>(false);
 
 function addNewLanguage(lang: Language) {
   languages.push(lang);
@@ -56,5 +58,11 @@ function deleteLanguage(code: string) {
 
   <USeparator class="my-8" />
 
-  <LanguageInput @submit="addNewLanguage" :language="undefined" mode="Create" />
+  <UButton @click="addLanguageModalOpen = true">Create new</UButton>
+
+  <LanguageInput
+    v-model:open="addLanguageModalOpen"
+    @submit="addNewLanguage"
+    :language="undefined"
+    mode="Create" />
 </template>

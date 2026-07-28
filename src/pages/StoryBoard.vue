@@ -15,6 +15,11 @@
     @onsave="onNodeContentChange"
     :branch-node-id="currentBranchNode"
     v-model:is-open="branchNodeEditorOpen" />
+
+  <ConditionNodeEditor
+    @onsave="onNodeContentChange"
+    :condition-node-id="currentConditionNode"
+    v-model:is-open="conditionNodeEditorOpen" />
 </template>
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
@@ -24,6 +29,7 @@ import { useContentStore } from "../stores/content";
 import StoryGraph from "../components/story/StoryGraph.vue";
 import StoryNodeEditor from "../components/story/editor/StoryNodeEditor.vue";
 import BranchNodeEditor from "../components/story/editor/BranchNodeEditor.vue";
+import ConditionNodeEditor from "../components/story/editor/ConditionNodeEditor.vue";
 
 const route = useRoute();
 const story = ref<Story>(undefined);
@@ -48,6 +54,9 @@ const storyNodeEditorOpen = ref<boolean>(false);
 const currentBranchNode = ref<string>("");
 const branchNodeEditorOpen = ref<boolean>(false);
 
+const currentConditionNode = ref<string>("");
+const conditionNodeEditorOpen = ref<boolean>(false);
+
 function onOpenNode(node: AnyStoryNode) {
   // reset all var
   resetOpenNodes();
@@ -58,6 +67,9 @@ function onOpenNode(node: AnyStoryNode) {
   } else if (node.type === "branch") {
     currentBranchNode.value = node.id;
     branchNodeEditorOpen.value = true;
+  } else if (node.type === "condition") {
+    currentConditionNode.value = node.id;
+    conditionNodeEditorOpen.value = true;
   }
 }
 
@@ -67,6 +79,9 @@ function resetOpenNodes() {
 
   currentBranchNode.value = "";
   branchNodeEditorOpen.value = false;
+
+  currentConditionNode.value = "";
+  conditionNodeEditorOpen.value = false;
 }
 
 const storyGraphRef = ref<InstanceType<typeof StoryGraph> | null>(null);

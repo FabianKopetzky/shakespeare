@@ -1,4 +1,7 @@
-import type { AnyStoryNode, StoryNode, BranchNode, ConditionNode } from "../types/schema";
+import type { AnyStoryNode, StoryNode, BranchNode, ConditionNode, RandomNode } from "../types/schema";
+import { useConditionUtils } from "../utils/conditionUtils";
+
+const { conditionToString } = useConditionUtils();
 
 export type OutputPin = {
   id: string; // unique per node, used as the vue-flow source handle id
@@ -108,11 +111,35 @@ registerNodeType<ConditionNode>({
     targetIdTrue: null,
     targetIdFalse: null
   }),
-  getTitle: (node) => 'No condition assigned',
+  getTitle: (node) => node.condition ? conditionToString(node.condition) :'No condition assigned',
   getOutputs: () => [{ id: "true", label: "On True" }, { id: "false", label: "On False" }],
   getTargetId: (node, handleId) => handleId === 'true' ? node.targetIdTrue : node.targetIdFalse,
   setTargetId: (node, handleId, targetId) => {
     if(handleId === 'true') node.targetIdTrue = targetId;
     else node.targetIdFalse = targetId;
   },
+});
+
+registerNodeType<RandomNode>({
+  type: "random",
+  label: "Random",
+  color: "#9E55B5",
+  createDefault: (id, position) => ({
+    id,
+    type: "random",
+    position,
+    branches: []
+  }),
+  getTitle: (node) => node.branches.length > 0 ? `Selects one of ${node.branches.length} at random` : 'No random branches assigned',
+  getOutputs: (node) =>
+      node.branches.map((branch, index) => ({
+        id: branch.id,
+        label: `Branch ${index + 1}`,
+      } as OutputPin)),
+    getTargetId: (node, handleId) =>
+      node.branches.find((b) => b.id === handleId)?.targetId ?? null,
+    setTargetId: (node, handleId, targetId) => {
+      const branch = node.branches.find((b) => b.id === handleId);
+      if (branch) branch.targetId = targetId;
+    },
 });

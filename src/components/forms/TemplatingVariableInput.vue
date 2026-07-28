@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import type { FormMode, TemplatingVariable } from "../../types/schema";
 import { useWidget } from "../../composables/widget";
 import { useContentStore } from "../../stores/content";
@@ -9,6 +9,8 @@ interface Props {
   variable: TemplatingVariable | undefined;
 }
 const props = defineProps<Props>();
+
+const open = defineModel<boolean>("open", { default: false });
 
 const { displayError } = useWidget();
 const { templatingVariables } = useContentStore();
@@ -30,6 +32,17 @@ onMounted(() => {
 const emit = defineEmits<{
   (e: "submit", variable: TemplatingVariable): void;
 }>();
+
+watch(open, (isOpen) => {
+  if (isOpen) {
+    if (props.mode === "Create") clear();
+    else if (props.mode === "Update") {
+      variableName.value = props.variable?.name ?? "";
+      csharpExpression.value = props.variable?.csharpExpression ?? "";
+      placeholder.value = props.variable?.placeholder ?? "";
+    }
+  }
+});
 
 function validateCsharpExpression(expr: string): string | undefined {
   const pairs: Record<string, string> = { "(": ")", "{": "}", "[": "]" };
@@ -114,6 +127,7 @@ function submit() {
     placeholder: placeholder.value,
   });
   clear();
+  open.value = false;
 }
 
 function clear() {
@@ -126,22 +140,43 @@ function clear() {
 </script>
 
 <template>
-  <div class="flex flex-row gap-4 mt-12 justify-start items-center">
-    <UFormField label="Variable Name" help="Unique identifier of the variable.">
-      <UInput :disabled="props.mode !== 'Create'" v-model="variableName" />
-    </UFormField>
-    <UFormField
-      label="C# Expression"
-      help="Inserted verbatim into the generated C# file.">
-      <UInput v-model="csharpExpression" />
-    </UFormField>
-    <UFormField
-      label="Placeholder"
-      help="Shown in the dialogue editor as a reference.">
-      <UInput v-model="placeholder" />
-    </UFormField>
-    <UButton @click="submit">{{
-      props.mode === "Create" ? "Add" : "Update"
-    }}</UButton>
-  </div>
+  <UModal
+    v-model:open="open"
+    :title="props.mode === 'Create' ? 'Add variable' : 'Edit variable'">
+    <template #body>
+      <div class="flex flex-col gap-4 justify-start items-start">
+        <UFormField
+          class="w-full"
+          label="Variable Name"
+          help="Unique identifier of the variable.">
+          <UInput
+            class="w-full"
+            :disabled="props.mode !== 'Create'"
+            v-model="variableName" />
+        </UFormField>
+        <UFormField
+          class="w-full"
+          label="C# Expression"
+          help="Inserted verbatim into the generated C# file.">
+          <UInput class="w-full" v-model="csharpExpression" />
+        </UFormField>
+        <UFormField
+          class="w-full"
+          label="Placeholder"
+          help="Shown in the dialogue editor as a reference.">
+          <UInput class="w-full" v-model="placeholder" />
+        </UFormField>
+      </div>
+    </template>
+    <template #footer>
+      <div class="flex flex-row gap-4 justify-end w-full">
+        <UButton variant="ghost" color="neutral" @click="open = false">
+          Cancel
+        </UButton>
+        <UButton @click="submit">{{
+          props.mode === "Create" ? "Add" : "Update"
+        }}</UButton>
+      </div>
+    </template>
+  </UModal>
 </template>

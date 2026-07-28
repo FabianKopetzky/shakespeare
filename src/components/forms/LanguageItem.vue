@@ -4,9 +4,6 @@ import type { Language } from "../../types/schema";
 import LanguageInput from "./LanguageInput.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
 
-const isEditing = ref<boolean>(false);
-const showDeleteConfirm = ref<boolean>(false);
-
 interface Props {
   language: Language;
   deletable: boolean;
@@ -17,12 +14,10 @@ const emit = defineEmits<{
   (e: "delete", code: string): void;
 }>();
 
-function enableEdit(): void {
-  isEditing.value = true;
-}
+const editorOpen = ref<boolean>(false);
+const showDeleteConfirm = ref<boolean>(false);
 
-function editLanguage(lang: Language): void {
-  isEditing.value = false;
+function confirmEdit(lang: Language): void {
   emit("edit", lang);
 }
 
@@ -32,12 +27,12 @@ function confirmDelete(): void {
 </script>
 
 <template>
-  <div v-if="!isEditing" class="flex flex-row gap-4 justify-start items-center">
+  <div class="flex flex-row gap-4 justify-start items-center">
     <p>
       <span class="font-bold mr-4">{{ props.language.code }}</span
       >{{ props.language.display }}
     </p>
-    <UButton @click="enableEdit" icon="material-symbols:edit" />
+    <UButton @click="editorOpen = true" icon="material-symbols:edit" />
     <UButton
       v-if="deletable"
       @click="showDeleteConfirm = true"
@@ -45,10 +40,10 @@ function confirmDelete(): void {
       color="error" />
   </div>
   <LanguageInput
-    v-else
+    v-model:open="editorOpen"
     mode="Update"
     :language="props.language"
-    @submit="editLanguage" />
+    @submit="confirmEdit" />
 
   <ConfirmDialog
     v-model:open="showDeleteConfirm"
