@@ -189,7 +189,7 @@ function onKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="dialogue-rich-editor">
+  <div class="w-full">
     <div
       v-if="viewMode === 'edit'"
       class="flex flex-row gap-2 items-center mb-2">
@@ -225,7 +225,7 @@ function onKeydown(e: KeyboardEvent) {
                 type="button"
                 class="w-6 h-6 rounded-full border border-gray-300"
                 :style="{ backgroundColor: swatch.hex }"
-                :title="swatch.display"
+                :title="swatch.name"
                 @click="applyColor(swatch.hex)" />
             </div>
             <UButton size="xs" block @click="applyColor(pendingColor)"
@@ -250,8 +250,8 @@ function onKeydown(e: KeyboardEvent) {
         ref="textareaRef"
         :value="modelValue"
         :placeholder="placeholder"
-        class="dialogue-textarea"
         rows="3"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md outline-none font-mono text-[0.9rem] leading-relaxed resize-y focus:border-blue-500"
         @input="onInput"
         @keydown="onKeydown"
         @keyup="updateAutocomplete"
@@ -260,18 +260,17 @@ function onKeydown(e: KeyboardEvent) {
 
       <div
         v-if="autocomplete.visible"
-        class="dialogue-autocomplete"
+        class="absolute z-50 min-w-[12rem] max-h-[12rem] overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg p-1"
         :style="{
           top: `${autocomplete.top}px`,
           left: `${autocomplete.left}px`,
-          backgroundColor: `#000000`,
         }">
         <button
           v-for="(item, index) in autocomplete.items"
           :key="item.name"
           type="button"
-          class="dialogue-autocomplete-item"
-          :class="{ active: index === autocomplete.activeIndex }"
+          class="flex justify-between gap-2 w-full px-2 py-1 rounded text-left hover:bg-blue-500/10"
+          :class="{ 'bg-blue-500/10': index === autocomplete.activeIndex }"
           @mousedown.prevent="acceptAutocomplete(index)">
           <span class="font-mono text-xs">{{ item.name }}</span>
           <span class="text-xs opacity-60">{{ item.placeholder }}</span>
@@ -286,57 +285,10 @@ function onKeydown(e: KeyboardEvent) {
       </p>
     </div>
 
-    <div v-else class="dialogue-preview">
+    <div
+      v-else
+      class="px-3 py-2 border border-gray-300 rounded-md min-h-[3rem] leading-relaxed">
       <ContentNodeRenderer :nodes="previewNodes" :variables="variables" />
     </div>
   </div>
 </template>
-
-<style>
-.dialogue-textarea {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  outline: none;
-  font-family: ui-monospace, monospace;
-  font-size: 0.9rem;
-  line-height: 1.6;
-  resize: vertical;
-}
-.dialogue-textarea:focus {
-  border-color: #3b82f6;
-}
-.dialogue-preview {
-  padding: 0.5rem 0.75rem;
-  border: 1px dashed #d1d5db;
-  border-radius: 0.375rem;
-  min-height: 3rem;
-  line-height: 1.6;
-}
-.dialogue-autocomplete {
-  position: absolute;
-  z-index: 50;
-  min-width: 12rem;
-  max-height: 12rem;
-  overflow-y: auto;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  padding: 0.25rem;
-}
-.dialogue-autocomplete-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  width: 100%;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  text-align: left;
-}
-.dialogue-autocomplete-item:hover,
-.dialogue-autocomplete-item.active {
-  background: rgba(59, 130, 246, 0.12);
-}
-</style>

@@ -86,6 +86,45 @@
                 :colors="textColors"
                 :view-mode="viewMode"
                 @remove="removeBranch(index)" />
+
+              <div class="mt-3 pt-3 border-t border-default">
+                <div class="flex flex-row justify-between items-start gap-2">
+                  <div class="flex flex-col gap-1 min-w-0">
+                    <span class="text-xs font-semibold opacity-70"
+                      >Condition</span
+                    >
+                    <span
+                      v-if="branch.condition"
+                      class="text-sm text-muted truncate">
+                      {{ conditionToString(branch.condition) }}
+                    </span>
+                    <span v-else class="text-sm text-muted italic">
+                      Always shown
+                    </span>
+                  </div>
+                  <div class="flex flex-row gap-1 shrink-0">
+                    <UButton
+                      size="xs"
+                      variant="soft"
+                      color="neutral"
+                      :icon="
+                        branch.condition
+                          ? 'material-symbols:edit-outline'
+                          : 'material-symbols:add'
+                      "
+                      @click="openConditionEditor(index)">
+                      {{ branch.condition ? "Edit" : "Add condition" }}
+                    </UButton>
+                    <UButton
+                      v-if="branch.condition"
+                      size="xs"
+                      variant="ghost"
+                      color="error"
+                      icon="material-symbols:close"
+                      @click="clearBranchCondition(index)" />
+                  </div>
+                </div>
+              </div>
             </div>
           </UContextMenu>
 
@@ -103,6 +142,12 @@
       </div>
     </template>
   </USlideover>
+
+  <ConditionInput
+    v-model:open="conditionEditorOpen"
+    :variables="storyVariables"
+    :condition="editingCondition"
+    @submit="onConditionSubmit" />
 </template>
 
 <script setup lang="ts">
@@ -111,16 +156,25 @@ import type {
   AnyStoryNode,
   BranchNode,
   Branch,
+  Condition,
   DialogueSentence,
 } from "../../../types/schema.ts";
 import { useContentStore } from "../../../stores/content.ts";
 import { useWidget } from "../../../composables/widget.ts";
+import { useConditionUtils } from "../../../utils/conditionUtils.ts";
 import { validateContent } from "../../../utils/dialogueContent.ts";
 import DialogueSentenceEditor from "../../dialogue/DialogueSentenceEditor.vue";
+import ConditionInput from "../../forms/ConditionInput.vue";
 
 const { displayError } = useWidget();
-const { storyNodes, languages, templatingVariables, textColors } =
-  useContentStore();
+const {
+  storyNodes,
+  languages,
+  templatingVariables,
+  textColors,
+  storyVariables,
+} = useContentStore();
+const { conditionToString } = useConditionUtils();
 
 interface Props {
   branchNodeId: string;
@@ -152,23 +206,33 @@ const slideoverUi = computed(() => ({
 }));
 
 const languageMenuItems = computed(() =>
-  languages.map((l) => ({ label: `${l.code} — ${l.display}`, value: l.code })),
+  languages.map((l) => ({ label: `${l.code} (${l.display})`, value: l.code })),
 );
 const referenceLanguageMenuItems = computed(() =>
   languages
     .filter((l) => l.code !== currentLanguageCode.value)
-    .map((l) => ({ label: `${l.code} — ${l.display}`, value: l.code })),
+    .map((l) => ({ label: `${l.code} (${l.display})`, value: l.code })),
 );
 
-const targetNodeItems = computed(() => [
-  { label: "— No target —", value: null },
-  ...Object.entries(storyNodes)
-    .filter(([id, n]) => !!n && id !== props.branchNodeId)
-    .map(([id, n]) => ({
-      label: `${id} (${(n as AnyStoryNode).type})`,
-      value: id,
-    })),
-]);
+const conditionEditorOpen = ref(false);
+const editingBranchIndex = ref<number | null>(null);
+const editingCondition = ref<Condition | undefined>(undefined);
+
+function openConditionEditor(index: number) {
+  editingBranchIndex.value = index;
+  editingCondition.value = branches.value[index].condition ?? undefined;
+  conditionEditorOpen.value = true;
+}
+
+function onConditionSubmit(condition: Condition | null) {
+  if (editingBranchIndex.value === null) return;
+  branches.value[editingBranchIndex.value].condition = condition;
+  editingBranchIndex.value = null;
+}
+
+function clearBranchCondition(index: number) {
+  branches.value[index].condition = null;
+}
 
 watch(isOpen, (open) => {
   if (!open) return;
@@ -179,7 +243,7 @@ watch(isOpen, (open) => {
       id: b.id,
       labels: { ...b.labels },
       targetId: b.targetId,
-      condition: null,
+      condition: b.condition ?? null,
     }));
   }
 
@@ -188,6 +252,8 @@ watch(isOpen, (open) => {
   referenceLanguageCode.value =
     defaultLanguage.value?.code ?? languages[0]?.code ?? "";
   viewMode.value = "preview"; // reset each time the node is opened
+  conditionEditorOpen.value = false;
+  editingBranchIndex.value = null;
 });
 
 watch(currentLanguageCode, (code) => {
@@ -236,6 +302,15 @@ function branchContextMenuItems(index: number) {
         icon: "material-symbols:arrow-downward",
         disabled: index === branches.value.length - 1,
         onSelect: () => moveBranch(index, 1),
+      },
+    ],
+    [
+      {
+        label: branches.value[index].condition
+          ? "Edit condition"
+          : "Add condition",
+        icon: "material-symbols:rule",
+        onSelect: () => openConditionEditor(index),
       },
     ],
     [

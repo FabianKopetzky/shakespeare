@@ -89,7 +89,7 @@ registerNodeType<BranchNode>({
   getOutputs: (node) =>
     node.branches.map((branch, index) => ({
       id: branch.id,
-      label: `Branch ${index + 1}`,
+      label: `Branch ${index + 1}${branch.condition ? ' (?)' : ''}`,
     } as OutputPin)),
   getTargetId: (node, handleId) =>
     node.branches.find((b) => b.id === handleId)?.targetId ?? null,

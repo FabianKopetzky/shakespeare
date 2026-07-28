@@ -176,12 +176,12 @@ const slideoverUi = computed(() => ({
 }));
 
 const languageMenuItems = computed(() =>
-  languages.map((l) => ({ label: `${l.code} — ${l.display}`, value: l.code })),
+  languages.map((l) => ({ label: `${l.code} (${l.display})`, value: l.code })),
 );
 const referenceLanguageMenuItems = computed(() =>
   languages
     .filter((l) => l.code !== currentLanguageCode.value)
-    .map((l) => ({ label: `${l.code} — ${l.display}`, value: l.code })),
+    .map((l) => ({ label: `${l.code} (${l.display})`, value: l.code })),
 );
 
 watch(isOpen, (open) => {
