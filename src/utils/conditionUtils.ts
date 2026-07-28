@@ -1,4 +1,4 @@
-import type { Condition, Operand, StoryVariableType } from "../types/schema";
+import type { Condition, Operand, Operation, StoryVariableType } from "../types/schema";
 
 export function useConditionUtils() {
   function operandToString(operand: Operand): string {
@@ -19,6 +19,20 @@ export function useConditionUtils() {
     return str;
   }
 
+  function operationToString(operation: Operation): string {
+    return `${operation.variableName} ${operationActionToString(operation.action)} ${operation.target.value}`;
+  }
+  function operationActionToString(action: 'set' | 'add' | 'subtract'): string {
+    switch(action) {
+      case 'add':
+        return '+=';
+      case 'subtract':
+        return '-=';
+      case 'set':
+        return '=';
+    }
+  }
+
   const typeMeta: Record<
     StoryVariableType,
     { icon: string; color: "info" | "secondary" | "success"; label: string }
@@ -28,5 +42,5 @@ export function useConditionUtils() {
     Boolean: { icon: "i-lucide-toggle-left", color: "success", label: "Boolean" },
   };
 
-  return { conditionToString, typeMeta };
+  return { conditionToString, typeMeta, operationToString };
 }

@@ -1,7 +1,7 @@
 import type { AnyStoryNode, StoryNode, BranchNode, ConditionNode, RandomNode, OperationNode, EventNode } from "../types/schema";
 import { useConditionUtils } from "../utils/conditionUtils";
 
-const { conditionToString } = useConditionUtils();
+const { conditionToString, operationToString } = useConditionUtils();
 
 export type OutputPin = {
   id: string; // unique per node, used as the vue-flow source handle id
@@ -152,9 +152,10 @@ registerNodeType<OperationNode>({
     id,
     type: "operation",
     position,
+    operation: null,
     targetId: null,
   }),
-  getTitle: (node) => "Modifies variable",
+  getTitle: (node) => node.operation ? operationToString(node.operation) : 'No operation set',
   getOutputs: () => [{ id: "out", label: 'On Finish' }],
   getTargetId: (node) => node.targetId,
   setTargetId: (node, _handleId, targetId) => {

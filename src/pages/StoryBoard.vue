@@ -20,16 +20,22 @@
     @onsave="onNodeContentChange"
     :condition-node-id="currentConditionNode"
     v-model:is-open="conditionNodeEditorOpen" />
+
+  <OperationNodeEditor
+    @onsave="onNodeContentChange"
+    :operation-node-id="currentOperationNode"
+    v-model:is-open="operationNodeEditorOpen" />
 </template>
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import type { AnyStoryNode, Story, StoryNode } from "../types/schema";
+import type { AnyStoryNode, Story } from "../types/schema";
 import { useContentStore } from "../stores/content";
 import StoryGraph from "../components/story/StoryGraph.vue";
 import StoryNodeEditor from "../components/story/editor/StoryNodeEditor.vue";
 import BranchNodeEditor from "../components/story/editor/BranchNodeEditor.vue";
 import ConditionNodeEditor from "../components/story/editor/ConditionNodeEditor.vue";
+import OperationNodeEditor from "../components/story/editor/OperationNodeEditor.vue";
 
 const route = useRoute();
 const story = ref<Story>(undefined);
@@ -57,6 +63,9 @@ const branchNodeEditorOpen = ref<boolean>(false);
 const currentConditionNode = ref<string>("");
 const conditionNodeEditorOpen = ref<boolean>(false);
 
+const currentOperationNode = ref<string>("");
+const operationNodeEditorOpen = ref<boolean>(false);
+
 function onOpenNode(node: AnyStoryNode) {
   // reset all var
   resetOpenNodes();
@@ -70,6 +79,9 @@ function onOpenNode(node: AnyStoryNode) {
   } else if (node.type === "condition") {
     currentConditionNode.value = node.id;
     conditionNodeEditorOpen.value = true;
+  } else if (node.type === "operation") {
+    currentOperationNode.value = node.id;
+    operationNodeEditorOpen.value = true;
   }
 }
 
@@ -82,6 +94,9 @@ function resetOpenNodes() {
 
   currentConditionNode.value = "";
   conditionNodeEditorOpen.value = false;
+
+  currentOperationNode.value = "";
+  operationNodeEditorOpen.value = false;
 }
 
 const storyGraphRef = ref<InstanceType<typeof StoryGraph> | null>(null);

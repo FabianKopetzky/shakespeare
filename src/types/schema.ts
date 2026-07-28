@@ -47,6 +47,7 @@ export type RandomNode = StoryNodeBase & {
 
 export type OperationNode = StoryNodeBase & {
   type: "operation",
+  operation: Operation | null,
   targetId: string | null // references another node in the story
 }
 
@@ -111,6 +112,18 @@ export type ConditionClause = {
 }
 
 export type Condition = ConditionClause[]
+
+//* OPERATION UTILS
+
+export type Operation = {
+  variableName: string, // variable to be mutated
+  action: 'set' | 'add' | 'subtract', // should only work on fitting data types (add and subtract only for Integer)
+  target: OperatonTarget
+}
+export type OperatonTarget = {
+  type: 'literal' | 'variable',
+  value: string | number | boolean // if type is variable, this holds the variable name
+}
 
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened
 
