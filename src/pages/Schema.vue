@@ -26,13 +26,14 @@
         <LanguageEditor />
       </template>
       <template #variables>
-        <p>Variables</p>
+        <StoryVariableEditor />
       </template>
     </UTabs>
   </div>
 </template>
 <script setup lang="ts">
 import LanguageEditor from "../components/forms/LanguageEditor.vue";
+import StoryVariableEditor from "../components/forms/StoryVariableEditor.vue";
 import TemplatingVariableEditor from "../components/forms/TemplatingVariableEditor.vue";
 import TextColorEditor from "../components/forms/TextColorEditor.vue";
 

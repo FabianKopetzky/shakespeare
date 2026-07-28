@@ -1,4 +1,4 @@
-import type { AnyStoryNode, StoryNode, BranchNode, ConditionNode, RandomNode } from "../types/schema";
+import type { AnyStoryNode, StoryNode, BranchNode, ConditionNode, RandomNode, OperationNode, EventNode } from "../types/schema";
 import { useConditionUtils } from "../utils/conditionUtils";
 
 const { conditionToString } = useConditionUtils();
@@ -142,4 +142,40 @@ registerNodeType<RandomNode>({
       const branch = node.branches.find((b) => b.id === handleId);
       if (branch) branch.targetId = targetId;
     },
+});
+
+registerNodeType<OperationNode>({
+  type: "operation",
+  label: "Operation",
+  color: "#FF5659",
+  createDefault: (id, position) => ({
+    id,
+    type: "operation",
+    position,
+    targetId: null,
+  }),
+  getTitle: (node) => "Modifies variable",
+  getOutputs: () => [{ id: "out", label: 'On Finish' }],
+  getTargetId: (node) => node.targetId,
+  setTargetId: (node, _handleId, targetId) => {
+    node.targetId = targetId;
+  },
+});
+
+registerNodeType<EventNode>({
+  type: "event",
+  label: "Event",
+  color: "#FF96DD",
+  createDefault: (id, position) => ({
+    id,
+    type: "event",
+    position,
+    targetId: null,
+  }),
+  getTitle: (node) => "Invokes event",
+  getOutputs: () => [{ id: "out", label: 'On Finish' }],
+  getTargetId: (node) => node.targetId,
+  setTargetId: (node, _handleId, targetId) => {
+    node.targetId = targetId;
+  },
 });

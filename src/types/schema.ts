@@ -19,7 +19,7 @@ export type Story = {
 } | undefined;
 //* STORY NODE TYPES
 
-export type AnyStoryNode = StoryNode | BranchNode | ConditionNode | RandomNode; // unison of all node types
+export type AnyStoryNode = StoryNode | BranchNode | ConditionNode | RandomNode | OperationNode | EventNode; // unison of all node types
 
 export type StoryNodeBase = {
   id: string, // random uuid of the node
@@ -43,6 +43,16 @@ export type BranchNode = StoryNodeBase & {
 export type RandomNode = StoryNodeBase & {
   type: "random",
   branches: RandomBranch[] // list of random possibilities
+}
+
+export type OperationNode = StoryNodeBase & {
+  type: "operation",
+  targetId: string | null // references another node in the story
+}
+
+export type EventNode = StoryNodeBase & {
+  type: "event",
+  targetId: string | null // references another node in the story
 }
 
 // a node that contains a condition and has two paths that can emerge from it - a true and false path. The node itself does not contain any dialogue information

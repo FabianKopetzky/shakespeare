@@ -39,7 +39,7 @@
     v-model:open="editorOpen"
     @submit="onUpdateCondition"
     :condition="condition ?? undefined"
-    :variables="variables" />
+    :variables="storyVariables" />
 </template>
 
 <script setup lang="ts">
@@ -48,7 +48,6 @@ import type {
   AnyStoryNode,
   ConditionNode,
   Condition,
-  StoryVariable,
 } from "../../../types/schema.ts";
 import { useContentStore } from "../../../stores/content.ts";
 import { useWidget } from "../../../composables/widget.ts";
@@ -56,14 +55,8 @@ import ConditionInput from "../../forms/ConditionInput.vue";
 import { useConditionUtils } from "../../../utils/conditionUtils.ts";
 
 const { displayError } = useWidget();
-const { storyNodes } = useContentStore();
+const { storyNodes, storyVariables } = useContentStore();
 const { conditionToString } = useConditionUtils();
-
-const variables: StoryVariable[] = [
-  { name: "playerGold", type: "Integer", defaultValue: 0 },
-  { name: "hasKey", type: "Boolean", defaultValue: false },
-  { name: "playerName", type: "String", defaultValue: "" },
-];
 
 interface Props {
   conditionNodeId: string;

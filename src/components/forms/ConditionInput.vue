@@ -10,6 +10,9 @@ import type {
   StoryVariableType,
 } from "../../types/schema";
 import { useWidget } from "../../composables/widget";
+import { useConditionUtils } from "../../utils/conditionUtils";
+import { useContentStore } from "../../stores/content";
+import StoryVariableInput from "./StoryVariableInput.vue";
 
 interface Props {
   variables: StoryVariable[];
@@ -19,22 +22,16 @@ const props = defineProps<Props>();
 const open = defineModel<boolean>("open", { default: false });
 
 const { displayError } = useWidget();
+const { storyVariables } = useContentStore();
 
 const emit = defineEmits<{
   (e: "submit", condition: Condition | null): void;
 }>();
 
-// --- Type metadata: icon + color per variable/value type ---
-const typeMeta: Record<
-  StoryVariableType,
-  { icon: string; color: "info" | "secondary" | "success"; label: string }
-> = {
-  Integer: { icon: "i-lucide-hash", color: "info", label: "Integer" },
-  String: { icon: "i-lucide-type", color: "secondary", label: "String" },
-  Boolean: { icon: "i-lucide-toggle-left", color: "success", label: "Boolean" },
-};
+const { typeMeta } = useConditionUtils();
 
 const LITERAL_SENTINEL = "__literal__";
+const CREATE_SENTINEL = "__create__";
 
 type OperandKind = "literal" | "variable";
 
@@ -180,8 +177,8 @@ function isValueTypeEditable(clause: ClauseForm): boolean {
   return lockedType(clause) === undefined;
 }
 
-// Single dropdown per side: "Literal value" + variables, filtered by whatever
-// type the OTHER side already locked in (if any).
+// Single dropdown per side: "Literal value" + "Create new variable" + existing
+// variables, filtered by whatever type the OTHER side already locked in (if any).
 function operandItems(clause: ClauseForm, side: "left" | "right") {
   const other = side === "left" ? clause.right : clause.left;
   const otherLock =
@@ -195,6 +192,12 @@ function operandItems(clause: ClauseForm, side: "left" | "right") {
     icon: "i-lucide-pencil",
   };
 
+  const createItem = {
+    label: "Create new variable...",
+    value: CREATE_SENTINEL,
+    icon: "i-lucide-plus",
+  };
+
   const variableItems = props.variables
     .filter((v) => !otherLock || v.type === otherLock)
     .map((v) => ({
@@ -203,7 +206,7 @@ function operandItems(clause: ClauseForm, side: "left" | "right") {
       icon: typeMeta[v.type].icon,
     }));
 
-  return [[literalItem], [...variableItems]];
+  return [[literalItem, createItem], [...variableItems]];
 }
 
 // what the dropdown itself should show as selected value
@@ -221,24 +224,17 @@ function reconcileOperator(clause: ClauseForm) {
   }
 }
 
-function onSelectOperand(
+function applyVariableToOperand(
   clause: ClauseForm,
   side: "left" | "right",
-  value: string,
+  variableName: string,
 ) {
   const operand = clause[side];
   const other = side === "left" ? clause.right : clause.left;
 
-  if (value === LITERAL_SENTINEL) {
-    operand.kind = "literal";
-    operand.variableName = "";
-    operand.literalValue = clause.valueType === "Boolean" ? "true" : "";
-    return;
-  }
-
   operand.kind = "variable";
-  operand.variableName = value;
-  const type = variableType(value);
+  operand.variableName = variableName;
+  const type = variableType(variableName);
   if (!type) return;
 
   clause.valueType = type;
@@ -250,6 +246,53 @@ function onSelectOperand(
   } else {
     other.literalValue = type === "Boolean" ? "true" : "";
   }
+}
+
+// --- Inline "create new variable" flow ---
+const createVariableOpen = ref(false);
+const pendingTarget = ref<{
+  clause: ClauseForm;
+  side: "left" | "right";
+} | null>(null);
+
+function openCreateVariable(clause: ClauseForm, side: "left" | "right") {
+  pendingTarget.value = { clause, side };
+  createVariableOpen.value = true;
+}
+
+function onVariableCreated(variable: StoryVariable) {
+  storyVariables.push(variable);
+
+  if (pendingTarget.value) {
+    applyVariableToOperand(
+      pendingTarget.value.clause,
+      pendingTarget.value.side,
+      variable.name,
+    );
+  }
+  pendingTarget.value = null;
+}
+
+function onSelectOperand(
+  clause: ClauseForm,
+  side: "left" | "right",
+  value: string,
+) {
+  const operand = clause[side];
+
+  if (value === LITERAL_SENTINEL) {
+    operand.kind = "literal";
+    operand.variableName = "";
+    operand.literalValue = clause.valueType === "Boolean" ? "true" : "";
+    return;
+  }
+
+  if (value === CREATE_SENTINEL) {
+    openCreateVariable(clause, side);
+    return;
+  }
+
+  applyVariableToOperand(clause, side, value);
 }
 
 function onSelectValueType(clause: ClauseForm, type: StoryVariableType) {
@@ -481,4 +524,10 @@ function clearCondition() {
       </div>
     </template>
   </UModal>
+
+  <StoryVariableInput
+    v-model:open="createVariableOpen"
+    mode="Create"
+    :variable="undefined"
+    @submit="onVariableCreated" />
 </template>

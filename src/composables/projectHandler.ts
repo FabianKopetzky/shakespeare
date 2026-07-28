@@ -16,7 +16,8 @@ export function useProjectHandler() {
 
             colors: contentStore.textColors,
             templating: contentStore.templatingVariables,
-            languages: contentStore.languages
+            languages: contentStore.languages,
+            storyVariables: contentStore.storyVariables
         }
 
         const json = JSON.stringify(data);
@@ -35,16 +36,17 @@ export function useProjectHandler() {
     }
     function importProject(project: any): boolean {
         try {
-            contentStore.projectTitle = project.projectTitle;
-            contentStore.projectAuthor = project.projectAuthor;
+            contentStore.projectTitle = project.projectTitle ?? 'My project';
+            contentStore.projectAuthor = project.projectAuthor ?? 'Author';
 
-            contentStore.dialogues = project.dialogues;
-            contentStore.stories = project.stories;
-            contentStore.storyNodes = project.storyNodes;
+            contentStore.dialogues = project.dialogues ?? [];
+            contentStore.stories = project.stories ?? [];
+            contentStore.storyNodes = project.storyNodes ?? {};
             
-            contentStore.textColors = project.colors;
-            contentStore.templatingVariables = project.templating;
-            contentStore.languages = project.languages;
+            contentStore.textColors = project.colors ?? [];
+            contentStore.templatingVariables = project.templating ?? [];
+            contentStore.languages = project.languages ?? [];
+            contentStore.storyVariables = project.storyVariables ?? [];
             
             appStore.projectLoaded = true;
             return true;
@@ -64,6 +66,7 @@ export function useProjectHandler() {
         contentStore.languages = [{code: 'default', display: 'English', isDefault: true}];
         contentStore.templatingVariables = [];
         contentStore.textColors = [];
+        contentStore.storyVariables = [];
 
         appStore.projectLoaded = true;
     }
