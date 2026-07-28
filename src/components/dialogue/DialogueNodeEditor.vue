@@ -40,6 +40,7 @@
           >
           <UTextarea
             v-model="nodeDescription"
+            :disabled="props.mode === 'Read'"
             maxlength="400"
             class="w-full mt-2" />
         </div>
@@ -50,7 +51,9 @@
           type="solid"
           size="sm" />
 
-        <div class="flex flex-row gap-4 items-end justify-between mt-2">
+        <div
+          v-if="props.mode !== 'Read'"
+          class="flex flex-row gap-4 items-end justify-between mt-2">
           <div class="flex flex-row gap-4 items-end">
             <UFormField label="Editing language">
               <USelectMenu
@@ -188,7 +191,11 @@ watch(isOpen, (open) => {
     defaultLanguage.value?.code ?? languages[0]?.code ?? "";
   referenceLanguageCode.value =
     defaultLanguage.value?.code ?? languages[0]?.code ?? "";
-  viewMode.value = "edit"; // reset each time the node is opened
+  if (props.mode === "Read") {
+    viewMode.value = "preview"; // reset each time the node is opened
+  } else {
+    viewMode.value = "edit";
+  }
 });
 
 watch(currentLanguageCode, (code) => {
