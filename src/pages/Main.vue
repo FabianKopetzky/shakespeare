@@ -10,7 +10,7 @@ const showCreateNewDialogue = ref<boolean>(false);
 <template>
   <div class="flex flex-col justify-center items-center gap-4 min-h-full">
     <img width="100" height="100" src="/icon.svg" />
-    <h1>Welcome to Shakespeer Web UI</h1>
+    <h1>Welcome to Shakespeare Web UI</h1>
     <p>
       Create and edit dialogues, storylines and branches and export directly to
       Unity!

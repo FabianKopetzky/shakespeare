@@ -3,7 +3,8 @@ import TabButton from "./widget/TabButton.vue";
 </script>
 
 <template>
-  <aside class="flex flex-col justify-start items-center px-0 pt-40">
+  <aside
+    class="flex flex-col justify-start items-center px-0 pt-40 bg-primary-900">
     <TabButton tooltip="Home" icon="ic:round-home" link="/" />
     <TabButton
       tooltip="Schema"
