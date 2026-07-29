@@ -11,7 +11,7 @@ export default defineConfig({
           button: {
             slots: {
               base: [
-                'font-bold text-md! cursor-pointer!'
+                'cursor-pointer!'
               ]
             }
           }

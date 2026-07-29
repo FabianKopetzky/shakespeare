@@ -193,28 +193,30 @@ function onKeydown(e: KeyboardEvent) {
     <div
       v-if="viewMode === 'edit'"
       class="flex flex-row gap-2 items-center mb-2">
-      <UButton
-        icon="material-symbols:format-bold"
-        variant="ghost"
-        color="neutral"
-        size="xs"
-        title="Wrap selection in <b></b>"
-        @click="applyBold" />
-      <UButton
-        icon="material-symbols:format-italic"
-        variant="ghost"
-        color="neutral"
-        size="xs"
-        title="Wrap selection in <i></i>"
-        @click="applyItalic" />
-
-      <UPopover>
+      <UTooltip text="Wrap selection in <b></b>">
         <UButton
-          icon="material-symbols:format-color-text"
+          icon="material-symbols:format-bold"
           variant="ghost"
           color="neutral"
           size="xs"
-          title="Wrap selection in <color=#hex></color>" />
+          @click="applyBold" />
+      </UTooltip>
+      <UTooltip text="Wrap selection in <i></i>">
+        <UButton
+          icon="material-symbols:format-italic"
+          variant="ghost"
+          color="neutral"
+          size="xs"
+          @click="applyItalic" />
+      </UTooltip>
+      <UPopover>
+        <UTooltip text="Wrap selection in <color=#hex></color>">
+          <UButton
+            icon="material-symbols:format-color-text"
+            variant="ghost"
+            color="neutral"
+            size="xs" />
+        </UTooltip>
         <template #content>
           <div class="p-3 flex flex-col gap-3 w-56">
             <UColorPicker v-model="pendingColor" format="hex" />
@@ -251,7 +253,7 @@ function onKeydown(e: KeyboardEvent) {
         :value="modelValue"
         :placeholder="placeholder"
         rows="3"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md outline-none font-mono text-[0.9rem] leading-relaxed resize-y focus:border-blue-500"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md outline-none leading-relaxed resize-y focus:border-blue-500"
         @input="onInput"
         @keydown="onKeydown"
         @keyup="updateAutocomplete"
@@ -260,7 +262,7 @@ function onKeydown(e: KeyboardEvent) {
 
       <div
         v-if="autocomplete.visible"
-        class="absolute z-50 min-w-[12rem] max-h-[12rem] overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg p-1"
+        class="absolute z-50 min-w-[12rem] max-h-[12rem] overflow-y-auto bg-black border border-gray-300 rounded-md shadow-lg p-1"
         :style="{
           top: `${autocomplete.top}px`,
           left: `${autocomplete.left}px`,
@@ -272,7 +274,7 @@ function onKeydown(e: KeyboardEvent) {
           class="flex justify-between gap-2 w-full px-2 py-1 rounded text-left hover:bg-blue-500/10"
           :class="{ 'bg-blue-500/10': index === autocomplete.activeIndex }"
           @mousedown.prevent="acceptAutocomplete(index)">
-          <span class="font-mono text-xs">{{ item.name }}</span>
+          <span class="text-xs">{{ item.name }}</span>
           <span class="text-xs opacity-60">{{ item.placeholder }}</span>
         </button>
       </div>

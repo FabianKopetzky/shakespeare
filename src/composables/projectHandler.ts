@@ -71,6 +71,11 @@ export function useProjectHandler() {
         appStore.projectLoaded = true;
     }
 
+    function exportLanguage(language: string): void {
+
+    }
+    
+
     return {
         exportProject,
         importProject,

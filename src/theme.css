@@ -41,16 +41,26 @@
     letter-spacing: var(--h6-letter-spacing);
   }
 
-  p,
-  span {
+  p {
     font-size: var(--body-size);
     font-weight: var(--body-weight);
     line-height: var(--body-line-height);
     letter-spacing: var(--body-letter-spacing);
   }
+  span {
+    font-size: var(--body-size);
+    line-height: var(--body-line-height);
+    letter-spacing: var(--body-letter-spacing);
+  }
+  strong {
+    font-size: var(--body-size);
+    font-weight: var(700);
+    line-height: var(--body-line-height);
+    letter-spacing: var(--body-letter-spacing);
+  }
   @theme {
-    /* --font-sans: "Spline Sans", system-ui, sans-serif;
-    --font-mono: "Google Sans Code", monospace; */
+    --font-sans: "Kameron", system-ui, sans-serif;
+    --font-mono: monospace;
 
     /* Type Scale */
     --display-lg-size: clamp(1.959rem, calc(1.577rem + 1.909vw), 3.008rem);
