@@ -18,14 +18,7 @@
         <h2>Compile files</h2>
         <p>Compile your files and export directly to Unity!</p>
         <UButton @click="tryCompileStories">Compile stories</UButton>
-        <h2>Compile languages</h2>
-        <div class="flex flex-row justify-start items-center gap-4">
-          <UButton
-            v-for="language in languages"
-            @click="tryCompileLanguage(language.code)"
-            >Compile {{ language.code }} ({{ language.display }})</UButton
-          >
-        </div>
+        <UButton @click="tryCompileProjectMain">Compile project</UButton>
       </div>
     </div>
   </div>
@@ -36,14 +29,15 @@ import { useWidget } from "../composables/widget";
 import { useContentStore } from "../stores/content";
 
 const { languages, projectTitle } = useContentStore();
-const { exportProject, compileLanguage, compileStories } = useProjectHandler();
+const { exportProject, compileStories, compileProjectMain } =
+  useProjectHandler();
 const { displayError, displaySuccess } = useWidget();
 
-function tryCompileLanguage(lang: string): void {
-  const res = compileLanguage(lang);
-  if (res) displaySuccess(`Successfully compiled language '${lang}'`);
-  else displayError(`An error occurred compiling language '${lang}'`);
-}
+// function tryCompileLanguage(lang: string): void {
+//   const res = compileLanguage(lang);
+//   if (res) displaySuccess(`Successfully compiled language '${lang}'`);
+//   else displayError(`An error occurred compiling language '${lang}'`);
+// }
 function tryCompileStories(): void {
   const res = compileStories();
   if (res)
@@ -53,6 +47,17 @@ function tryCompileStories(): void {
   else
     displayError(
       `An error occurred compiling stories for project '${projectTitle}'`,
+    );
+}
+function tryCompileProjectMain(): void {
+  const res = compileProjectMain();
+  if (res)
+    displaySuccess(
+      `Successfully compiled main file for project '${projectTitle}'`,
+    );
+  else
+    displayError(
+      `An error occurred compiling main file for project '${projectTitle}'`,
     );
 }
 </script>

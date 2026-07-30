@@ -31,8 +31,8 @@
             <span class="text-muted">{{
               dialogueNode.description || "No description provided"
             }}</span>
-            <UButton variant="subtle" class="mt-2" @click="openReadView">
-              Open
+            <UButton variant="subtle" class="mt-2" @click="openEditView">
+              Edit
             </UButton>
           </div>
         </div>
@@ -100,9 +100,9 @@ const dialogueEditorOpen = ref(false);
 const dialogueEditorMode = ref<FormMode>("Read");
 const dialogueEditorNode = ref<DialogueNode | undefined>(undefined);
 
-function openReadView() {
+function openEditView() {
   if (!dialogueNode.value) return;
-  dialogueEditorMode.value = "Read";
+  dialogueEditorMode.value = "Update";
   dialogueEditorNode.value = dialogueNode.value;
   dialogueEditorOpen.value = true;
 }
