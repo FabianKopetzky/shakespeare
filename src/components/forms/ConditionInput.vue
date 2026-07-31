@@ -37,7 +37,7 @@ type OperandKind = "literal" | "variable";
 
 interface OperandForm {
   kind: OperandKind;
-  variableName: string;
+  variableName: string | (string | number | boolean);
   literalValue: string; // raw, parsed against clause.valueType on submit
 }
 
@@ -89,13 +89,15 @@ function emptyClause(): ClauseForm {
 
 const clauses = ref<ClauseForm[]>([emptyClause()]);
 
-function variableType(name: string): StoryVariableType | undefined {
+function variableType(
+  name: string | (string | number | boolean),
+): StoryVariableType | undefined {
   return props.variables.find((v) => v.name === name)?.type;
 }
 
 function operandToForm(operand: Operand): OperandForm {
   if (operand.kind === "variable") {
-    return { kind: "variable", variableName: operand.name, literalValue: "" };
+    return { kind: "variable", variableName: operand.value, literalValue: "" };
   }
   return {
     kind: "literal",
@@ -109,11 +111,11 @@ function inferValueType(comparison: {
   right: Operand;
 }): StoryVariableType {
   if (comparison.left.kind === "variable") {
-    const t = variableType(comparison.left.name);
+    const t = variableType(comparison.left.value);
     if (t) return t;
   }
   if (comparison.right.kind === "variable") {
-    const t = variableType(comparison.right.name);
+    const t = variableType(comparison.right.value);
     if (t) return t;
   }
   const literal =
@@ -211,7 +213,9 @@ function operandItems(clause: ClauseForm, side: "left" | "right") {
 
 // what the dropdown itself should show as selected value
 function operandSelection(operand: OperandForm): string {
-  return operand.kind === "variable" ? operand.variableName : LITERAL_SENTINEL;
+  return operand.kind === "variable"
+    ? operand.variableName?.toString()
+    : LITERAL_SENTINEL;
 }
 
 // Reset the operator if it's no longer valid for the clause's current type
@@ -316,7 +320,7 @@ function toOperand(
   valueType: StoryVariableType,
 ): Operand {
   if (operand.kind === "variable") {
-    return { kind: "variable", name: operand.variableName };
+    return { kind: "variable", value: operand.variableName };
   }
   return {
     kind: "literal",

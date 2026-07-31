@@ -1,18 +1,11 @@
-import type { Condition, Operand, Operation, StoryVariableType } from "../types/schema";
+import type { Condition, Operation, StoryVariableType } from "../types/schema";
 
 export function useConditionUtils() {
-  function operandToString(operand: Operand): string {
-    if(operand.kind === 'literal') {
-      return operand.value.toString();
-    } else {
-      return operand.name;
-    }
-  }
   function conditionToString(condition: Condition): string {
     let str = "";
 
     for(const clause of condition) {
-      str += `${operandToString(clause.comparison.left)} ${clause.comparison.operator} ${operandToString(clause.comparison.right)}`;
+      str += `${clause.comparison.left.value?.toString()} ${clause.comparison.operator} ${clause.comparison.right.value?.toString()}`;
       if(clause.connector) str += ` ${clause.connector} `;
     }
 

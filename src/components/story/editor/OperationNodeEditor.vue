@@ -192,9 +192,7 @@ const targetItems = computed(() => {
     icon: "i-lucide-pencil",
   };
   const variableItems = storyVariables
-    .filter(
-      (v) => v.name !== variableName.value && v.type === selectedType.value,
-    )
+    .filter((v) => v.type === selectedType.value)
     .map((v) => ({
       label: v.name,
       value: v.name,

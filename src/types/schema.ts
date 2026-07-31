@@ -95,8 +95,7 @@ export type LogicalOperator = 'AND' | 'OR'
 
 // An operand is either a literal value or a reference to another StoryVariable
 export type Operand =
-  | { kind: 'literal'; value: number | string | boolean }
-  | { kind: 'variable'; name: string }
+  | { kind: 'literal' | 'variable'; value: number | string | boolean }
 
 export type Comparison = {
   left: Operand

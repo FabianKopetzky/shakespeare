@@ -1,6 +1,6 @@
 import { useAppStore } from "../stores/app";
 import { useContentStore } from "../stores/content";
-import type { AnyStoryNode, DialogueNode, Story, StoryNode } from "../types/schema";
+import type { AnyStoryNode, BranchNode, StoryNode } from "../types/schema";
 
 export function useProjectHandler() {
     const contentStore = useContentStore();
@@ -97,24 +97,42 @@ export function useProjectHandler() {
         for (const story of contentStore.stories) {
             for (const language of contentStore.languages) {
 
-                const nodes: Partial<AnyStoryNode>[] = []; // fetch all nodes that are referenced in the story
+                const nodes: Partial<AnyStoryNode | any>[] = []; // fetch all nodes that are referenced in the story
                 const dialogues = []; // for all dialogue nodes, bake the sentences into the compiled story file in the corresponding language
                 for (const n of story?.nodes ?? []) {
                     if (!n) continue;
                     if (story?.nodes.includes(n) && contentStore.storyNodes[n]) {
                         const { position, ...nodeData } = contentStore.storyNodes[n];
-                        nodes.push(nodeData);
-
-                        // check dialogue node
-                        if (contentStore.storyNodes[n].type === 'story') {
-                            const dialogue = contentStore.dialogues.find(d => d?.id === (contentStore.storyNodes[n] as StoryNode).dialogueId);
-                            if (dialogue) {
-                                const sentences = dialogue.sentences.map(s => { return { value: s.translations[language.code] ?? s.translations[defaultLanguage?.code] ?? '' } });
-                                dialogues.push({
-                                    id: dialogue.id,
-                                    sentences: sentences
+                        
+                        switch(contentStore.storyNodes[n].type) {
+                            case 'story':
+                                const dialogue = contentStore.dialogues.find(d => d?.id === (contentStore.storyNodes[n] as StoryNode).dialogueId);
+                                if (dialogue) {
+                                    const sentences = dialogue.sentences.map(s => { return { value: s.translations[language.code] ?? s.translations[defaultLanguage?.code] ?? '' } });
+                                    dialogues.push({
+                                        id: dialogue.id,
+                                        sentences: sentences
+                                    });
+                                }
+                                nodes.push(nodeData);
+                                break;
+                            case 'branch':
+                                const branches = (nodeData as Partial<BranchNode>).branches?.map(b => {
+                                    return {
+                                        label: b.labels[language.code] ?? b.labels[defaultLanguage.code] ?? '',
+                                        targetId: b.targetId,
+                                        condition: b.condition
+                                    }
                                 });
-                            }
+                                const branchNode = {
+                                    ...nodeData,
+                                    branches
+                                };
+                                nodes.push(branchNode);
+                                break;
+                            default:
+                                nodes.push(nodeData);
+                                break;
                         }
                     }
                 }
