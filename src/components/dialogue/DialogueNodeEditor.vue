@@ -101,7 +101,7 @@
             :current-language="currentLanguageCode"
             :reference-language="isSplit ? referenceLanguageCode : null"
             :is-split="isSplit"
-            :variables="templatingVariables"
+            :variables="storyVariables"
             :colors="textColors"
             :view-mode="viewMode"
             @remove="removeSentence(index)" />
@@ -150,8 +150,7 @@ const emit = defineEmits<{
   (e: "onsave", id: string): void;
 }>();
 
-const { dialogues, languages, templatingVariables, textColors } =
-  useContentStore();
+const { dialogues, languages, storyVariables, textColors } = useContentStore();
 
 const defaultLanguage = computed(() => languages.find((l) => l.isDefault));
 
@@ -248,7 +247,7 @@ function validateAllSentences(): string[] {
     }
     Object.entries(sentence.translations).forEach(([code, content]) => {
       if (!content) return;
-      validateContent(content, templatingVariables).forEach((err) =>
+      validateContent(content, storyVariables).forEach((err) =>
         errors.push(`Sentence ${index + 1} (${code}): ${err}`),
       );
     });

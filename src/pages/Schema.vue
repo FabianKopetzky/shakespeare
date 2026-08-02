@@ -13,14 +13,7 @@
         <p>Model</p>
       </template>
       <template #templating>
-        <div class="flex flex-row justify-evenly items-start">
-          <div>
-            <TemplatingVariableEditor />
-          </div>
-          <div>
-            <TextColorEditor />
-          </div>
-        </div>
+        <TextColorEditor />
       </template>
       <template #languages>
         <LanguageEditor />
@@ -34,7 +27,6 @@
 <script setup lang="ts">
 import LanguageEditor from "../components/forms/LanguageEditor.vue";
 import StoryVariableEditor from "../components/forms/StoryVariableEditor.vue";
-import TemplatingVariableEditor from "../components/forms/TemplatingVariableEditor.vue";
 import TextColorEditor from "../components/forms/TextColorEditor.vue";
 
 const sections = [

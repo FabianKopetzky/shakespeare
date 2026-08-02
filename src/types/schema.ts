@@ -132,11 +132,6 @@ export type Language = {
   display: string,
   isDefault: boolean
 }
-export type TemplatingVariable = {
-  name: string, // variable name
-  csharpExpression: string, // when exported, this will be inserted into a generated csharp file
-  placeholder: string // this will be displayed in the dialogue editor as a reference
-}
 export type TextColor = {
   name: string, // color variable name identifier
   hex: string // hex of the color

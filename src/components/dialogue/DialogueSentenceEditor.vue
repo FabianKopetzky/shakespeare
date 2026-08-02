@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import type {
   DialogueSentence,
-  TemplatingVariable,
+  StoryVariable,
   TextColor,
 } from "../../types/schema";
 import RichSentenceEditor from "./RichSentenceEditor.vue";
@@ -13,7 +13,7 @@ interface Props {
   currentLanguage: string;
   referenceLanguage: string | null;
   isSplit: boolean;
-  variables: TemplatingVariable[];
+  variables: StoryVariable[];
   colors: TextColor[];
   viewMode: "edit" | "preview";
 }

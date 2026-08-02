@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref } from "vue";
-import type { TemplatingVariable, TextColor } from "../../types/schema";
+import type { StoryVariable, TextColor } from "../../types/schema";
 import { useWidget } from "../../composables/widget.ts";
 import { parseContent, validateContent } from "../../utils/dialogueContent";
 import { getCaretCoordinates } from "../../utils/caretCoordinates";
 import ContentNodeRenderer from "./ContentNodeRenderer.vue";
+import { useContentStore } from "../../stores/content.ts";
 
 const HEX_PATTERN = /^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
+const { textColors } = useContentStore();
 
 interface Props {
   modelValue: string;
-  variables: TemplatingVariable[];
+  variables: StoryVariable[];
   colors?: TextColor[];
   placeholder?: string;
   viewMode: "edit" | "preview"; // now controlled by the parent (global toggle)
@@ -83,12 +85,15 @@ function applyBold() {
 function applyItalic() {
   wrapSelection("<i>", "</i>");
 }
-function applyColor(hex: string) {
-  if (!HEX_PATTERN.test(hex)) {
+function applyColor(value: string, isVariable: boolean) {
+  if (isVariable && !textColors.find((c) => c.name === value)) {
+    displayError(`Text color ${value} does not exist.`);
+    return;
+  } else if (!isVariable && !HEX_PATTERN.test(value)) {
     displayError("Invalid color value.");
     return;
   }
-  wrapSelection(`<color=${hex}>`, "</color>");
+  wrapSelection(`<color=${value}>`, "</color>");
 }
 
 const variableMenuValue = ref<string | null>(null);
@@ -104,7 +109,7 @@ function onVariableMenuSelect(name: string | null) {
 // --- "{{" autocomplete, driven off the textarea's own selection/caret ---
 const autocomplete = reactive({
   visible: false,
-  items: [] as TemplatingVariable[],
+  items: [] as StoryVariable[],
   activeIndex: 0,
   top: 0,
   left: 0,
@@ -228,9 +233,9 @@ function onKeydown(e: KeyboardEvent) {
                 class="w-6 h-6 rounded-full border border-gray-300"
                 :style="{ backgroundColor: swatch.hex }"
                 :title="swatch.name"
-                @click="applyColor(swatch.hex)" />
+                @click="applyColor(swatch.name, true)" />
             </div>
-            <UButton size="xs" block @click="applyColor(pendingColor)"
+            <UButton size="xs" block @click="applyColor(pendingColor, false)"
               >Apply color</UButton
             >
           </div>
@@ -262,7 +267,7 @@ function onKeydown(e: KeyboardEvent) {
 
       <div
         v-if="autocomplete.visible"
-        class="absolute z-50 min-w-[12rem] max-h-[12rem] overflow-y-auto bg-black border border-gray-300 rounded-md shadow-lg p-1"
+        class="absolute z-50 min-w-48 max-h-48 overflow-y-auto bg-black border border-gray-300 rounded-md shadow-lg p-1"
         :style="{
           top: `${autocomplete.top}px`,
           left: `${autocomplete.left}px`,
@@ -275,7 +280,7 @@ function onKeydown(e: KeyboardEvent) {
           :class="{ 'bg-blue-500/10': index === autocomplete.activeIndex }"
           @mousedown.prevent="acceptAutocomplete(index)">
           <span class="text-xs">{{ item.name }}</span>
-          <span class="text-xs opacity-60">{{ item.placeholder }}</span>
+          <span class="text-xs opacity-60">{{ item.name }}</span>
         </button>
       </div>
 
@@ -289,7 +294,7 @@ function onKeydown(e: KeyboardEvent) {
 
     <div
       v-else
-      class="px-3 py-2 border border-gray-300 rounded-md min-h-[3rem] leading-relaxed">
+      class="px-3 py-2 border border-gray-300 rounded-md min-h-12 leading-relaxed">
       <ContentNodeRenderer :nodes="previewNodes" :variables="variables" />
     </div>
   </div>

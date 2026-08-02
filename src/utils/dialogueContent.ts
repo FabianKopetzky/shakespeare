@@ -1,13 +1,16 @@
-import type { TemplatingVariable } from "../types/schema";
+import { useContentStore } from "../stores/content";
+import type { StoryVariable } from "../types/schema";
 
 export type ContentNode =
   | { type: "text"; value: string }
   | { type: "variable"; name: string }
   | { type: "bold"; children: ContentNode[] }
   | { type: "italic"; children: ContentNode[] }
-  | { type: "color"; hex: string; children: ContentNode[] };
+  | { type: "color"; value: string; children: ContentNode[] };
 
 const HEX_PATTERN = /^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
+
+const { textColors } = useContentStore();
 
 type Token =
   | { kind: "text"; value: string }
@@ -20,7 +23,7 @@ type Token =
   | { kind: "variable"; name: string };
 
 const TOKEN_REGEX =
-  /(<b>)|(<\/b>)|(<i>)|(<\/i>)|(<color=(#[0-9A-Fa-f]{3,6})>)|(<\/color>)|(\{\{\s*([A-Za-z0-9]*)\s*\}\})/g;
+  /(<b>)|(<\/b>)|(<i>)|(<\/i>)|(<color=(#[0-9A-Fa-f]{3,6}|[A-Za-z0-9_]+)>)|(<\/color>)|(\{\{\s*([A-Za-z0-9]*)\s*\}\})/g;
 
 function tokenize(raw: string): Token[] {
   const tokens: Token[] = [];
@@ -82,7 +85,7 @@ export function parseContent(raw: string): ContentNode[] {
         break;
       }
       case "open-color": {
-        const node: ContentNode = { type: "color", hex: token.hex, children: [] };
+        const node: ContentNode = { type: "color", value: token.hex, children: [] };
         currentChildren().push(node);
         stack.push({ node: node as any, closeKind: "close-color" });
         break;
@@ -120,7 +123,7 @@ function serializeNode(node: ContentNode): string {
     case "italic":
       return `<i>${serializeContent(node.children)}</i>`;
     case "color":
-      return `<color=${node.hex}>${serializeContent(node.children)}</color>`;
+      return `<color=${node.value}>${serializeContent(node.children)}</color>`;
   }
 }
 
@@ -128,7 +131,7 @@ function serializeNode(node: ContentNode): string {
  * Structural + semantic validation. Returns human-readable error messages;
  * an empty array means the content is safe to save.
  */
-export function validateContent(raw: string, variables: TemplatingVariable[]): string[] {
+export function validateContent(raw: string, variables: StoryVariable[]): string[] {
   const errors: string[] = [];
   const knownNames = new Set(variables.map((v) => v.name));
   const tokens = tokenize(raw ?? "");
@@ -143,7 +146,7 @@ export function validateContent(raw: string, variables: TemplatingVariable[]): s
         stack.push("i");
         break;
       case "open-color":
-        if (!HEX_PATTERN.test(token.hex)) errors.push(`Invalid color value "${token.hex}".`);
+        if (!HEX_PATTERN.test(token.hex) && !textColors.find(c => c.name === token.hex)) errors.push(`Invalid color value "${token.hex}".`);
         stack.push("color");
         break;
       case "close-b":
@@ -175,13 +178,13 @@ export function validateContent(raw: string, variables: TemplatingVariable[]): s
   return errors;
 }
 
-export function placeholderForVariable(name: string, variables: TemplatingVariable[]): string {
+export function placeholderForVariable(name: string, variables: StoryVariable[]): string {
   const variable = variables.find((v) => v.name === name);
-  return variable ? variable.placeholder : `{{ ${name} }}`;
+  return variable ? variable.name : `{{ ${name} }}`;
 }
 
 /** Strips all markup down to plain text (previews, search indexing, etc). */
-export function contentToPlainText(raw: string, variables: TemplatingVariable[]): string {
+export function contentToPlainText(raw: string, variables: StoryVariable[]): string {
   function walk(nodes: ContentNode[]): string {
     return nodes
       .map((n) => {

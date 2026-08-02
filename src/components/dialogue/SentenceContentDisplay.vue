@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { parseContent } from "../../utils/dialogueContent";
-import type { TemplatingVariable } from "../../types/schema";
+import type { StoryVariable } from "../../types/schema";
 import ContentNodeRenderer from "./ContentNodeRenderer.vue";
 
 interface Props {
   content: string;
-  variables: TemplatingVariable[];
+  variables: StoryVariable[];
 }
 const props = defineProps<Props>();
 const nodes = computed(() => parseContent(props.content ?? ""));
