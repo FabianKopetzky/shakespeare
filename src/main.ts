@@ -15,6 +15,7 @@ import Schema from './pages/Schema.vue'
 import Export from './pages/Export.vue'
 import Settings from './pages/Settings.vue'
 import StoryBoard from './pages/StoryBoard.vue'
+import { useAppStore } from './stores/app.ts'
 
 const app = createApp(App);
 
@@ -35,5 +36,8 @@ const router = createRouter({
 app.use(pinia);
 app.use(router);
 app.use(ui);
+
+const appStore = useAppStore();
+appStore.resolvePlatform();
 
 app.mount('#app')

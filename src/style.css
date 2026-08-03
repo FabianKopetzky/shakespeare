@@ -3,3 +3,11 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 @import "./theme.css";
+
+::-webkit-scrollbar {
+  width: 0px;
+}
+
+or ::-webkit-scrollbar {
+  display: none;
+}
