@@ -1,11 +1,113 @@
 import { useAppStore } from "../stores/app";
 import { useContentStore } from "../stores/content";
 import { useCompiler } from "./compiler";
+import { useWidget } from "./widget";
+
+import { appDataDir, join } from "@tauri-apps/api/path";
+import { exists, mkdir, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+
+import { isValidProject } from "./projectValidator";
+
+export interface ProjectFileEntry {
+    name: string,
+    path: string
+}
 
 export function useProjectHandler() {
     const contentStore = useContentStore();
     const appStore = useAppStore();
     const compiler = useCompiler();
+
+    const { displayError, displaySuccess } = useWidget();
+
+    //* UTILS
+    async function getProjectDir(): Promise<string> {
+        if(!appStore.isNativeApp) return '';
+        const base = await appDataDir();
+        const dir = await(join(base, 'Projects'));
+        if(!await exists(dir)) {
+            await mkdir(dir, { recursive: true});
+        }
+        return dir;
+    }
+    async function getProjectPath(projectName: string): Promise<string> {
+        if(!appStore.isNativeApp) return '';
+        const base = await getProjectDir();
+        return await join(base, `${projectName}.json`);
+    }
+    async function fileExists(path: string): Promise<boolean> {
+        if(!appStore.isNativeApp) return false;
+        return await exists(path);
+    }
+    async function writeJson(content: string, path: string) {
+        if(!appStore.isNativeApp) return;
+        await writeTextFile(path, content);
+    }
+    async function getProjects(): Promise<ProjectFileEntry[]> {
+        if(!appStore.isNativeApp) return [];
+        const dir = await getProjectDir();
+        const entries = await readDir(dir);
+
+        const jsonFiles = entries.filter(e => e.isFile && e.name.toLowerCase().endsWith(".json"));
+
+        const projects = await Promise.all(jsonFiles.map(async (e) => ({
+            name: e.name.substring(0, e.name.length - 5),
+            path: await(join(dir, e.name))
+        })));
+
+        console.log(projects);
+
+        return projects;
+    }
+
+    function loadProjectDataToStore(project: any, fallbackTitle: string, fallbackAuthor: string): boolean {
+        try {
+            if (!project) {
+                // reset properties
+                contentStore.projectTitle = fallbackTitle;
+                contentStore.projectAuthor = fallbackAuthor;
+
+                contentStore.unityStreamingAssetsPath = '';
+
+                contentStore.dialogues = [];
+                contentStore.stories = [];
+                contentStore.storyNodes = {};
+
+                contentStore.languages = [{ code: 'default', display: 'English', isDefault: true }];
+                contentStore.textColors = [];
+                contentStore.storyVariables = [];
+
+                appStore.projectLoaded = true;
+                return true;
+            }
+
+            if (!isValidProject(project)) {
+                appStore.projectLoaded = false;
+                return false;
+            }
+
+            // import data
+            contentStore.projectTitle = project.projectTitle ?? fallbackTitle;
+            contentStore.projectAuthor = project.projectAuthor ?? fallbackAuthor;
+
+            contentStore.unityStreamingAssetsPath = project.unityStreamingAssetsPath ?? '';
+
+            contentStore.dialogues = project.dialogues ?? [];
+            contentStore.stories = project.stories ?? [];
+            contentStore.storyNodes = project.storyNodes ?? {};
+
+            contentStore.textColors = project.colors ?? [];
+            contentStore.languages = project.languages ?? [];
+            contentStore.storyVariables = project.storyVariables ?? [];
+
+            appStore.projectLoaded = true;
+            return true;
+        } catch (err) {
+            console.error('Failed to load project data:', err);
+            appStore.projectLoaded = false;
+            return false;
+        }
+    }
 
     //* PROJECT HANDLING
     function downloadFile(content: string, type: 'application/json', fileName: string): void {
@@ -27,50 +129,109 @@ export function useProjectHandler() {
         const data = compiler.getProjectData();
         const json = JSON.stringify(data);
         downloadFile(json, 'application/json', `${contentStore.projectTitle || "project"}.json`);
+
+        displaySuccess(`Successfully exported & downloaded project ${contentStore.projectTitle}`);
     }
-    function importProject(project: any): boolean {
+    async function importProject(project: any): Promise<boolean> {
+        
+        if(appStore.isNativeApp) {
+            const path = await getProjectPath(project.projectTitle ?? 'My project');
+            if(await fileExists(path)) {
+                displayError(`A project '${project.projectTitle ?? 'My project'}' already exists at ${path}`);
+                return false;
+            }
+        }
+
+        const res = loadProjectDataToStore(project, 'My project', 'Default author');
+        if(!res) {
+            displayError("Could not parse project data. Please verify your project file");
+            return false;
+        }
+
+        if(appStore.isNativeApp) {
+            // also directly create a file
+            const path = await getProjectPath(project.projectTitle ?? 'My project');
+            appStore.currentProjectPath = path;
+            await saveCurrentProject(path);
+        }
+        return true;
+    }
+    async function createProject(title: string, author: string): Promise<boolean> {
+        
+        if(appStore.isNativeApp) {
+            const path = await getProjectPath(title);
+            if(await fileExists(path)) {
+                displayError(`A project '${title}' already exists at ${path}`);
+                return false;
+            }
+        }
+
+        const res = loadProjectDataToStore(null, title, author);
+        if(!res) {
+            displayError(`An error occurred creating project ${title}`);
+            return false;
+        }
+
+        if(appStore.isNativeApp) {
+            // also directly create a file
+            const path = await getProjectPath(title);
+            appStore.currentProjectPath = path;
+            await saveCurrentProject(path);
+        }
+
+        return true;
+    }
+    async function openProject(path: string): Promise<boolean> {
+        if(!appStore.isNativeApp) return false;
         try {
-            contentStore.projectTitle = project.projectTitle ?? 'My project';
-            contentStore.projectAuthor = project.projectAuthor ?? 'Author';
+            const json = await readTextFile(path);
+            const data = JSON.parse(json);
 
-            contentStore.dialogues = project.dialogues ?? [];
-            contentStore.stories = project.stories ?? [];
-            contentStore.storyNodes = project.storyNodes ?? {};
+            const res = loadProjectDataToStore(data, 'My project', 'Default author');
+            if(!res) {
+                displayError("Could not parse project data. Please verify your project file");
+                return false;
+            }
 
-            contentStore.textColors = project.colors ?? [];
-            contentStore.languages = project.languages ?? [];
-            contentStore.storyVariables = project.storyVariables ?? [];
-
-            appStore.projectLoaded = true;
+            displaySuccess(`Successfully opened project ${data.projectTitle}`);
+            appStore.currentProjectPath = path;
             return true;
-        } catch (err) {
-            console.error(`Error importing data: ${err}`);
+        } catch(err) {
+            displayError(`An error occurred loading from ${path}: ${err}`);
             return false;
         }
     }
-    function createProject(title: string, author: string): void {
-        contentStore.projectTitle = title;
-        contentStore.projectAuthor = author;
+    async function saveCurrentProject(path: string, logSuccess: boolean = false): Promise<boolean> {
+        if(!appStore.isNativeApp) return false;
+        if(!appStore.projectLoaded) return false;
 
-        contentStore.dialogues = [];
-        contentStore.stories = [];
-        contentStore.storyNodes = {};
+        if(!path || path.length <= 0) {
+            displayError(`Could not save project: Invalid project path ${path}`);
+            return false;
+        }
 
-        contentStore.languages = [{ code: 'default', display: 'English', isDefault: true }];
-        contentStore.textColors = [];
-        contentStore.storyVariables = [];
+        const data = compiler.getProjectData();
+        const json = JSON.stringify(data);
+        await writeJson(json, path);
 
-        appStore.projectLoaded = true;
+        if(logSuccess) {
+            displaySuccess(`Successfully saved project at ${path}`);
+        }
+
+        return true;
     }
 
     //* DOWNLOAD HANDLING
-    function downloadCompiledProject(): boolean {
+    function downloadCompiledProject(): void {
         const data = compiler.compileProjectMain();
         const json = JSON.stringify(data);
         downloadFile(json, 'application/json', 'main.json');
-        return true;
+        
+        displaySuccess(
+            `Successfully compiled main file for project '${contentStore.projectTitle}'`,
+        );
     }
-    function downloadCompiledStories(): boolean {
+    function downloadCompiledStories(): void {
         const data = compiler.compileStories();
 
         for(const key of Object.keys(data)) {
@@ -78,17 +239,21 @@ export function useProjectHandler() {
             const json = JSON.stringify(value);
             downloadFile(json, 'application/json', `${key}.json`);
         }
-        return true;
+        displaySuccess(
+            `Successfully compiled stories for project '${contentStore.projectTitle}'`,
+        );
     }
 
     //* BUILD HANDLING
 
     function buildProject(): boolean {
+        if(!appStore.isNativeApp) return false;
         const data = compiler.compileProjectMain();
         // TODO build directly to unity in tauri
         return true;
     }
     function buildStories(): boolean {
+        if(!appStore.isNativeApp) return false;
         const data = compiler.compileStories();
         // TODO build directly to unity in tauri
         return true;
@@ -99,6 +264,9 @@ export function useProjectHandler() {
         exportProject,
         importProject,
         createProject,
+        saveCurrentProject,
+        getProjects,
+        openProject,
         downloadCompiledProject,
         downloadCompiledStories,
         buildProject,

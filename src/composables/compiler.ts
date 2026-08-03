@@ -1,15 +1,14 @@
-import { useAppStore } from "../stores/app";
 import { useContentStore } from "../stores/content";
 import type { AnyStoryNode, BranchNode, StoryNode } from "../types/schema";
 
 export function useCompiler() {
     const contentStore = useContentStore();
-    const appStore = useAppStore();
 
     function getProjectData(): any {
         const data = {
             projectTitle: contentStore.projectTitle,
             projectAuthor: contentStore.projectAuthor,
+            unityStreamingAssetsPath: contentStore.unityStreamingAssetsPath,
 
             dialogues: contentStore.dialogues,
             stories: contentStore.stories,

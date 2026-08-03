@@ -17,47 +17,14 @@
       <div>
         <h2>Compile files</h2>
         <p>Compile your files and export directly to Unity!</p>
-        <UButton @click="tryDownloadStories">Download stories</UButton>
-        <UButton @click="tryDownloadMain">Download project</UButton>
+        <UButton @click="downloadCompiledStories">Download stories</UButton>
+        <UButton @click="downloadCompiledProject">Download project</UButton>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
 import { useProjectHandler } from "../composables/projectHandler";
-import { useWidget } from "../composables/widget";
-import { useContentStore } from "../stores/content";
-
-const { projectTitle } = useContentStore();
 const { exportProject, downloadCompiledStories, downloadCompiledProject } =
   useProjectHandler();
-const { displayError, displaySuccess } = useWidget();
-
-// function tryCompileLanguage(lang: string): void {
-//   const res = compileLanguage(lang);
-//   if (res) displaySuccess(`Successfully compiled language '${lang}'`);
-//   else displayError(`An error occurred compiling language '${lang}'`);
-// }
-function tryDownloadStories(): void {
-  const res = downloadCompiledStories();
-  if (res)
-    displaySuccess(
-      `Successfully compiled stories for project '${projectTitle}'`,
-    );
-  else
-    displayError(
-      `An error occurred compiling stories for project '${projectTitle}'`,
-    );
-}
-function tryDownloadMain(): void {
-  const res = downloadCompiledProject();
-  if (res)
-    displaySuccess(
-      `Successfully compiled main file for project '${projectTitle}'`,
-    );
-  else
-    displayError(
-      `An error occurred compiling main file for project '${projectTitle}'`,
-    );
-}
 </script>

@@ -14,7 +14,7 @@ const author = ref<string>("");
 
 const { displayError, displaySuccess } = useWidget();
 
-function onConfirm() {
+async function onConfirm() {
   if (!title.value) {
     displayError("Project title cannot be empty");
     return;
@@ -30,9 +30,11 @@ function onConfirm() {
     return;
   }
 
-  createProject(title.value, author.value);
+  const res = await createProject(title.value, author.value);
+  if (!res) return;
+
   displaySuccess(`Successfully created project ${title.value}`);
-  router.push("/dialogues");
+  router.push("/stories");
 
   title.value = "";
   author.value = "";

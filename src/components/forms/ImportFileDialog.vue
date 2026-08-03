@@ -13,19 +13,14 @@ const json = ref<any>(undefined);
 const { importProject } = useProjectHandler();
 const { displayError, displaySuccess } = useWidget();
 
-function onConfirm() {
+async function onConfirm() {
   if (!json) {
     displayError("Empty project file. Please try again with a valid file");
     return;
   }
 
-  const success = importProject(json.value);
-  if (!success) {
-    displayError(
-      "Could not parse project data. Please verify your project file",
-    );
-    return;
-  }
+  const res = await importProject(json.value);
+  if (!res) return;
 
   displaySuccess(`Successfully imported project ${json.value.projectTitle}`);
   router.push("/dialogues");

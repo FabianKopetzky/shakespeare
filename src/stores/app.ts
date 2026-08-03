@@ -6,11 +6,12 @@ export const useAppStore = defineStore('app', () => {
     
   const isLoading = ref<boolean>(false);
   const projectLoaded = ref<boolean>(false);
+  const currentProjectPath = ref<string>("");
   const isNativeApp = ref<boolean>(false);
 
   function resolvePlatform(): void {
     isNativeApp.value = isTauri();
   }
 
-  return { isLoading, projectLoaded, isNativeApp, resolvePlatform }
+  return { isLoading, projectLoaded, isNativeApp, resolvePlatform, currentProjectPath }
 })

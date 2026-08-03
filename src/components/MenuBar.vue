@@ -2,39 +2,78 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAppStore } from "../stores/app";
 import CreateFileDialog from "./forms/CreateFileDialog.vue";
-import { ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import ImportFileDialog from "./forms/ImportFileDialog.vue";
+import { storeToRefs } from "pinia";
+import {
+  type ProjectFileEntry,
+  useProjectHandler,
+} from "../composables/projectHandler.ts";
 
 const app = useAppStore();
-const appWindow = app.isNativeApp ? getCurrentWindow() : null;
+const { projectLoaded, isNativeApp } = storeToRefs(useAppStore());
 
-const fileItems = [
+const appWindow = isNativeApp.value ? getCurrentWindow() : null;
+
+const {
+  exportProject,
+  saveCurrentProject,
+  downloadCompiledProject,
+  downloadCompiledStories,
+  getProjects,
+  openProject,
+} = useProjectHandler();
+
+const projects = ref<ProjectFileEntry[]>([]);
+const projectItems = computed(() => {
+  return projects.value.map((p) => ({
+    label: p.name,
+    onSelect: () => openProject(p.path),
+  }));
+});
+
+async function regenerateProjectList(): Promise<void> {
+  projects.value = await getProjects();
+}
+
+const fileItems = computed(() => [
   [
     { label: "New Project", onSelect: () => (createDialogueOpen.value = true) },
     {
-      label: "Open Project",
+      label: "Import Project",
       onSelect: () => (importDialogueOpen.value = true),
     },
     {
-      label: "Open Recent",
-      children: [
-        { label: "Sample", onSelect: () => console.log("sample project") },
-      ],
+      label: "Open Project",
+      disabled: !projectItems.value || projectItems.value.length <= 0,
+      children: projectItems.value,
     },
   ],
-  [{ label: "Save", onSelect: () => console.log("save") }],
+  [
+    {
+      label: "Save",
+      disabled: !projectLoaded.value,
+      onSelect: () => saveCurrentProject(app.currentProjectPath, true),
+    },
+  ],
   [{ label: "Quit", onSelect: () => appWindow?.close() }],
-];
+]);
 
 const compileItems = [
   [
-    { label: "Download Project", onSelect: () => console.log("download") },
+    { label: "Download Project", onSelect: () => exportProject() },
     {
       label: "Compile & Download",
       children: [
-        { label: "All", onSelect: () => console.log("all") },
-        { label: "Project Main", onSelect: () => console.log("main") },
-        { label: "Stories", onSelect: () => console.log("stories") },
+        {
+          label: "All",
+          onSelect: () => {
+            downloadCompiledProject();
+            downloadCompiledStories();
+          },
+        },
+        { label: "Project Main", onSelect: () => downloadCompiledProject() },
+        { label: "Stories", onSelect: () => downloadCompiledStories() },
       ],
     },
     {
@@ -48,16 +87,16 @@ const compileItems = [
   ],
 ];
 
-const menus: { title: string; items: any[] }[] = [
+const menus = computed(() => [
   {
     title: "File",
-    items: fileItems,
+    items: fileItems.value,
   },
   {
     title: "Export",
     items: compileItems,
   },
-];
+]);
 
 function minimize() {
   appWindow?.minimize();
@@ -73,6 +112,10 @@ function close() {
 
 const createDialogueOpen = ref<boolean>(false);
 const importDialogueOpen = ref<boolean>(false);
+
+onMounted(() => {
+  regenerateProjectList();
+});
 </script>
 
 <template>
@@ -86,7 +129,12 @@ const importDialogueOpen = ref<boolean>(false);
         v-for="menu in menus"
         :content="{ sideOffset: 0 }"
         :ui="{ content: 'mt-0' }"
-        :items="menu.items">
+        :items="menu.items"
+        @update:open="
+          (open: boolean) => {
+            if (open && menu.title === 'File') regenerateProjectList();
+          }
+        ">
         <UButton
           :label="menu.title"
           variant="ghost"

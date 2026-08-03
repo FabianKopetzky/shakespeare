@@ -13,5 +13,7 @@ export const useContentStore = defineStore('content', () => {
   const languages = ref<Language[]>([{code: 'default', display: 'English', isDefault: true}]);
   const textColors = ref<TextColor[]>([]);
   const storyVariables = ref<StoryVariable[]>([]);
-  return { dialogues, stories, storyNodes, languages, textColors, storyVariables, projectTitle, projectAuthor }
+
+  const unityStreamingAssetsPath = ref<string>('');
+  return { dialogues, stories, storyNodes, languages, textColors, storyVariables, projectTitle, projectAuthor, unityStreamingAssetsPath }
 })
