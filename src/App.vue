@@ -16,9 +16,12 @@ router.beforeEach((to) => {
 
 <template>
   <UApp>
-    <div v-if="!app.isLoading" class="w-screen h-screen flex flex-row">
+    <div
+      v-if="!app.isLoading"
+      class="w-screen h-screen flex flex-row overflow-y-hidden overflow-x-hidden">
       <Sidebar v-if="app.projectLoaded" class="w-20 h-full" />
-      <UMain class="max-w-screen flex-1 min-h-screen overflow-y-scroll p-12">
+      <UMain
+        class="max-w-screen flex-1 min-h-screen overflow-y-scroll overflow-x-hidden p-12">
         <RouterView />
       </UMain>
     </div>
