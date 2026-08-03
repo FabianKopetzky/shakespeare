@@ -4,9 +4,10 @@ import { useCompiler } from "./compiler";
 import { useWidget } from "./widget";
 
 import { appDataDir, join } from "@tauri-apps/api/path";
-import { exists, mkdir, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readDir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 
 import { isValidProject } from "./projectValidator";
+import { invoke } from "@tauri-apps/api/core";
 
 export interface ProjectFileEntry {
     name: string,
@@ -24,7 +25,7 @@ export function useProjectHandler() {
     async function getProjectDir(): Promise<string> {
         if(!appStore.isNativeApp) return '';
         const base = await appDataDir();
-        const dir = await(join(base, 'Projects'));
+        const dir = await join(base, 'Projects');
         if(!await exists(dir)) {
             await mkdir(dir, { recursive: true});
         }
@@ -34,6 +35,26 @@ export function useProjectHandler() {
         if(!appStore.isNativeApp) return '';
         const base = await getProjectDir();
         return await join(base, `${projectName}.json`);
+    }
+    async function getUnityStoryPath(): Promise<string> {
+        if(!contentStore.unityStreamingAssetsPath || contentStore.unityStreamingAssetsPath.length <= 0) return '';
+        const base = await getUnityProjectPath();
+        try {
+            return await invoke<string>('resolve_project_path', { base: base, subfolder: 'Stories'});
+        } catch(err) {
+            console.error('Error resolving unity project path:', err);
+            return '';
+        }
+    }
+    async function getUnityProjectPath(): Promise<string> {
+        if(!contentStore.unityStreamingAssetsPath || contentStore.unityStreamingAssetsPath.length <= 0) return '';
+        
+        try {
+            return await invoke<string>('resolve_project_path', { base: contentStore.unityStreamingAssetsPath, subfolder: 'Shakespeare'});
+        } catch(err) {
+            console.error('Error resolving unity project path:', err);
+            return '';
+        }
     }
     async function fileExists(path: string): Promise<boolean> {
         if(!appStore.isNativeApp) return false;
@@ -55,9 +76,24 @@ export function useProjectHandler() {
             path: await(join(dir, e.name))
         })));
 
-        console.log(projects);
-
         return projects;
+    }
+
+    async function removeOldProjectFileIfExistsUnity(): Promise<void> {
+        if(!appStore.isNativeApp) return;
+
+        const projectDir = await getUnityProjectPath();
+        if(!projectDir || projectDir.length <= 0) return;
+
+        await invoke("clear_json_files", { projectDir: projectDir });
+    }
+    async function removeOldStoryFilesIfExistUnity(): Promise<void> {
+        if(!appStore.isNativeApp) return;
+
+        const storyDir = await getUnityStoryPath();
+        if(!storyDir || storyDir.length <= 0) return;
+
+        await invoke("clear_json_files", {  projectDir: storyDir });
     }
 
     function loadProjectDataToStore(project: any, fallbackTitle: string, fallbackAuthor: string): boolean {
@@ -246,16 +282,47 @@ export function useProjectHandler() {
 
     //* BUILD HANDLING
 
-    function buildProject(): boolean {
+    async function buildProject(): Promise<boolean> {
         if(!appStore.isNativeApp) return false;
+        
+        const path: string = await getUnityProjectPath();
+        if(!path || path.length <= 0) {
+            displayError(`Error building project: The path ${path} is not valid!`);
+            return false;
+        }
+
+        await removeOldProjectFileIfExistsUnity();
         const data = compiler.compileProjectMain();
-        // TODO build directly to unity in tauri
+        const json = JSON.stringify(data);
+
+        await invoke("write_json_to_project", { projectPath:  path, relativeFile: 'main.json', contents: json});
+
+        displaySuccess(`Successfully compiled and built main file for ${contentStore.projectTitle} to ${path}`);
+
         return true;
     }
-    function buildStories(): boolean {
+    async function buildStories(): Promise<boolean> {
         if(!appStore.isNativeApp) return false;
+
+        const path: string = await getUnityStoryPath();
+        if(!path || path.length <= 0) {
+            displayError(`Error building stories: The path ${path} is not valid!`);
+            return false;
+        }
+
+        await removeOldStoryFilesIfExistUnity();
         const data = compiler.compileStories();
-        // TODO build directly to unity in tauri
+        
+        for(const key of Object.keys(data)) {
+            const value = data[key];
+            const json = JSON.stringify(value);
+            
+            await invoke("write_json_to_project", { projectPath:  path, relativeFile: `${key}.json`, contents: json});
+        }
+        displaySuccess(
+            `Successfully compiled stories for project '${contentStore.projectTitle}' to ${path}`,
+        );
+
         return true;
     }
 

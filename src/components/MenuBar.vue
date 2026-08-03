@@ -22,6 +22,8 @@ const {
   downloadCompiledStories,
   getProjects,
   openProject,
+  buildProject,
+  buildStories,
 } = useProjectHandler();
 
 const projects = ref<ProjectFileEntry[]>([]);
@@ -79,9 +81,15 @@ const compileItems = [
     {
       label: "Compile & Build",
       children: [
-        { label: "All", onSelect: () => console.log("all") },
-        { label: "Project Main", onSelect: () => console.log("main") },
-        { label: "Stories", onSelect: () => console.log("stories") },
+        {
+          label: "All",
+          onSelect: () => {
+            buildProject();
+            buildStories();
+          },
+        },
+        { label: "Project Main", onSelect: () => buildProject() },
+        { label: "Stories", onSelect: () => buildStories() },
       ],
     },
   ],
