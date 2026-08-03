@@ -4,6 +4,14 @@ import type { AnyStoryNode, BranchNode, StoryNode } from "../types/schema";
 export function useCompiler() {
     const contentStore = useContentStore();
 
+    function resolveColorVariables(text: string): string {
+        return text.replace(/<color=([^>]+)>/g, (match, value) => {
+            if (value.startsWith('#')) return match;
+            const colorEntry = contentStore.textColors?.find((c) => c.name === value);
+            return colorEntry ? `<color=#${colorEntry.hex.replace(/^#/, '')}>` : match;
+        });
+    }
+
     function getProjectData(): any {
         const data = {
             projectTitle: contentStore.projectTitle,
@@ -55,8 +63,10 @@ export function useCompiler() {
                                 if (dialogue) {
                                     const sentences = dialogue.sentences.map(s => 
                                         { 
+                                            // replace color variables
+                                            const translation = s.translations[language.code] ?? s.translations[defaultLanguage?.code] ?? '';
                                             return { 
-                                                value: s.translations[language.code] ?? s.translations[defaultLanguage?.code] ?? '' 
+                                                value: resolveColorVariables(translation)
                                             } 
                                         });
                                     dialogues.push({
@@ -68,8 +78,9 @@ export function useCompiler() {
                                 break;
                             case 'branch':
                                 const branches = (nodeData as Partial<BranchNode>).branches?.map(b => {
+                                    const translation = b.labels[language.code] ?? b.labels[defaultLanguage.code] ?? '';
                                     return {
-                                        label: b.labels[language.code] ?? b.labels[defaultLanguage.code] ?? '',
+                                        label: resolveColorVariables(translation),
                                         targetId: b.targetId,
                                         condition: b.condition
                                     }
