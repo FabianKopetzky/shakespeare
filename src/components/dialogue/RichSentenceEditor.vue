@@ -5,10 +5,8 @@ import { useWidget } from "../../composables/widget.ts";
 import { parseContent, validateContent } from "../../utils/dialogueContent";
 import { getCaretCoordinates } from "../../utils/caretCoordinates";
 import ContentNodeRenderer from "./ContentNodeRenderer.vue";
-import { useContentStore } from "../../stores/content.ts";
 
 const HEX_PATTERN = /^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
-const { textColors } = useContentStore();
 
 interface Props {
   modelValue: string;
@@ -33,7 +31,7 @@ const pendingColor = ref<string>("#000000");
 
 const previewNodes = computed(() => parseContent(props.modelValue ?? ""));
 const liveWarnings = computed(() =>
-  validateContent(props.modelValue ?? "", props.variables),
+  validateContent(props.modelValue ?? "", props.variables, props.colors),
 );
 
 function updateValue(newValue: string) {
@@ -86,7 +84,7 @@ function applyItalic() {
   wrapSelection("<i>", "</i>");
 }
 function applyColor(value: string, isVariable: boolean) {
-  if (isVariable && !textColors.find((c) => c.name === value)) {
+  if (isVariable && !props.colors?.find((c) => c.name === value)) {
     displayError(`Text color ${value} does not exist.`);
     return;
   } else if (!isVariable && !HEX_PATTERN.test(value)) {

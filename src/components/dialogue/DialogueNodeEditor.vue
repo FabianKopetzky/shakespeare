@@ -135,6 +135,7 @@ import { useContentStore } from "../../stores/content";
 import { useWidget } from "../../composables/widget.ts";
 import { validateContent } from "../../utils/dialogueContent";
 import DialogueSentenceEditor from "./DialogueSentenceEditor.vue";
+import { storeToRefs } from "pinia";
 
 const { displayError } = useWidget();
 
@@ -150,9 +151,12 @@ const emit = defineEmits<{
   (e: "onsave", id: string): void;
 }>();
 
-const { dialogues, languages, storyVariables, textColors } = useContentStore();
+const { dialogues, languages, storyVariables, textColors } =
+  storeToRefs(useContentStore());
 
-const defaultLanguage = computed(() => languages.find((l) => l.isDefault));
+const defaultLanguage = computed(() =>
+  languages.value.find((l) => l.isDefault),
+);
 
 const nodeKey = ref<string>("");
 const nodeDescription = ref<string>("");
@@ -175,10 +179,13 @@ const slideoverUi = computed(() => ({
 }));
 
 const languageMenuItems = computed(() =>
-  languages.map((l) => ({ label: `${l.code} (${l.display})`, value: l.code })),
+  languages.value.map((l) => ({
+    label: `${l.code} (${l.display})`,
+    value: l.code,
+  })),
 );
 const referenceLanguageMenuItems = computed(() =>
-  languages
+  languages.value
     .filter((l) => l.code !== currentLanguageCode.value)
     .map((l) => ({ label: `${l.code} (${l.display})`, value: l.code })),
 );
@@ -193,9 +200,9 @@ watch(isOpen, (open) => {
   }));
 
   currentLanguageCode.value =
-    defaultLanguage.value?.code ?? languages[0]?.code ?? "";
+    defaultLanguage.value?.code ?? languages.value[0]?.code ?? "";
   referenceLanguageCode.value =
-    defaultLanguage.value?.code ?? languages[0]?.code ?? "";
+    defaultLanguage.value?.code ?? languages.value[0]?.code ?? "";
   if (props.mode === "Read") {
     viewMode.value = "preview"; // reset each time the node is opened
   } else {
@@ -208,7 +215,7 @@ watch(currentLanguageCode, (code) => {
   referenceLanguageCode.value =
     defaultLanguage.value && defaultLanguage.value.code !== code
       ? defaultLanguage.value.code
-      : (languages.find((l) => l.code !== code)?.code ?? code);
+      : (languages.value.find((l) => l.code !== code)?.code ?? code);
 });
 
 const editorTitle = computed(() => {
@@ -247,8 +254,8 @@ function validateAllSentences(): string[] {
     }
     Object.entries(sentence.translations).forEach(([code, content]) => {
       if (!content) return;
-      validateContent(content, storyVariables, textColors).forEach((err) =>
-        errors.push(`Sentence ${index + 1} (${code}): ${err}`),
+      validateContent(content, storyVariables.value, textColors.value).forEach(
+        (err) => errors.push(`Sentence ${index + 1} (${code}): ${err}`),
       );
     });
   });
@@ -269,7 +276,7 @@ function save(): void {
   }
   if (
     props.mode === "Create" &&
-    dialogues.find((n) => n?.id === nodeKey.value)
+    dialogues.value.find((n) => n?.id === nodeKey.value)
   ) {
     displayError(
       `A dialogue node with the ID "${nodeKey.value}" already exists!`,
@@ -309,12 +316,12 @@ function upsertDialogueNode() {
   };
 
   if (props.mode === "Update" && props.node) {
-    const index = dialogues.findIndex((n) => n?.id === props.node!.id);
+    const index = dialogues.value.findIndex((n) => n?.id === props.node!.id);
     if (index !== -1) {
-      dialogues[index] = newNode;
+      dialogues.value[index] = newNode;
       return;
     }
   }
-  dialogues.push(newNode);
+  dialogues.value.push(newNode);
 }
 </script>

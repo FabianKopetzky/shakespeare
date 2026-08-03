@@ -144,7 +144,7 @@ export function validateContent(raw: string, variables: StoryVariable[], textCol
         stack.push("i");
         break;
       case "open-color":
-        if (!HEX_PATTERN.test(token.hex) && !textColors.find(c => c.name === token.hex)) errors.push(`Invalid color value "${token.hex}".`);
+        if (!HEX_PATTERN.test(token.hex) && !textColors?.find(c => c.name === token.hex)) errors.push(`Invalid color value "${token.hex}".`);
         stack.push("color");
         break;
       case "close-b":

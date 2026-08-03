@@ -82,7 +82,7 @@
                 :current-language="currentLanguageCode"
                 :reference-language="isSplit ? referenceLanguageCode : null"
                 :is-split="isSplit"
-                :variables="templatingVariables"
+                :variables="storyVariables"
                 :colors="textColors"
                 :view-mode="viewMode"
                 @remove="removeBranch(index)" />
@@ -165,15 +165,11 @@ import { useConditionUtils } from "../../../utils/conditionUtils.ts";
 import { validateContent } from "../../../utils/dialogueContent.ts";
 import DialogueSentenceEditor from "../../dialogue/DialogueSentenceEditor.vue";
 import ConditionInput from "../../forms/ConditionInput.vue";
+import { storeToRefs } from "pinia";
 
 const { displayError } = useWidget();
-const {
-  storyNodes,
-  languages,
-  templatingVariables,
-  textColors,
-  storyVariables,
-} = useContentStore();
+const { storyNodes, languages, textColors, storyVariables } =
+  storeToRefs(useContentStore());
 const { conditionToString } = useConditionUtils();
 
 interface Props {
@@ -187,7 +183,9 @@ const isOpen = defineModel<boolean>("isOpen", { required: true });
 
 const branches = ref<Branch[]>([]);
 
-const defaultLanguage = computed(() => languages.find((l) => l.isDefault));
+const defaultLanguage = computed(() =>
+  languages.value.find((l) => l.isDefault),
+);
 
 const currentLanguageCode = ref<string>("");
 const referenceLanguageCode = ref<string>("");
@@ -206,10 +204,13 @@ const slideoverUi = computed(() => ({
 }));
 
 const languageMenuItems = computed(() =>
-  languages.map((l) => ({ label: `${l.code} (${l.display})`, value: l.code })),
+  languages.value.map((l) => ({
+    label: `${l.code} (${l.display})`,
+    value: l.code,
+  })),
 );
 const referenceLanguageMenuItems = computed(() =>
-  languages
+  languages.value
     .filter((l) => l.code !== currentLanguageCode.value)
     .map((l) => ({ label: `${l.code} (${l.display})`, value: l.code })),
 );
@@ -236,7 +237,7 @@ function clearBranchCondition(index: number) {
 
 watch(isOpen, (open) => {
   if (!open) return;
-  const n: AnyStoryNode = storyNodes[props.branchNodeId];
+  const n: AnyStoryNode = storyNodes.value[props.branchNodeId];
   if (n?.type === "branch") {
     // clone so edits don't mutate the store until save
     branches.value = (n as BranchNode).branches.map((b) => ({
@@ -248,9 +249,9 @@ watch(isOpen, (open) => {
   }
 
   currentLanguageCode.value =
-    defaultLanguage.value?.code ?? languages[0]?.code ?? "";
+    defaultLanguage.value?.code ?? languages.value[0]?.code ?? "";
   referenceLanguageCode.value =
-    defaultLanguage.value?.code ?? languages[0]?.code ?? "";
+    defaultLanguage.value?.code ?? languages.value[0]?.code ?? "";
   viewMode.value = "preview"; // reset each time the node is opened
   conditionEditorOpen.value = false;
   editingBranchIndex.value = null;
@@ -261,7 +262,7 @@ watch(currentLanguageCode, (code) => {
   referenceLanguageCode.value =
     defaultLanguage.value && defaultLanguage.value.code !== code
       ? defaultLanguage.value.code
-      : (languages.find((l) => l.code !== code)?.code ?? code);
+      : (languages.value.find((l) => l.code !== code)?.code ?? code);
 });
 
 function branchAsSentence(branch: Branch): DialogueSentence {
@@ -339,8 +340,8 @@ function validateAllBranches(): string[] {
     }
     Object.entries(branch.labels).forEach(([code, content]) => {
       if (!content) return;
-      validateContent(content, templatingVariables).forEach((err) =>
-        errors.push(`Branch ${index + 1} (${code}): ${err}`),
+      validateContent(content, storyVariables.value, textColors.value).forEach(
+        (err) => errors.push(`Branch ${index + 1} (${code}): ${err}`),
       );
     });
   });
@@ -349,7 +350,7 @@ function validateAllBranches(): string[] {
 }
 
 function save(): void {
-  const node: AnyStoryNode = storyNodes[props.branchNodeId];
+  const node: AnyStoryNode = storyNodes.value[props.branchNodeId];
   if (!node) {
     displayError(
       `An error occurred: Node "${props.branchNodeId}" does not exist (anymore)`,
@@ -382,6 +383,7 @@ function close(): void {
 }
 
 function updateBranchNode() {
-  (storyNodes[props.branchNodeId] as BranchNode).branches = branches.value;
+  (storyNodes.value[props.branchNodeId] as BranchNode).branches =
+    branches.value;
 }
 </script>

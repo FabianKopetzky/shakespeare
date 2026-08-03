@@ -53,7 +53,12 @@ export function useCompiler() {
                             case 'story':
                                 const dialogue = contentStore.dialogues.find(d => d?.id === (contentStore.storyNodes[n] as StoryNode).dialogueId);
                                 if (dialogue) {
-                                    const sentences = dialogue.sentences.map(s => { return { value: s.translations[language.code] ?? s.translations[defaultLanguage?.code] ?? '' } });
+                                    const sentences = dialogue.sentences.map(s => 
+                                        { 
+                                            return { 
+                                                value: s.translations[language.code] ?? s.translations[defaultLanguage?.code] ?? '' 
+                                            } 
+                                        });
                                     dialogues.push({
                                         id: dialogue.id,
                                         sentences: sentences
