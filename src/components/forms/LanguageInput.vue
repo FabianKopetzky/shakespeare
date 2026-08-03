@@ -43,6 +43,12 @@ function submit() {
     displayError("Language code cannot be empty!");
     return;
   }
+  if (!/^[A-Za-z0-9_]+$/.test(languageCode.value)) {
+    displayError(
+      "Only alphanumeric values and '_' are allowed for the language code",
+    );
+    return;
+  }
   if (!languageDisplay.value || languageDisplay.value.length <= 0) {
     displayError("Language display cannot be empty!");
     return;

@@ -30,9 +30,10 @@ const router = createRouter({
     { path: '/export', component: Export }
   ],
   history: createWebHashHistory()
-})
+});
+
+app.use(pinia);
 app.use(router);
-app.use(pinia)
 app.use(ui);
 
 app.mount('#app')

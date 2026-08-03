@@ -19,6 +19,12 @@ function onConfirm() {
     displayError("Project title cannot be empty");
     return;
   }
+  if (!/^[A-Za-z0-9_]+$/.test(title.value)) {
+    displayError(
+      "Only alphanumeric values and '_' are allowed for the project title",
+    );
+    return;
+  }
   if (!author.value) {
     displayError("Project author cannot be empty");
     return;

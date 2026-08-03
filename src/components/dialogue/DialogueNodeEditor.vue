@@ -247,7 +247,7 @@ function validateAllSentences(): string[] {
     }
     Object.entries(sentence.translations).forEach(([code, content]) => {
       if (!content) return;
-      validateContent(content, storyVariables).forEach((err) =>
+      validateContent(content, storyVariables, textColors).forEach((err) =>
         errors.push(`Sentence ${index + 1} (${code}): ${err}`),
       );
     });
@@ -259,6 +259,12 @@ function validateAllSentences(): string[] {
 function save(): void {
   if (!nodeKey.value || nodeKey.value.length <= 0) {
     displayError("The ID of a dialogue node cannot be null!");
+    return;
+  }
+  if (!/^[A-Za-z0-9_]+$/.test(nodeKey.value)) {
+    displayError(
+      "Only alphanumeric values and '_' are allowed for a node key!",
+    );
     return;
   }
   if (

@@ -1,5 +1,5 @@
 import { useContentStore } from "../stores/content";
-import type { StoryVariable } from "../types/schema";
+import type { StoryVariable, TextColor } from "../types/schema";
 
 export type ContentNode =
   | { type: "text"; value: string }
@@ -9,8 +9,6 @@ export type ContentNode =
   | { type: "color"; value: string; children: ContentNode[] };
 
 const HEX_PATTERN = /^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
-
-const { textColors } = useContentStore();
 
 type Token =
   | { kind: "text"; value: string }
@@ -131,7 +129,7 @@ function serializeNode(node: ContentNode): string {
  * Structural + semantic validation. Returns human-readable error messages;
  * an empty array means the content is safe to save.
  */
-export function validateContent(raw: string, variables: StoryVariable[]): string[] {
+export function validateContent(raw: string, variables: StoryVariable[], textColors: TextColor[]): string[] {
   const errors: string[] = [];
   const knownNames = new Set(variables.map((v) => v.name));
   const tokens = tokenize(raw ?? "");

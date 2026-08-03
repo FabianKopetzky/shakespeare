@@ -101,6 +101,12 @@ function save(): void {
     displayError("The ID of a story cannot be null!");
     return;
   }
+  if (!/^[A-Za-z0-9_]+$/.test(storyKey.value)) {
+    displayError(
+      "Only alphanumeric values and '_' are allowed for the story key!",
+    );
+    return;
+  }
   if (
     props.mode === "Create" &&
     stories.find((s) => s?.id === storyKey.value)

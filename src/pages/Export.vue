@@ -17,8 +17,8 @@
       <div>
         <h2>Compile files</h2>
         <p>Compile your files and export directly to Unity!</p>
-        <UButton @click="tryCompileStories">Compile stories</UButton>
-        <UButton @click="tryCompileProjectMain">Compile project</UButton>
+        <UButton @click="tryDownloadStories">Download stories</UButton>
+        <UButton @click="tryDownloadMain">Download project</UButton>
       </div>
     </div>
   </div>
@@ -28,8 +28,8 @@ import { useProjectHandler } from "../composables/projectHandler";
 import { useWidget } from "../composables/widget";
 import { useContentStore } from "../stores/content";
 
-const { languages, projectTitle } = useContentStore();
-const { exportProject, compileStories, compileProjectMain } =
+const { projectTitle } = useContentStore();
+const { exportProject, downloadCompiledStories, downloadCompiledProject } =
   useProjectHandler();
 const { displayError, displaySuccess } = useWidget();
 
@@ -38,8 +38,8 @@ const { displayError, displaySuccess } = useWidget();
 //   if (res) displaySuccess(`Successfully compiled language '${lang}'`);
 //   else displayError(`An error occurred compiling language '${lang}'`);
 // }
-function tryCompileStories(): void {
-  const res = compileStories();
+function tryDownloadStories(): void {
+  const res = downloadCompiledStories();
   if (res)
     displaySuccess(
       `Successfully compiled stories for project '${projectTitle}'`,
@@ -49,8 +49,8 @@ function tryCompileStories(): void {
       `An error occurred compiling stories for project '${projectTitle}'`,
     );
 }
-function tryCompileProjectMain(): void {
-  const res = compileProjectMain();
+function tryDownloadMain(): void {
+  const res = downloadCompiledProject();
   if (res)
     displaySuccess(
       `Successfully compiled main file for project '${projectTitle}'`,
