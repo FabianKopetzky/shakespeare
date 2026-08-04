@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw, provide, ref } from "vue";
+import { computed, markRaw, provide, ref, nextTick } from "vue";
 import {
   VueFlow,
   useVueFlow,
@@ -66,11 +66,22 @@ const emit = defineEmits<{
 const { displayError } = useWidget();
 
 const graph = useStoryGraph(() => props.story);
-const { applyNodeChanges, applyEdgeChanges, screenToFlowCoordinate } =
-  useVueFlow();
+const {
+  applyNodeChanges,
+  applyEdgeChanges,
+  screenToFlowCoordinate,
+  updateNodeInternals,
+} = useVueFlow();
 
 const { flowNodes, flowEdges, availableNodeTypes } = graph;
-defineExpose({ updateNodeContent: graph.updateNodeContent });
+function updateNodeContent(id: string, content: Partial<AnyStoryNode>) {
+  graph.updateNodeContent(id, content);
+  nextTick(() => {
+    updateNodeInternals([id]);
+  });
+}
+
+defineExpose({ updateNodeContent });
 
 // every registered node type renders through the same generic card -
 // adding a new node type never requires touching this map.

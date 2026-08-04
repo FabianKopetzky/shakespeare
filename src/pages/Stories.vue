@@ -30,7 +30,7 @@ import { useContentStore } from "../stores/content.ts";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 
-const { stories } = storeToRefs(useContentStore());
+const { stories, storyNodes } = storeToRefs(useContentStore());
 const router = useRouter();
 const editorOpen = ref<boolean>(false);
 const editorMode = ref<FormMode>("Create");
@@ -49,8 +49,13 @@ function editStory(story: Story): void {
 }
 function deleteStory(story: Story): void {
   const idx = stories.value.findIndex((s) => s?.id === story?.id);
-  if (idx >= 0 && idx < stories.value.length) {
-    stories.value.splice(idx, 1);
+  if (idx < 0 || idx >= stories.value.length) return;
+
+  // remove referenced nodes
+  for (const id of story?.nodes ?? []) {
+    if (storyNodes.value[id]) delete storyNodes.value[id];
   }
+
+  stories.value.splice(idx, 1);
 }
 </script>
