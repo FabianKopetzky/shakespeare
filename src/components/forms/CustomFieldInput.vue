@@ -21,6 +21,7 @@ const { displayError } = useWidget();
 const { customFields } = useContentStore();
 
 const fieldName = ref<string>("");
+const fieldLabel = ref<string>("");
 const fieldType = ref<DataType>("Integer");
 const fieldDefault = ref<number | string | boolean>(0);
 const fieldModel = ref<CustomFieldModel>("dialogue");
@@ -58,6 +59,7 @@ onMounted(() => {
     fieldType.value = props.field.type;
     fieldDefault.value = props.field.defaultValue;
     fieldModel.value = props.field.model;
+    fieldLabel.value = props.field.label;
   }
 });
 
@@ -69,6 +71,7 @@ watch(open, (isOpen) => {
       fieldType.value = props.field?.type ?? "Integer";
       fieldDefault.value = props.field?.defaultValue ?? 0;
       fieldModel.value = props.field?.model ?? "dialogue";
+      fieldLabel.value = props.field?.label ?? "";
     }
   }
 });
@@ -79,13 +82,15 @@ const emit = defineEmits<{
 
 function submit() {
   if (!fieldName.value || fieldName.value.length <= 0) {
-    displayError("Variable name cannot be empty");
+    displayError("Field name cannot be empty");
     return;
   }
   if (!/^[A-Za-z0-9_]+$/.test(fieldName.value)) {
-    displayError(
-      "Only alphanumeric values and '_' are allowed a variable name",
-    );
+    displayError("Only alphanumeric values and '_' are allowed a field name");
+    return;
+  }
+  if (!fieldLabel.value || fieldLabel.value.length <= 0) {
+    displayError("Field label cannot be empty");
     return;
   }
   if (!fieldType.value || fieldType.value.length <= 0) {
@@ -122,6 +127,7 @@ function submit() {
     type: fieldType.value,
     defaultValue,
     model: fieldModel.value,
+    label: fieldLabel.value,
   });
   open.value = false;
   clear();
@@ -138,9 +144,7 @@ function clear() {
 <template>
   <UModal
     v-model:open="open"
-    :title="
-      props.mode === 'Create' ? 'Add story variable' : 'Edit story variable'
-    ">
+    :title="props.mode === 'Create' ? 'Add custom field' : 'Edit custom field'">
     <template #body>
       <div class="flex flex-col gap-4 justify-start items-start">
         <UFormField
@@ -150,7 +154,7 @@ function clear() {
           <USelect
             class="w-full"
             :disabled="props.mode !== 'Create'"
-            :model-value="fieldModel"
+            v-model="fieldModel"
             :items="modelOptions"
             value-key="value"
             label-key="label" />
@@ -163,6 +167,12 @@ function clear() {
             class="w-full"
             :disabled="props.mode !== 'Create'"
             v-model="fieldName" />
+        </UFormField>
+        <UFormField
+          class="w-full"
+          label="Field label"
+          help="How the field is labelled in the editor.">
+          <UInput class="w-full" v-model="fieldLabel" />
         </UFormField>
 
         <UFormField

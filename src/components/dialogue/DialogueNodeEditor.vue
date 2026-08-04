@@ -45,6 +45,27 @@
             class="w-full mt-2" />
         </div>
 
+        <div class="mb-4">
+          <div v-for="fieldSchema in getCustomFieldsForModel('dialogue')">
+            <FieldInstanceInput
+              @submit="
+                (value) => {
+                  const field = nodeFields?.data?.find(
+                    (f) => f.name === fieldSchema.name,
+                  );
+                  if (field) {
+                    field.value = value;
+                  }
+                }
+              "
+              :schema="fieldSchema"
+              :default-value="
+                nodeFields?.data?.find((f) => f.name === fieldSchema.name)
+                  ?.value ?? undefined
+              " />
+          </div>
+        </div>
+
         <USeparator
           class="h-4"
           orientation="horizontal"
@@ -108,7 +129,7 @@
 
           <div
             v-if="props.mode !== 'Read'"
-            class="w-full flex flex-row justify-end gap-2">
+            class="w-full flex flex-row justify-end gap-2 pb-4 mb-4">
             <UButton
               @click="createDialogueSentence()"
               class="flex items-center justify-center mt-2"
@@ -126,16 +147,19 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import type {
-  DialogueNode,
-  DialogueSentence,
-  FormMode,
+import {
+  type CustomFields,
+  type DialogueNode,
+  type DialogueSentence,
+  type FormMode,
 } from "../../types/schema";
 import { useContentStore } from "../../stores/content";
 import { useWidget } from "../../composables/widget.ts";
 import { validateContent } from "../../utils/dialogueContent";
 import DialogueSentenceEditor from "./DialogueSentenceEditor.vue";
 import { storeToRefs } from "pinia";
+import { useCustomFieldsUtils } from "../../utils/customFieldsUtils.ts";
+import FieldInstanceInput from "../forms/FieldInstanceInput.vue";
 
 const { displayError } = useWidget();
 
@@ -143,6 +167,8 @@ interface Props {
   node?: DialogueNode;
   mode: FormMode;
 }
+const { createDefaultFieldsForModel, getCustomFieldsForModel } =
+  useCustomFieldsUtils();
 const props = defineProps<Props>();
 
 const isOpen = defineModel<boolean>("isOpen", { required: true });
@@ -161,6 +187,7 @@ const defaultLanguage = computed(() =>
 const nodeKey = ref<string>("");
 const nodeDescription = ref<string>("");
 const nodeSentences = ref<DialogueSentence[]>([]);
+const nodeFields = ref<CustomFields>();
 
 const currentLanguageCode = ref<string>("");
 const referenceLanguageCode = ref<string>("");
@@ -197,7 +224,11 @@ watch(isOpen, (open) => {
   nodeSentences.value = (props.node?.sentences ?? []).map((s) => ({
     key: s.key,
     translations: { ...s.translations },
+    fields: s.fields ?? createDefaultFieldsForModel("dialogue_sentence"),
   }));
+
+  nodeFields.value =
+    props.node?.fields ?? createDefaultFieldsForModel("dialogue");
 
   currentLanguageCode.value =
     defaultLanguage.value?.code ?? languages.value[0]?.code ?? "";
@@ -233,6 +264,7 @@ function createDialogueSentence() {
   nodeSentences.value.push({
     key: crypto.randomUUID(),
     translations: { [currentLanguageCode.value]: "" },
+    fields: createDefaultFieldsForModel("dialogue_sentence"),
   });
 }
 function removeSentence(index: number) {
@@ -313,6 +345,7 @@ function upsertDialogueNode() {
     id: nodeKey.value,
     description: nodeDescription.value,
     sentences: nodeSentences.value,
+    fields: nodeFields.value ?? createDefaultFieldsForModel("dialogue"),
   };
 
   if (props.mode === "Update" && props.node) {

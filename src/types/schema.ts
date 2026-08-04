@@ -1,13 +1,17 @@
 //* DIALOGUES
 export type DialogueSentence = {
-  key: string | number; // crypto random uuid, assigned when created during runtime — shared across languages
-  translations: Record<string, string>; // languageCode -> raw markup content for that language
+  key: string | number, // crypto random uuid, assigned when created during runtime — shared across languages
+  translations: Record<string, string>, // languageCode -> raw markup content for that language
+
+  fields: CustomFields
 };
 
 export type DialogueNode = {
-  id: string;
-  description: string;
-  sentences: DialogueSentence[];
+  id: string,
+  description: string,
+  sentences: DialogueSentence[],
+
+  fields: CustomFields
 } | undefined;
 
 //* STORY
@@ -15,7 +19,9 @@ export type Story = {
   id: string, // created by player, must be unique
   description: string, // internal editor description
   entryNodeId: string | null,
-  nodes: string[] // array of all uuids of the nodes in a story
+  nodes: string[], // array of all uuids of the nodes in a story
+
+  fields: CustomFields
 } | undefined;
 //* STORY NODE TYPES
 
@@ -73,7 +79,9 @@ export type Branch = {
   id: string | number, // random uuid of the branch
   labels: Record<string, string>, // labels for the different languages for the choice
   targetId: string | null, // the dialogue target
-  condition: Condition | null // condition that this branch will be rendered
+  condition: Condition | null, // condition that this branch will be rendered
+
+  fields: CustomFields
 }
 
 export type RandomBranch = {
@@ -98,15 +106,15 @@ export type Operand =
   | { kind: 'literal' | 'variable'; value: number | string | boolean }
 
 export type Comparison = {
-  left: Operand
-  operator: ComparisonOperator
+  left: Operand,
+  operator: ComparisonOperator,
   right: Operand
 }
 
 // Each clause pairs a comparison with the operator that links it to the NEXT clause.
 // The last clause in the array has no connector.
 export type ConditionClause = {
-  comparison: Comparison
+  comparison: Comparison,
   connector?: LogicalOperator
 }
 
@@ -128,13 +136,13 @@ export type CustomFieldModel = 'dialogue' | 'dialogue_sentence' | 'branch' | 'st
 
 export type CustomFieldSchema = {
   name: string,
+  label: string,
   type: DataType,
   defaultValue: number | string | boolean,
   model: CustomFieldModel
 }
-export type CustomField = {
-  name: string,
-  value: number | string | boolean
+export type CustomFields = {
+  data: { name: string, value: number | string | boolean }[]
 }
 
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened
