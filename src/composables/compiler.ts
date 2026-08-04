@@ -1,5 +1,5 @@
 import { useContentStore } from "../stores/content";
-import type { AnyStoryNode, BranchNode, StoryNode } from "../types/schema";
+import type { AnyStoryNode, BranchNode, CustomFields, RandomNode, StoryNode } from "../types/schema";
 
 export function useCompiler() {
     const contentStore = useContentStore();
@@ -10,6 +10,19 @@ export function useCompiler() {
             const colorEntry = contentStore.textColors?.find((c) => c.name === value);
             return colorEntry ? `<color=#${colorEntry.hex.replace(/^#/, '')}>` : match;
         });
+    }
+    function compileCustomFields(fields: CustomFields): any {
+        if(!fields.data || fields.data.length <= 0) return null;
+        const entries = fields.data.map(field => {
+            const schema = contentStore.customFields.find(f => f.name === field.name);
+            if(!schema) return null;
+            return {
+                name: field.name,
+                type: schema.type,
+                value: field.value
+            }
+        });
+        return entries;
     }
 
     function getProjectData(): any {
@@ -49,6 +62,7 @@ export function useCompiler() {
         if (!defaultLanguage) return [];
 
         for (const story of contentStore.stories) {
+            if(!story) continue;
             for (const language of contentStore.languages) {
 
                 const nodes: Partial<AnyStoryNode | any>[] = []; // fetch all nodes that are referenced in the story
@@ -67,12 +81,14 @@ export function useCompiler() {
                                             // replace color variables
                                             const translation = s.translations[language.code] ?? s.translations[defaultLanguage?.code] ?? '';
                                             return { 
-                                                value: resolveColorVariables(translation)
+                                                value: resolveColorVariables(translation),
+                                                fields: compileCustomFields(s.fields)
                                             } 
                                         });
                                     dialogues.push({
                                         id: dialogue.id,
-                                        sentences: sentences
+                                        sentences: sentences,
+                                        fields: compileCustomFields(dialogue.fields)
                                     });
                                 }
                                 nodes.push(nodeData);
@@ -83,7 +99,8 @@ export function useCompiler() {
                                     return {
                                         label: resolveColorVariables(translation),
                                         targetId: b.targetId,
-                                        condition: b.condition
+                                        condition: b.condition,
+                                        fields: compileCustomFields(b.fields)
                                     }
                                 });
                                 const branchNode = {
@@ -91,6 +108,14 @@ export function useCompiler() {
                                     branches
                                 };
                                 nodes.push(branchNode);
+                                break;
+                            case 'random':
+                                const randomBranches = (nodeData as Partial<RandomNode>).branches?.map(b => ({ weight: b.weight, targetId: b.targetId }));
+                                const randomNode = {
+                                    ...nodeData,
+                                    branches: randomBranches
+                                }
+                                nodes.push(randomNode);
                                 break;
                             default:
                                 nodes.push(nodeData);
@@ -100,10 +125,11 @@ export function useCompiler() {
                 }
 
                 const sample = {
-                    id: story?.id,
-                    entry: story?.entryNodeId,
+                    id: story.id,
+                    entry: story.entryNodeId,
                     nodes: nodes,
-                    dialogues: dialogues
+                    dialogues: dialogues,
+                    fields: compileCustomFields(story.fields)
                 };
                 const idx = `${story?.id ?? ""}_${language.code ?? ""}`;
                 data[idx] = sample;
