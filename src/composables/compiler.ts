@@ -24,7 +24,8 @@ export function useCompiler() {
 
             colors: contentStore.textColors,
             languages: contentStore.languages,
-            storyVariables: contentStore.storyVariables
+            storyVariables: contentStore.storyVariables,
+            customFields: contentStore.customFields
         }
 
         return data;

@@ -10,7 +10,7 @@
     <USeparator class="h-6" orientation="horizontal" />
     <UTabs :items="sections">
       <template #model>
-        <p>Model</p>
+        <CustomFieldEditor />
       </template>
       <template #templating>
         <TextColorEditor />
@@ -25,6 +25,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import CustomFieldEditor from "../components/forms/CustomFieldEditor.vue";
 import LanguageEditor from "../components/forms/LanguageEditor.vue";
 import StoryVariableEditor from "../components/forms/StoryVariableEditor.vue";
 import TextColorEditor from "../components/forms/TextColorEditor.vue";

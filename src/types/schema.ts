@@ -124,10 +124,17 @@ export type OperatonTarget = {
   value: string | number | boolean // if type is variable, this holds the variable name
 }
 
-export type CustomField = {
+export type CustomFieldModel = 'dialogue' | 'dialogue_sentence' | 'branch' | 'story';
+
+export type CustomFieldSchema = {
   name: string,
   type: DataType,
-  
+  defaultValue: number | string | boolean,
+  model: CustomFieldModel
+}
+export type CustomField = {
+  name: string,
+  value: number | string | boolean
 }
 
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened

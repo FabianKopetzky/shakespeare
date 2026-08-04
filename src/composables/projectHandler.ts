@@ -112,6 +112,7 @@ export function useProjectHandler() {
                 contentStore.languages = [{ code: 'default', display: 'English', isDefault: true }];
                 contentStore.textColors = [];
                 contentStore.storyVariables = [];
+                contentStore.customFields = [];
 
                 appStore.projectLoaded = true;
                 return true;
@@ -135,6 +136,7 @@ export function useProjectHandler() {
             contentStore.textColors = project.colors ?? [];
             contentStore.languages = project.languages ?? [];
             contentStore.storyVariables = project.storyVariables ?? [];
+            contentStore.customFields = project.customFields ?? [];
 
             appStore.projectLoaded = true;
             return true;

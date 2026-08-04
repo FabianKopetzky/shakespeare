@@ -8,6 +8,7 @@ export function isValidProject(project: any): project is {
     colors?: any[];
     languages?: any[];
     storyVariables?: any[];
+    customFields?: any[];
 } {
     if (typeof project !== 'object' || project === null || Array.isArray(project)) {
         return false;
