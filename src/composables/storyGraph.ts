@@ -135,8 +135,6 @@ export function useStoryGraph(getStory: () => Story) {
 
     Object.assign(node, content);
 
-    console.log("called, patched node: " + JSON.stringify(node));
-
     // node identity didn't change, so the id-based watch won't fire -
     // patch this one flow node's derived data in place instead of a full rebuild
     flowNodes.value = flowNodes.value.map((n) => {

@@ -85,7 +85,35 @@
                 :variables="storyVariables"
                 :colors="textColors"
                 :view-mode="viewMode"
+                :exclude-custom-fields="true"
                 @remove="removeBranch(index)" />
+
+              <div
+                v-if="branchFieldSchemas.length > 0"
+                class="flex flex-row flex-wrap gap-3 mt-2">
+                <div
+                  v-for="fieldSchema in branchFieldSchemas"
+                  :key="fieldSchema.name"
+                  class="min-w-40 flex-1">
+                  <FieldInstanceInput
+                    @submit="
+                      (value) => {
+                        const field = branch.fields?.data?.find(
+                          (f) => f.name === fieldSchema.name,
+                        );
+                        if (field) {
+                          field.value = value;
+                        }
+                      }
+                    "
+                    :schema="fieldSchema"
+                    :default-value="
+                      branch.fields?.data?.find(
+                        (f) => f.name === fieldSchema.name,
+                      )?.value ?? undefined
+                    " />
+                </div>
+              </div>
 
               <div class="mt-3 pt-3 border-t border-default">
                 <div class="flex flex-row justify-between items-start gap-2">
@@ -152,12 +180,12 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import type {
-  AnyStoryNode,
-  BranchNode,
-  Branch,
-  Condition,
-  DialogueSentence,
+import {
+  type AnyStoryNode,
+  type BranchNode,
+  type Branch,
+  type Condition,
+  type DialogueSentence,
 } from "../../../types/schema.ts";
 import { useContentStore } from "../../../stores/content.ts";
 import { useWidget } from "../../../composables/widget.ts";
@@ -166,11 +194,16 @@ import { validateContent } from "../../../utils/dialogueContent.ts";
 import DialogueSentenceEditor from "../../dialogue/DialogueSentenceEditor.vue";
 import ConditionInput from "../../forms/ConditionInput.vue";
 import { storeToRefs } from "pinia";
+import { useCustomFieldsUtils } from "../../../utils/customFieldsUtils.ts";
+import FieldInstanceInput from "../../forms/FieldInstanceInput.vue";
 
 const { displayError } = useWidget();
 const { storyNodes, languages, textColors, storyVariables } =
   storeToRefs(useContentStore());
 const { conditionToString } = useConditionUtils();
+
+const { getCustomFieldsForModel, createDefaultFieldsForModel } =
+  useCustomFieldsUtils();
 
 interface Props {
   branchNodeId: string;
@@ -182,6 +215,10 @@ const emit = defineEmits<{
 const isOpen = defineModel<boolean>("isOpen", { required: true });
 
 const branches = ref<Branch[]>([]);
+
+const branchFieldSchemas = computed(() => {
+  return getCustomFieldsForModel("branch");
+});
 
 const defaultLanguage = computed(() =>
   languages.value.find((l) => l.isDefault),
@@ -245,6 +282,7 @@ watch(isOpen, (open) => {
       labels: { ...b.labels },
       targetId: b.targetId,
       condition: b.condition ?? null,
+      fields: b.fields ?? createDefaultFieldsForModel("branch"),
     }));
   }
 
@@ -268,7 +306,7 @@ watch(currentLanguageCode, (code) => {
 function branchAsSentence(branch: Branch): DialogueSentence {
   // adapts a Branch's `labels` to the shape DialogueSentenceEditor expects,
   // keeping a reference to the same object so edits stay in sync
-  return { key: branch.id, translations: branch.labels };
+  return { key: branch.id, translations: branch.labels, fields: { data: [] } };
 }
 
 function createBranch() {
@@ -277,6 +315,7 @@ function createBranch() {
     labels: { [currentLanguageCode.value]: "" },
     targetId: null,
     condition: null,
+    fields: createDefaultFieldsForModel("branch"),
   });
 }
 function removeBranch(index: number) {

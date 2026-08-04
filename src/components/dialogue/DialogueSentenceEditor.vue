@@ -35,7 +35,7 @@
       </div>
 
       <div
-        v-if="sentenceFieldSchemas.length > 0"
+        v-if="!props.excludeCustomFields && sentenceFieldSchemas.length > 0"
         class="flex flex-row flex-wrap gap-3 mt-2">
         <div
           v-for="fieldSchema in sentenceFieldSchemas"
@@ -84,8 +84,12 @@ interface Props {
   variables: StoryVariable[];
   colors: TextColor[];
   viewMode: "edit" | "preview";
+
+  excludeCustomFields?: boolean;
 }
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  excludeCustomFields: false,
+});
 const emit = defineEmits<{ (e: "remove"): void }>();
 
 const { getCustomFieldsForModel } = useCustomFieldsUtils();
