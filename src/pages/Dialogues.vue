@@ -11,7 +11,8 @@
       <DialogueNodeElement
         v-for="node in dialogues"
         :node="node"
-        @click="editNode(node)" />
+        @edit="editNode(node)"
+        @delete="deleteNode(node)" />
     </div>
     <DialogueNodeEditor
       v-model:isOpen="editorOpen"
@@ -25,8 +26,9 @@ import { type DialogueNode, type FormMode } from "../types/schema.ts";
 import DialogueNodeEditor from "../components/dialogue/DialogueNodeEditor.vue";
 import DialogueNodeElement from "../components/widget/DialogueNodeElement.vue";
 import { useContentStore } from "../stores/content.ts";
+import { storeToRefs } from "pinia";
 
-const { dialogues } = useContentStore();
+const { dialogues } = storeToRefs(useContentStore());
 const editorOpen = ref<boolean>(false);
 const editorMode = ref<FormMode>("Create");
 
@@ -41,5 +43,11 @@ function editNode(node: DialogueNode): void {
   editorMode.value = "Update";
   currentNode.value = node;
   editorOpen.value = true;
+}
+function deleteNode(node: DialogueNode): void {
+  const idx = dialogues.value.findIndex((n) => n?.id === node?.id);
+  if (idx >= 0 && idx < dialogues.value.length) {
+    dialogues.value.splice(idx, 1);
+  }
 }
 </script>

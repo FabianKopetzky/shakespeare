@@ -11,7 +11,9 @@
       <StoryElement
         v-for="story in stories"
         :story="story"
-        @click="router.push(`/stories/${story?.id}`)" />
+        @open-graph="router.push(`/stories/${story?.id}`)"
+        @edit="editStory(story)"
+        @delete="deleteStory(story)" />
     </div>
     <StoryEditor
       v-model:isOpen="editorOpen"
@@ -26,8 +28,9 @@ import StoryEditor from "../components/story/StoryEditor.vue";
 import StoryElement from "../components/widget/StoryElement.vue";
 import { useContentStore } from "../stores/content.ts";
 import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
 
-const { stories } = useContentStore();
+const { stories } = storeToRefs(useContentStore());
 const router = useRouter();
 const editorOpen = ref<boolean>(false);
 const editorMode = ref<FormMode>("Create");
@@ -43,5 +46,11 @@ function editStory(story: Story): void {
   editorMode.value = "Update";
   currentStory.value = story;
   editorOpen.value = true;
+}
+function deleteStory(story: Story): void {
+  const idx = stories.value.findIndex((s) => s?.id === story?.id);
+  if (idx >= 0 && idx < stories.value.length) {
+    stories.value.splice(idx, 1);
+  }
 }
 </script>

@@ -44,13 +44,26 @@
             class="w-full mt-2" />
         </div>
 
-        <USeparator
-          class="h-4"
-          orientation="horizontal"
-          type="solid"
-          size="sm" />
-
-        <div class="mb-4 pl-8 mt-4"></div>
+        <div class="mb-4">
+          <div v-for="fieldSchema in getCustomFieldsForModel('story')">
+            <FieldInstanceInput
+              @submit="
+                (value) => {
+                  const field = customFields?.data?.find(
+                    (f) => f.name === fieldSchema.name,
+                  );
+                  if (field) {
+                    field.value = value;
+                  }
+                }
+              "
+              :schema="fieldSchema"
+              :default-value="
+                customFields?.data?.find((f) => f.name === fieldSchema.name)
+                  ?.value ?? undefined
+              " />
+          </div>
+        </div>
       </div>
     </template>
   </USlideover>
@@ -58,13 +71,22 @@
 
 <script setup lang="ts">
 import { computed, ref, nextTick, watch } from "vue";
-import type { FormMode, Story } from "../../types/schema.ts";
+import {
+  type CustomFields,
+  type FormMode,
+  type Story,
+} from "../../types/schema.ts";
 import { useContentStore } from "../../stores/content.ts";
 import { useWidget } from "../../composables/widget.ts";
 import { useRouter } from "vue-router";
+import { useCustomFieldsUtils } from "../../utils/customFieldsUtils.ts";
+import FieldInstanceInput from "../forms/FieldInstanceInput.vue";
 
 const { displayError } = useWidget();
 const router = useRouter();
+
+const { getCustomFieldsForModel, createDefaultFieldsForModel } =
+  useCustomFieldsUtils();
 
 interface Props {
   story?: Story;
@@ -78,12 +100,15 @@ watch(isOpen, (open) => {
   if (!open) return;
   storyKey.value = props.story?.id ?? "";
   storyDescription.value = props.story?.description ?? "";
+  customFields.value =
+    props.story?.fields ?? createDefaultFieldsForModel("story");
 });
 
 const { stories } = useContentStore();
 
 const storyKey = ref<string>("");
 const storyDescription = ref<string>("");
+const customFields = ref<CustomFields>();
 
 const editorTitle = computed(() => {
   switch (props.mode) {
@@ -128,6 +153,7 @@ async function upsertStory() {
     description: storyDescription.value,
     entryNodeId: null,
     nodes: [],
+    fields: customFields.value ?? createDefaultFieldsForModel("story"),
   };
 
   if (props.mode === "Update" && props.story) {
