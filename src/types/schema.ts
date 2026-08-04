@@ -84,10 +84,10 @@ export type RandomBranch = {
 
 export type StoryVariable = {
   name: string, // unique identifier
-  type: StoryVariableType,
+  type: DataType,
   defaultValue: number | string | boolean
 }
-export type StoryVariableType = 'Integer' | 'String' | 'Boolean'
+export type DataType = 'Integer' | 'String' | 'Boolean'
 
 //* CONDITION UTILS
 export type ComparisonOperator = '==' | '!=' | '<' | '>' | '<=' | '>='
@@ -122,6 +122,12 @@ export type Operation = {
 export type OperatonTarget = {
   type: 'literal' | 'variable',
   value: string | number | boolean // if type is variable, this holds the variable name
+}
+
+export type CustomField = {
+  name: string,
+  type: DataType,
+  
 }
 
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened

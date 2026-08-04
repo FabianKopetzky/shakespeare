@@ -7,7 +7,7 @@ import type {
   ComparisonOperator,
   LogicalOperator,
   StoryVariable,
-  StoryVariableType,
+  DataType,
 } from "../../types/schema";
 import { useWidget } from "../../composables/widget";
 import { useConditionUtils } from "../../utils/conditionUtils";
@@ -46,7 +46,7 @@ interface ClauseForm {
   left: OperandForm;
   operator: ComparisonOperator;
   right: OperandForm;
-  valueType: StoryVariableType; // shared type for both sides of this clause
+  valueType: DataType; // shared type for both sides of this clause
   connector: LogicalOperator; // connector to NEXT clause; ignored for last
 }
 
@@ -70,7 +70,7 @@ function operatorOptions(clause: ClauseForm) {
 }
 
 const connectorOptions: LogicalOperator[] = ["AND", "OR"];
-const typeOptions: StoryVariableType[] = ["Integer", "String", "Boolean"];
+const typeOptions: DataType[] = ["Integer", "String", "Boolean"];
 
 function emptyOperand(): OperandForm {
   return { kind: "literal", variableName: "", literalValue: "" };
@@ -91,7 +91,7 @@ const clauses = ref<ClauseForm[]>([emptyClause()]);
 
 function variableType(
   name: string | (string | number | boolean),
-): StoryVariableType | undefined {
+): DataType | undefined {
   return props.variables.find((v) => v.name === name)?.type;
 }
 
@@ -109,7 +109,7 @@ function operandToForm(operand: Operand): OperandForm {
 function inferValueType(comparison: {
   left: Operand;
   right: Operand;
-}): StoryVariableType {
+}): DataType {
   if (comparison.left.kind === "variable") {
     const t = variableType(comparison.left.value);
     if (t) return t;
@@ -165,7 +165,7 @@ function removeClause(id: number) {
 
 // The type is "locked" (derived, not user-selectable) whenever either side
 // is a variable that's actually been selected.
-function lockedType(clause: ClauseForm): StoryVariableType | undefined {
+function lockedType(clause: ClauseForm): DataType | undefined {
   if (clause.left.kind === "variable" && clause.left.variableName) {
     return variableType(clause.left.variableName);
   }
@@ -299,7 +299,7 @@ function onSelectOperand(
   applyVariableToOperand(clause, side, value);
 }
 
-function onSelectValueType(clause: ClauseForm, type: StoryVariableType) {
+function onSelectValueType(clause: ClauseForm, type: DataType) {
   clause.valueType = type;
   clause.left.literalValue = type === "Boolean" ? "true" : "";
   clause.right.literalValue = type === "Boolean" ? "true" : "";
@@ -308,17 +308,14 @@ function onSelectValueType(clause: ClauseForm, type: StoryVariableType) {
 
 function parseLiteral(
   value: string,
-  type: StoryVariableType,
+  type: DataType,
 ): number | string | boolean {
   if (type === "Integer") return Number(value);
   if (type === "Boolean") return value === "true";
   return value;
 }
 
-function toOperand(
-  operand: OperandForm,
-  valueType: StoryVariableType,
-): Operand {
+function toOperand(operand: OperandForm, valueType: DataType): Operand {
   if (operand.kind === "variable") {
     return { kind: "variable", value: operand.variableName };
   }

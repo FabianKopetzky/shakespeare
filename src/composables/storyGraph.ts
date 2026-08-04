@@ -119,6 +119,15 @@ export function useStoryGraph(getStory: () => Story) {
   function updateNodePosition(id: string, position: { x: number; y: number }) {
     const node = contentStore.storyNodes[id];
     if (node) node.position = position;
+
+    // keep the external flowNodes ref in sync with the domain position too -
+    // vue-flow's own internal store already has this position from the drag
+    // (via applyNodeChanges in onNodesChange), but flowNodes itself doesn't,
+    // and anything that later rebuilds flowNodes.value (e.g. updateNodeContent)
+    // would otherwise stamp this node back to its pre-drag position.
+    flowNodes.value = flowNodes.value.map((n) =>
+      n.id === id ? { ...n, position: { ...position } } : n,
+    );
   }
   function updateNodeContent(id: string, content: Partial<AnyStoryNode>) {
     const node = contentStore.storyNodes[id];

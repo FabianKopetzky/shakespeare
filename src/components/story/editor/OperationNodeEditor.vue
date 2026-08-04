@@ -115,7 +115,7 @@ import type {
   OperationNode,
   Operation,
   OperatonTarget,
-  StoryVariableType,
+  DataType,
 } from "../../../types/schema.ts";
 import { useContentStore } from "../../../stores/content.ts";
 import { useWidget } from "../../../composables/widget.ts";
@@ -150,7 +150,7 @@ const targetKind = ref<"literal" | "variable">("literal");
 const targetVariableName = ref<string>("");
 const targetLiteralValue = ref<string>("");
 
-const selectedType = computed<StoryVariableType | undefined>(() =>
+const selectedType = computed<DataType | undefined>(() =>
   variableName.value
     ? storyVariables.find((v) => v.name === variableName.value)?.type
     : undefined,
@@ -205,7 +205,7 @@ const targetSelection = computed(() =>
   targetKind.value === "variable" ? targetVariableName.value : LITERAL_SENTINEL,
 );
 
-function defaultLiteralFor(type: StoryVariableType | undefined): string {
+function defaultLiteralFor(type: DataType | undefined): string {
   if (type === "Boolean") return "true";
   if (type === "Integer") return "0";
   return "";
@@ -236,7 +236,7 @@ function onSelectTarget(value: string) {
 
 function parseLiteral(
   value: string,
-  type: StoryVariableType,
+  type: DataType,
 ): number | string | boolean {
   if (type === "Integer") return Number(value);
   if (type === "Boolean") return value === "true";
@@ -316,7 +316,7 @@ function validate(): boolean {
 }
 
 function buildOperation(): Operation {
-  const type = selectedType.value as StoryVariableType;
+  const type = selectedType.value as DataType;
   const target: OperatonTarget =
     targetKind.value === "variable"
       ? { type: "variable", value: targetVariableName.value }

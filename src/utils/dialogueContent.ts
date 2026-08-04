@@ -1,4 +1,3 @@
-import { useContentStore } from "../stores/content";
 import type { StoryVariable, TextColor } from "../types/schema";
 
 export type ContentNode =

@@ -1,4 +1,4 @@
-import type { Condition, Operation, StoryVariableType } from "../types/schema";
+import type { Condition, Operation, DataType } from "../types/schema";
 
 export function useConditionUtils() {
   function conditionToString(condition: Condition): string {
@@ -27,7 +27,7 @@ export function useConditionUtils() {
   }
 
   const typeMeta: Record<
-    StoryVariableType,
+    DataType,
     { icon: string; color: "info" | "secondary" | "success"; label: string }
     > = {
     Integer: { icon: "i-lucide-hash", color: "info", label: "Integer" },
