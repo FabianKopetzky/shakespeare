@@ -120,6 +120,7 @@ registerNodeType<ConditionNode>({
   },
 });
 
+
 registerNodeType<RandomNode>({
   type: "random",
   label: "Random",
@@ -130,12 +131,13 @@ registerNodeType<RandomNode>({
     position,
     branches: []
   }),
-  getTitle: (node) => node.branches.length > 0 ? `Selects one of ${node.branches.length} at random` : 'No random branches assigned',
-  getOutputs: (node) =>
-      node.branches.map((branch, index) => ({
+  getTitle: (node) => node.branches.length > 0 ? `Selects one of ${node.branches.length} branches at random` : 'No random branches assigned',
+  getOutputs: (node) => {
+      const total = (node.branches ?? []).reduce((sum, b) => sum + (b.weight || 0), 0);
+      return node.branches.map((branch) => ({
         id: branch.id,
-        label: `Branch ${index + 1}`,
-      } as OutputPin)),
+        label: `${total <= 0 ? 0 : ((branch.weight / total) * 100).toFixed(1)}%`,
+      } as OutputPin)) },
     getTargetId: (node, handleId) =>
       node.branches.find((b) => b.id === handleId)?.targetId ?? null,
     setTargetId: (node, handleId, targetId) => {

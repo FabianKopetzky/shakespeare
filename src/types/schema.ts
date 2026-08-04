@@ -86,7 +86,7 @@ export type Branch = {
 
 export type RandomBranch = {
   id: string | number, // random uuid of the branch
-  chance: number, // chance of this branch activating
+  weight: number, // weight of this branch
   targetId: string | null, // the dialogue target
 }
 

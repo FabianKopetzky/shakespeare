@@ -72,7 +72,6 @@ const condition = ref<Condition | null>();
 const editorOpen = ref<boolean>(false);
 
 function onUpdateCondition(c: Condition | null) {
-  console.log("saved condition:", c);
   condition.value = c;
 }
 

@@ -25,6 +25,11 @@
     @onsave="onNodeContentChange"
     :operation-node-id="currentOperationNode"
     v-model:is-open="operationNodeEditorOpen" />
+
+  <RandomNodeEditor
+    @onsave="onNodeContentChange"
+    :random-node-id="currentRandomNode"
+    v-model:is-open="randomNodeEditorOpen" />
 </template>
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
@@ -36,6 +41,7 @@ import StoryNodeEditor from "../components/story/editor/StoryNodeEditor.vue";
 import BranchNodeEditor from "../components/story/editor/BranchNodeEditor.vue";
 import ConditionNodeEditor from "../components/story/editor/ConditionNodeEditor.vue";
 import OperationNodeEditor from "../components/story/editor/OperationNodeEditor.vue";
+import RandomNodeEditor from "../components/story/editor/RandomNodeEditor.vue";
 
 const route = useRoute();
 const story = ref<Story>(undefined);
@@ -66,6 +72,9 @@ const conditionNodeEditorOpen = ref<boolean>(false);
 const currentOperationNode = ref<string>("");
 const operationNodeEditorOpen = ref<boolean>(false);
 
+const currentRandomNode = ref<string>("");
+const randomNodeEditorOpen = ref<boolean>(false);
+
 function onOpenNode(node: AnyStoryNode) {
   // reset all var
   resetOpenNodes();
@@ -82,6 +91,9 @@ function onOpenNode(node: AnyStoryNode) {
   } else if (node.type === "operation") {
     currentOperationNode.value = node.id;
     operationNodeEditorOpen.value = true;
+  } else if (node.type === "random") {
+    currentRandomNode.value = node.id;
+    randomNodeEditorOpen.value = true;
   }
 }
 
@@ -97,16 +109,17 @@ function resetOpenNodes() {
 
   currentOperationNode.value = "";
   operationNodeEditorOpen.value = false;
+
+  currentRandomNode.value = "";
+  randomNodeEditorOpen.value = false;
 }
 
 const storyGraphRef = ref<InstanceType<typeof StoryGraph> | null>(null);
 
 function onNodeContentChange(id: string) {
-  console.log("CHANGE " + id);
   if (!id) return;
   const content = storyNodes[id];
   if (!content) return;
-  console.log("CONTENT " + JSON.stringify(content));
   storyGraphRef.value?.updateNodeContent(id, content);
 }
 </script>
