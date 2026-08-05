@@ -4,7 +4,7 @@ import { useCompiler } from "./compiler";
 import { useWidget } from "./widget";
 
 import { appDataDir, join } from "@tauri-apps/api/path";
-import { exists, mkdir, readDir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 
 import { isValidProject } from "./projectValidator";
 import { invoke } from "@tauri-apps/api/core";
@@ -113,6 +113,7 @@ export function useProjectHandler() {
                 contentStore.textColors = [];
                 contentStore.storyVariables = [];
                 contentStore.customFields = [];
+                contentStore.events = [];
 
                 appStore.projectLoaded = true;
                 return true;
@@ -137,6 +138,7 @@ export function useProjectHandler() {
             contentStore.languages = project.languages ?? [];
             contentStore.storyVariables = project.storyVariables ?? [];
             contentStore.customFields = project.customFields ?? [];
+            contentStore.events = project.events ?? [];
 
             appStore.projectLoaded = true;
             return true;

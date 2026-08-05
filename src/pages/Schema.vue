@@ -12,20 +12,22 @@
       <template #model>
         <CustomFieldEditor />
       </template>
-      <template #templating>
-        <TextColorEditor />
+      <template #events>
+        <EventEditor />
       </template>
       <template #languages>
         <LanguageEditor />
       </template>
       <template #variables>
         <StoryVariableEditor />
+        <TextColorEditor />
       </template>
     </UTabs>
   </div>
 </template>
 <script setup lang="ts">
 import CustomFieldEditor from "../components/forms/CustomFieldEditor.vue";
+import EventEditor from "../components/forms/EventEditor.vue";
 import LanguageEditor from "../components/forms/LanguageEditor.vue";
 import StoryVariableEditor from "../components/forms/StoryVariableEditor.vue";
 import TextColorEditor from "../components/forms/TextColorEditor.vue";
@@ -37,9 +39,9 @@ const sections = [
     slot: "model",
   },
   {
-    label: "Templating",
-    icon: "tabler:template-filled",
-    slot: "templating",
+    label: "Events",
+    icon: "mynaui:lightning-solid",
+    slot: "events",
   },
   {
     label: "Languages",

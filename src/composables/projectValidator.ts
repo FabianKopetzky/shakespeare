@@ -9,6 +9,7 @@ export function isValidProject(project: any): project is {
     languages?: any[];
     storyVariables?: any[];
     customFields?: any[];
+    events?: any[];
 } {
     if (typeof project !== 'object' || project === null || Array.isArray(project)) {
         return false;
@@ -27,6 +28,8 @@ export function isValidProject(project: any): project is {
     if ('colors' in project && !Array.isArray(project.colors)) return false;
     if ('languages' in project && !Array.isArray(project.languages)) return false;
     if ('storyVariables' in project && !Array.isArray(project.storyVariables)) return false;
+    if ('customFields' in project && !Array.isArray(project.customFields)) return false;
+    if ('events' in project && !Array.isArray(project.events)) return false;
 
     return true;
 }

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
-import type { AnyStoryNode, CustomFieldSchema, DialogueNode, Language, Story, StoryVariable, TextColor } from "../types/schema";
+import type { AnyStoryNode, CustomFieldSchema, DialogueNode, Language, Story, StoryVariable, TextColor, Event } from "../types/schema";
 
 export const useContentStore = defineStore('content', () => {
   
@@ -14,7 +14,8 @@ export const useContentStore = defineStore('content', () => {
   const textColors = ref<TextColor[]>([]);
   const storyVariables = ref<StoryVariable[]>([]);
   const customFields = ref<CustomFieldSchema[]>([]);
+  const events = ref<Event[]>([]);
 
   const unityStreamingAssetsPath = ref<string>('');
-  return { dialogues, stories, storyNodes, languages, textColors, storyVariables, customFields, projectTitle, projectAuthor, unityStreamingAssetsPath }
+  return { dialogues, stories, storyNodes, languages, textColors, storyVariables, customFields, events, projectTitle, projectAuthor, unityStreamingAssetsPath }
 })

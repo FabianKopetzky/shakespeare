@@ -145,6 +145,17 @@ export type CustomFields = {
   data: { name: string, value: number | string | boolean }[]
 }
 
+//* EVENTS
+
+export type EventParam = {
+  name: string,
+  type: DataType
+}
+export type Event = {
+  name: string,
+  params: EventParam[]
+}
+
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened
 
 //* DATA  MODEL

@@ -38,7 +38,8 @@ export function useCompiler() {
             colors: contentStore.textColors,
             languages: contentStore.languages,
             storyVariables: contentStore.storyVariables,
-            customFields: contentStore.customFields
+            customFields: contentStore.customFields,
+            events: contentStore.events
         }
 
         return data;
@@ -47,10 +48,12 @@ export function useCompiler() {
     function compileProjectMain(): any {
         const languages = contentStore.languages.map(l => { return { code: l.code, name: l.display } });
         const variables = contentStore.storyVariables;
+        const events = contentStore.events;
 
         const data = {
             languages: languages,
-            variables: variables
+            variables: variables,
+            events: events
         }
 
         return data;
