@@ -3,6 +3,7 @@ import { ref } from "vue";
 import type { Event } from "../../types/schema.ts";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import EventInput from "./EventInput.vue";
+import { useConditionUtils } from "../../utils/conditionUtils.ts";
 
 interface Props {
   event: Event;
@@ -16,6 +17,8 @@ const emit = defineEmits<{
 const editorOpen = ref<boolean>(false);
 const showDeleteConfirm = ref<boolean>(false);
 
+const { eventToString } = useConditionUtils();
+
 function confirmEdit(event: Event): void {
   emit("edit", event);
 }
@@ -28,9 +31,8 @@ function confirmDelete(): void {
 <template>
   <div class="flex flex-row gap-4 justify-start items-center">
     <p>
-      <span class="font-bold mr-4">{{ props.event.name }}</span>
+      <span class="font-bold mr-4">{{ eventToString(props.event) }}</span>
     </p>
-    <UButton @click="editorOpen = true" icon="material-symbols:edit" />
     <UButton
       @click="showDeleteConfirm = true"
       icon="material-symbols:delete"
@@ -44,7 +46,7 @@ function confirmDelete(): void {
 
   <ConfirmDialog
     v-model:open="showDeleteConfirm"
-    title="Delete story variable"
+    title="Delete event"
     :description="`Are you sure you want to delete '${props.event.name}'? All references in event nodes will be reset. This cannot be undone.`"
     confirm-label="Delete"
     color="error"

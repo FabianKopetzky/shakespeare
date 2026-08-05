@@ -18,6 +18,8 @@ const { events } = useContentStore();
 const eventName = ref<string>("");
 const params = ref<EventParam[]>([]);
 
+const showCreateConfirm = ref<boolean>(false);
+
 const { typeMeta } = useConditionUtils();
 
 const typeOptions = (Object.keys(typeMeta) as DataType[]).map((t) => ({
@@ -188,10 +190,18 @@ function clear() {
         <UButton variant="ghost" color="neutral" @click="open = false">
           Cancel
         </UButton>
-        <UButton @click="submit">{{
+        <UButton @click="showCreateConfirm = true">{{
           props.mode === "Create" ? "Add" : "Update"
         }}</UButton>
       </div>
     </template>
   </UModal>
+  <ConfirmDialog
+    v-model:open="showCreateConfirm"
+    title="Create event"
+    :description="`Are you sure you want to create '${eventName}' with the configured signature? You cannot edit an event schema afterwards.`"
+    confirm-label="Create"
+    color="primary"
+    icon="material-symbols:delete-outline"
+    @confirm="submit" />
 </template>

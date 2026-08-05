@@ -48,12 +48,10 @@ export function useCompiler() {
     function compileProjectMain(): any {
         const languages = contentStore.languages.map(l => { return { code: l.code, name: l.display } });
         const variables = contentStore.storyVariables;
-        const events = contentStore.events;
 
         const data = {
             languages: languages,
-            variables: variables,
-            events: events
+            variables: variables
         }
 
         return data;

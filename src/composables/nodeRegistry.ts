@@ -1,7 +1,7 @@
 import type { AnyStoryNode, StoryNode, BranchNode, ConditionNode, RandomNode, OperationNode, EventNode } from "../types/schema";
 import { useConditionUtils } from "../utils/conditionUtils";
 
-const { conditionToString, operationToString } = useConditionUtils();
+const { conditionToString, operationToString, eventInvokationToString } = useConditionUtils();
 
 export type OutputPin = {
   id: string; // unique per node, used as the vue-flow source handle id
@@ -174,8 +174,10 @@ registerNodeType<EventNode>({
     type: "event",
     position,
     targetId: null,
+    event: null,
+    args: []
   }),
-  getTitle: (node) => "Invokes event",
+  getTitle: (node) => node.event ? eventInvokationToString(node.event, node.args) : 'No event invokation assigned',
   getOutputs: () => [{ id: "out", label: 'On Finish' }],
   getTargetId: (node) => node.targetId,
   setTargetId: (node, _handleId, targetId) => {

@@ -59,6 +59,8 @@ export type OperationNode = StoryNodeBase & {
 
 export type EventNode = StoryNodeBase & {
   type: "event",
+  event: string | null,
+  args: EventArg[]
   targetId: string | null // references another node in the story
 }
 
@@ -154,6 +156,11 @@ export type EventParam = {
 export type Event = {
   name: string,
   params: EventParam[]
+}
+export type EventArg = {
+  name: string,
+  value: number | boolean | string
+  kind: 'literal' | 'variable'
 }
 
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened

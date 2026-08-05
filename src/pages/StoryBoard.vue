@@ -30,6 +30,11 @@
     @onsave="onNodeContentChange"
     :random-node-id="currentRandomNode"
     v-model:is-open="randomNodeEditorOpen" />
+
+  <EventNodeEditor
+    @onsave="onNodeContentChange"
+    :event-node-id="currentEventNode"
+    v-model:is-open="eventNodeEditorOpen" />
 </template>
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
@@ -42,6 +47,7 @@ import BranchNodeEditor from "../components/story/editor/BranchNodeEditor.vue";
 import ConditionNodeEditor from "../components/story/editor/ConditionNodeEditor.vue";
 import OperationNodeEditor from "../components/story/editor/OperationNodeEditor.vue";
 import RandomNodeEditor from "../components/story/editor/RandomNodeEditor.vue";
+import EventNodeEditor from "../components/story/editor/EventNodeEditor.vue";
 
 const route = useRoute();
 const story = ref<Story>(undefined);
@@ -75,6 +81,9 @@ const operationNodeEditorOpen = ref<boolean>(false);
 const currentRandomNode = ref<string>("");
 const randomNodeEditorOpen = ref<boolean>(false);
 
+const currentEventNode = ref<string>("");
+const eventNodeEditorOpen = ref<boolean>(false);
+
 function onOpenNode(node: AnyStoryNode) {
   // reset all var
   resetOpenNodes();
@@ -94,6 +103,9 @@ function onOpenNode(node: AnyStoryNode) {
   } else if (node.type === "random") {
     currentRandomNode.value = node.id;
     randomNodeEditorOpen.value = true;
+  } else if (node.type === "event") {
+    currentEventNode.value = node.id;
+    eventNodeEditorOpen.value = true;
   }
 }
 
@@ -112,6 +124,9 @@ function resetOpenNodes() {
 
   currentRandomNode.value = "";
   randomNodeEditorOpen.value = false;
+
+  currentEventNode.value = "";
+  eventNodeEditorOpen.value = false;
 }
 
 const storyGraphRef = ref<InstanceType<typeof StoryGraph> | null>(null);

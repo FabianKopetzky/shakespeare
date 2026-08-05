@@ -5,7 +5,7 @@ import type { Event } from "../../types/schema.ts";
 import EventItem from "./EventItem.vue";
 import EventInput from "./EventInput.vue";
 
-const { events, dialogues, stories, storyNodes } = useContentStore();
+const { events } = useContentStore();
 const addEventModalOpen = ref<boolean>(false);
 
 function addEvent(event: Event) {

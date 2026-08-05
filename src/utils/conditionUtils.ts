@@ -1,4 +1,4 @@
-import type { Condition, Operation, DataType, CustomFieldModel } from "../types/schema";
+import type { Condition, Operation, DataType, CustomFieldModel, Event, EventArg } from "../types/schema";
 
 export function useConditionUtils() {
   function conditionToString(condition: Condition): string {
@@ -25,6 +25,12 @@ export function useConditionUtils() {
         return '=';
     }
   }
+  function eventToString(event: Event): string {
+    return `${event.name} ${event.params && event.params.length > 0 ? `(${event.params.map(p => p.type).join(', ')})` : ''}`
+  }
+  function eventInvokationToString(event: string, args: EventArg[]): string {
+    return `Invoke ${event}${args && args.length > 0 ? `(${args.map(a => a.value).join(', ')})` : ''}`
+  }
 
   const typeMeta: Record<
     DataType,
@@ -45,5 +51,5 @@ export function useConditionUtils() {
     story: { icon: "i-lucide-toggle-left", color: "success", label: "Story" },
   };
 
-  return { conditionToString, typeMeta, fieldMeta, operationToString };
+  return { conditionToString, typeMeta, fieldMeta, operationToString, eventToString, eventInvokationToString };
 }
