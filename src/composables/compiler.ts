@@ -15,6 +15,10 @@ export function useCompiler() {
         const regex = new RegExp(`<color=${variable}>`, 'g');
         return text.replace(regex, () => `<color=#${color.replace(/^#/, '')}>`);
     }
+    function resolveStoryVariable(text: string, variable: string, value: string | number | boolean): string {
+        const regex = new RegExp(`\\{\\{\\s*${variable}\\s*\\}\\}`, 'g');
+        return text.replace(regex, String(value));
+    }
     function compileCustomFields(fields: CustomFields): any {
         if(!fields.data || fields.data.length <= 0) return null;
         const entries = fields.data.map(field => {
@@ -146,6 +150,7 @@ export function useCompiler() {
 
     return {
         resolveColorVariable,
+        resolveStoryVariable,
         getProjectData,
         compileStories,
         compileProjectMain
