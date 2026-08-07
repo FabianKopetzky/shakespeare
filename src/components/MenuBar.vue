@@ -9,6 +9,8 @@ import {
   type ProjectFileEntry,
   useProjectHandler,
 } from "../composables/projectHandler.ts";
+import ExportTranslationsDialog from "./forms/ExportTranslationsDialog.vue";
+import ImportTranslationsDialog from "./forms/ImportTranslationsDialog.vue";
 
 const app = useAppStore();
 const { projectLoaded, isNativeApp } = storeToRefs(useAppStore());
@@ -63,8 +65,14 @@ const fileItems = computed(() => [
 
 const languageItems = computed(() => [
   [
-    { label: "Import translation map", onSelect: () => console.log("test") },
-    { label: "Export translation map", onSelect: () => console.log("test") },
+    {
+      label: "Import translation map",
+      onSelect: () => (importTranslationsOpen.value = true),
+    },
+    {
+      label: "Export translation map",
+      onSelect: () => (exportTranslationsOpen.value = true),
+    },
   ],
 ]);
 
@@ -131,6 +139,8 @@ function close() {
 
 const createDialogueOpen = ref<boolean>(false);
 const importDialogueOpen = ref<boolean>(false);
+const exportTranslationsOpen = ref<boolean>(false);
+const importTranslationsOpen = ref<boolean>(false);
 
 onMounted(() => {
   regenerateProjectList();
@@ -190,4 +200,6 @@ onMounted(() => {
   </div>
   <CreateFileDialog v-model:open="createDialogueOpen" />
   <ImportFileDialog v-model:open="importDialogueOpen" />
+  <ExportTranslationsDialog v-model:open="exportTranslationsOpen" />
+  <ImportTranslationsDialog v-model:open="importTranslationsOpen" />
 </template>

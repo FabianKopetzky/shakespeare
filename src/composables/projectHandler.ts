@@ -150,7 +150,7 @@ export function useProjectHandler() {
     }
 
     //* PROJECT HANDLING
-    function downloadFile(content: string, type: 'application/json', fileName: string): void {
+    function downloadFile(content: string, type: 'application/json' | 'text/csv', fileName: string): void {
         const blob = new Blob([content], { type: type });
         const url = URL.createObjectURL(blob);
 
@@ -341,6 +341,7 @@ export function useProjectHandler() {
         downloadCompiledProject,
         downloadCompiledStories,
         buildProject,
-        buildStories
+        buildStories,
+        downloadFile
     }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useProjectHandler } from "../../composables/projectHandler";
 import { useWidget } from "../../composables/widget";
 import { useRouter } from "vue-router";
@@ -11,6 +11,13 @@ const { createProject } = useProjectHandler();
 
 const title = ref<string>("");
 const author = ref<string>("");
+
+watch(open, (isOpen) => {
+  if (isOpen) {
+    author.value = "";
+    title.value = ";";
+  }
+});
 
 const { displayError, displaySuccess } = useWidget();
 
