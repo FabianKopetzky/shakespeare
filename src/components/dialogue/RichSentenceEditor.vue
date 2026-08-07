@@ -189,6 +189,15 @@ function onKeydown(e: KeyboardEvent) {
     closeAutocomplete();
   }
 }
+
+function onKeyup(e: KeyboardEvent) {
+  // these are fully handled on keydown; don't let updateAutocomplete
+  // stomp on activeIndex right after we just set it
+  if (["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(e.key)) {
+    return;
+  }
+  updateAutocomplete();
+}
 </script>
 
 <template>
@@ -256,16 +265,16 @@ function onKeydown(e: KeyboardEvent) {
         :value="modelValue"
         :placeholder="placeholder"
         rows="3"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md outline-none leading-relaxed resize-y focus:border-blue-500"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md outline-none leading-relaxed resize-y"
         @input="onInput"
         @keydown="onKeydown"
-        @keyup="updateAutocomplete"
+        @keyup="onKeyup"
         @click="updateAutocomplete"
         @blur="closeAutocomplete" />
 
       <div
         v-if="autocomplete.visible"
-        class="absolute z-50 min-w-48 max-h-48 overflow-y-auto bg-black border border-gray-300 rounded-md shadow-lg p-1"
+        class="absolute z-50 min-w-48 max-h-48 overflow-y-auto bg-slate-800 border border-gray-300 rounded-md shadow-lg p-1"
         :style="{
           top: `${autocomplete.top}px`,
           left: `${autocomplete.left}px`,
@@ -274,11 +283,11 @@ function onKeydown(e: KeyboardEvent) {
           v-for="(item, index) in autocomplete.items"
           :key="item.name"
           type="button"
-          class="flex justify-between gap-2 w-full px-2 py-1 rounded text-left hover:bg-blue-500/10"
-          :class="{ 'bg-blue-500/10': index === autocomplete.activeIndex }"
+          class="flex justify-between gap-2 w-full px-2 py-1 rounded text-left hover:bg-neutral-500/10"
+          :class="{ 'bg-neutral-500/30': index === autocomplete.activeIndex }"
           @mousedown.prevent="acceptAutocomplete(index)">
           <span class="text-xs">{{ item.name }}</span>
-          <span class="text-xs opacity-60">{{ item.name }}</span>
+          <span class="text-xs opacity-60">{{ item.type }}</span>
         </button>
       </div>
 

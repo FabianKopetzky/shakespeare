@@ -61,6 +61,13 @@ const fileItems = computed(() => [
   [{ label: "Quit", onSelect: () => appWindow?.close() }],
 ]);
 
+const languageItems = computed(() => [
+  [
+    { label: "Import translation map", onSelect: () => console.log("test") },
+    { label: "Export translation map", onSelect: () => console.log("test") },
+  ],
+]);
+
 const compileItems = [
   [
     { label: "Download Project", onSelect: () => exportProject() },
@@ -99,6 +106,10 @@ const menus = computed(() => [
   {
     title: "File",
     items: fileItems.value,
+  },
+  {
+    title: "Translations",
+    items: languageItems.value,
   },
   {
     title: "Export",

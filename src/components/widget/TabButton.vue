@@ -10,7 +10,7 @@
     }">
     <UButton
       @click="router.push(props.link)"
-      color="primary"
+      color="neutral"
       variant="ghost"
       class="w-full h-auto aspect-square flex items-center justify-center rounded-none">
       <UIcon :name="props.icon" class="size-9" />

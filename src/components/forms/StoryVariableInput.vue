@@ -66,10 +66,8 @@ function submit() {
     displayError("Variable name cannot be empty");
     return;
   }
-  if (!/^[A-Za-z0-9_]+$/.test(variableName.value)) {
-    displayError(
-      "Only alphanumeric values and '_' are allowed a variable name",
-    );
+  if (!/^[A-Za-z0-9]+$/.test(variableName.value)) {
+    displayError("Only alphanumeric values are allowed in a variable name");
     return;
   }
   if (!variableType.value || variableType.value.length <= 0) {

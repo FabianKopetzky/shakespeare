@@ -8,7 +8,7 @@
       >
     </div>
     <USeparator class="h-6" orientation="horizontal" />
-    <UTabs :items="sections">
+    <UTabs color="neutral" :items="sections">
       <template #model>
         <CustomFieldEditor />
       </template>
