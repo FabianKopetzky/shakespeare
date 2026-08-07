@@ -4,24 +4,34 @@ import { useContentStore } from "../../stores/content.ts";
 import type { Event } from "../../types/schema.ts";
 import EventItem from "./EventItem.vue";
 import EventInput from "./EventInput.vue";
+import { storeToRefs } from "pinia";
 
-const { events } = useContentStore();
+const { events, storyNodes } = storeToRefs(useContentStore());
 const addEventModalOpen = ref<boolean>(false);
 
 function addEvent(event: Event) {
-  events.push(event);
+  events.value.push(event);
 }
 function editEvent(event: Event) {
-  const idx = events.findIndex((e) => e.name == event.name);
-  if (idx >= 0 && idx < events.length) {
-    events[idx] = event;
+  const idx = events.value.findIndex((e) => e.name == event.name);
+  if (idx >= 0 && idx < events.value.length) {
+    events.value[idx] = event;
   }
 }
 function deleteEvent(name: string) {
-  const idx = events.findIndex((e) => e.name == name);
+  const idx = events.value.findIndex((e) => e.name == name);
   if (idx < 0) return;
 
-  events.splice(idx, 1);
+  for (const node of Object.keys(storyNodes.value)) {
+    if (
+      storyNodes.value[node].type === "event" &&
+      storyNodes.value[node].event === name
+    ) {
+      storyNodes.value[node].event = null;
+      storyNodes.value[node].args = [];
+    }
+  }
+  events.value.splice(idx, 1);
 }
 </script>
 

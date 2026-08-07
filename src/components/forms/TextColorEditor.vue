@@ -4,24 +4,54 @@ import { useContentStore } from "../../stores/content";
 import type { TextColor } from "../../types/schema";
 import TextColorInput from "./TextColorInput.vue";
 import TextColorItem from "./TextColorItem.vue";
+import { storeToRefs } from "pinia";
+import { useCompiler } from "../../composables/compiler.ts";
 
-const { textColors } = useContentStore();
+const { dialogues, storyNodes, textColors } = storeToRefs(useContentStore());
+const { resolveColorVariable } = useCompiler();
 const addTextColorModalOpen = ref<boolean>(false);
 
 function addNewColor(color: TextColor) {
-  textColors.push(color);
+  textColors.value.push(color);
 }
 function editColor(color: TextColor) {
-  const idx = textColors.findIndex((c) => c.name == color.name);
-  if (idx >= 0 && idx < textColors.length) {
-    textColors[idx] = color;
+  const idx = textColors.value.findIndex((c) => c.name == color.name);
+  if (idx >= 0 && idx < textColors.value.length) {
+    textColors.value[idx] = color;
   }
 }
 function deleteColor(name: string) {
-  const idx = textColors.findIndex((c) => c.name == name);
-  if (idx >= 0) {
-    textColors.splice(idx, 1);
+  const idx = textColors.value.findIndex((c) => c.name == name);
+  if (idx < 0) return;
+
+  // clean up
+  for (const dialogue of dialogues.value) {
+    for (const sentence of dialogue?.sentences ?? []) {
+      for (const key of Object.keys(sentence.translations)) {
+        sentence.translations[key] = resolveColorVariable(
+          sentence.translations[key],
+          textColors.value[idx].name,
+          textColors.value[idx].hex,
+        );
+      }
+    }
   }
+
+  for (const node of Object.keys(storyNodes.value)) {
+    if (storyNodes.value[node].type === "branch") {
+      for (const branch of storyNodes.value[node].branches) {
+        for (const key of Object.keys(branch.labels)) {
+          branch.labels[key] = resolveColorVariable(
+            branch.labels[key],
+            textColors.value[idx].name,
+            textColors.value[idx].hex,
+          );
+        }
+      }
+    }
+  }
+
+  textColors.value.splice(idx, 1);
 }
 </script>
 

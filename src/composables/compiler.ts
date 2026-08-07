@@ -11,6 +11,10 @@ export function useCompiler() {
             return colorEntry ? `<color=#${colorEntry.hex.replace(/^#/, '')}>` : match;
         });
     }
+    function resolveColorVariable(text: string, variable: string, color: string): string {
+        const regex = new RegExp(`<color=${variable}>`, 'g');
+        return text.replace(regex, () => `<color=#${color.replace(/^#/, '')}>`);
+    }
     function compileCustomFields(fields: CustomFields): any {
         if(!fields.data || fields.data.length <= 0) return null;
         const entries = fields.data.map(field => {
@@ -141,6 +145,7 @@ export function useCompiler() {
 
 
     return {
+        resolveColorVariable,
         getProjectData,
         compileStories,
         compileProjectMain

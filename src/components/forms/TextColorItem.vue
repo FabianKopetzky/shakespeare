@@ -49,7 +49,7 @@ function confirmDelete(): void {
   <ConfirmDialog
     v-model:open="showDeleteConfirm"
     title="Delete text color"
-    :description="`Are you sure you want to delete '${props.color.name}'? This cannot be undone.`"
+    :description="`Are you sure you want to delete '${props.color.name}'? All references of this color will be replaced by the hex value. This cannot be undone.`"
     confirm-label="Delete"
     color="error"
     icon="material-symbols:delete-outline"
