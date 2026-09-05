@@ -56,24 +56,34 @@ function deleteColor(name: string) {
 </script>
 
 <template>
-  <h2>Text Colors</h2>
-
-  <template v-if="textColors.length > 0">
-    <div v-for="color in textColors" :key="color.name">
-      <TextColorItem @edit="editColor" @delete="deleteColor" :color="color" />
+  <div>
+    <div class="flex flex-row justify-between mb-12">
+      <h2>Text Colors</h2>
+      <UButton
+        icon="material-symbols:add-box-sharp"
+        @click="addTextColorModalOpen = true"
+        >New Text Color</UButton
+      >
     </div>
-  </template>
-  <template v-else>
-    <p>There are no text colors defined...</p>
-  </template>
 
-  <USeparator class="my-8" />
+    <template v-if="textColors.length > 0">
+      <div class="flex flex-col gap-2">
+        <div v-for="color in textColors" :key="color.name">
+          <TextColorItem
+            @edit="editColor"
+            @delete="deleteColor"
+            :color="color" />
+        </div>
+      </div>
+    </template>
+    <template v-else>
+      <p>There are no text colors defined...</p>
+    </template>
 
-  <UButton @click="addTextColorModalOpen = true">Create new</UButton>
-
-  <TextColorInput
-    v-model:open="addTextColorModalOpen"
-    @submit="addNewColor"
-    :color="undefined"
-    mode="Create" />
+    <TextColorInput
+      v-model:open="addTextColorModalOpen"
+      @submit="addNewColor"
+      :color="undefined"
+      mode="Create" />
+  </div>
 </template>

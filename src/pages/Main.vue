@@ -25,6 +25,11 @@ const showCreateNewDialogue = ref<boolean>(false);
         >Open Project</UButton
       >
     </div>
+
+    <!-- <div class="w-10 h-10 bg-muted border-2" />
+    <div class="w-10 h-10 bg-muted border-muted border-2" />
+    <div class="w-10 h-10 bg-muted border-accented border-2" />
+    <div class="w-10 h-10 bg-muted border-inverted border-2" /> -->
   </div>
 
   <ImportFileDialog v-model:open="showImportDialogue" />

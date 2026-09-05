@@ -94,27 +94,29 @@ function deleteVariable(name: string) {
 </script>
 
 <template>
-  <h2>Story Variables</h2>
+  <div>
+    <h2>Story Variables</h2>
 
-  <template v-if="storyVariables.length > 0">
-    <div v-for="variable in storyVariables" :key="variable.name">
-      <StoryVariableItem
-        @edit="editVariable"
-        @delete="deleteVariable"
-        :variable="variable" />
-    </div>
-  </template>
-  <template v-else>
-    <p>There are no story variables defined...</p>
-  </template>
+    <template v-if="storyVariables.length > 0">
+      <div v-for="variable in storyVariables" :key="variable.name">
+        <StoryVariableItem
+          @edit="editVariable"
+          @delete="deleteVariable"
+          :variable="variable" />
+      </div>
+    </template>
+    <template v-else>
+      <p>There are no story variables defined...</p>
+    </template>
 
-  <USeparator class="my-8" />
+    <USeparator class="my-8" />
 
-  <UButton @click="addStoryVariableModalOpen = true">Create new</UButton>
+    <UButton @click="addStoryVariableModalOpen = true">Create new</UButton>
 
-  <StoryVariableInput
-    v-model:open="addStoryVariableModalOpen"
-    @submit="addNewVariable"
-    :variable="undefined"
-    mode="Create" />
+    <StoryVariableInput
+      v-model:open="addStoryVariableModalOpen"
+      @submit="addNewVariable"
+      :variable="undefined"
+      mode="Create" />
+  </div>
 </template>

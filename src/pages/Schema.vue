@@ -1,14 +1,14 @@
 <template>
-  <div>
+  <div class="h-full">
     <div class="flex flex-row justify-between">
       <h1>Schema</h1>
-      <span class="self-end"
+      <!-- <span class="self-end"
         >Allows you define custom data entries and extend dialogue and story
         models.</span
-      >
+      > -->
     </div>
     <USeparator class="h-6" orientation="horizontal" />
-    <UTabs color="neutral" :items="sections">
+    <UTabs :items="sections">
       <template #model>
         <CustomFieldEditor />
       </template>
@@ -19,8 +19,11 @@
         <LanguageEditor />
       </template>
       <template #variables>
-        <StoryVariableEditor />
-        <TextColorEditor />
+        <div class="flex flex-row h-full gap-12 mt-8">
+          <StoryVariableEditor class="flex-3" />
+          <div class="bg-accented w-0.5"></div>
+          <TextColorEditor class="flex-2" />
+        </div>
       </template>
     </UTabs>
   </div>

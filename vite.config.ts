@@ -21,6 +21,32 @@ export default defineConfig({
                 }
               }
             }
+          },
+          tooltip: {
+            slots: {
+             content: 'h-9 px-4 py-2 text-base text-default border-none bg-muted! rounded-none',
+             arrow: 'scale-150 fill-(--ui-bg-muted)'
+            }
+          },
+          input: {
+            slots: {
+              base: [
+                'rounded-none! border-none! border-0! bg-muted!'
+              ]
+            }
+          },
+          modal: {
+            slots: {
+              content: 'rounded-none! border-none!',
+              title: 'text-default!'
+            }
+          },
+          fileUpload: {
+            slots: {
+              base: [
+                'rounded-none! border-none! border-0! bg-muted! hover:bg-elevated! hover:cursor-pointer!'
+              ]
+            }
           }
         }
       }
