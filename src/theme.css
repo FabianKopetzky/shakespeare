@@ -64,31 +64,23 @@
     font-weight: var(--body-weight);
     line-height: var(--body-line-height);
     letter-spacing: var(--body-letter-spacing);
-
-    color: var(--ui-text);
   }
   span {
     font-size: var(--body-size);
     line-height: var(--body-line-height);
     letter-spacing: var(--body-letter-spacing);
-
-    color: var(--ui-text);
   }
   code {
     font-size: var(--body-size);
     line-height: var(--body-line-height);
     letter-spacing: var(--body-letter-spacing);
     font-family: var(--font-mono);
-
-    color: var(--ui-text);
   }
   strong {
     font-size: var(--body-size);
     font-weight: var(700);
     line-height: var(--body-line-height);
     letter-spacing: var(--body-letter-spacing);
-
-    color: var(--ui-text);
   }
   @theme {
     --font-sans: "Google Sans Flex", system-ui, sans-serif;
@@ -96,42 +88,42 @@
     --font-mono: "Google Sans Code", monospace;
 
     /* Type Scale */
-    --display-lg-size: clamp(1.959rem, calc(1.577rem + 1.909vw), 3.008rem);
+    --display-lg-size: clamp(2.155rem, calc(1.735rem + 2.1vw), 3.309rem);
     --display-lg-weight: 800;
     --display-lg-line-height: 1.47;
     --display-lg-letter-spacing: 0.015em;
 
-    --display-md-size: clamp(1.801rem, calc(1.502rem + 1.492vw), 2.622rem);
+    --display-md-size: clamp(1.981rem, calc(1.652rem + 1.641vw), 2.884rem);
     --display-md-weight: 800;
     --display-md-line-height: 1.47;
     --display-md-letter-spacing: 0.015em;
 
-    --h1-size: clamp(1.656rem, calc(1.427rem + 1.143vw), 2.284rem);
+    --h1-size: clamp(1.822rem, calc(1.57rem + 1.257vw), 2.512rem);
     --h1-weight: 700;
     --h1-line-height: 1.47;
     --h1-letter-spacing: 0.02em;
 
-    --h2-size: clamp(1.399rem, calc(1.278rem + 0.609vw), 1.734rem);
+    --h2-size: clamp(1.539rem, calc(1.406rem + 0.67vw), 1.907rem);
     --h2-weight: 600;
     --h2-line-height: 1.47;
     --h2-letter-spacing: 0.02em;
 
-    --h3-size: clamp(1.287rem, calc(1.205rem + 0.409vw), 1.511rem);
+    --h3-size: clamp(1.416rem, calc(1.326rem + 0.45vw), 1.662rem);
     --h3-weight: 600;
     --h3-line-height: 1.52;
     --h3-letter-spacing: 0.025em;
 
-    --h4-size: clamp(1.183rem, calc(1.134rem + 0.244vw), 1.317rem);
+    --h4-size: clamp(1.301rem, calc(1.247rem + 0.268vw), 1.449rem);
     --h4-weight: 500;
     --h4-line-height: 1.52;
     --h4-letter-spacing: 0.025em;
 
-    --h5-size: clamp(1.134rem, calc(1.1rem + 0.173vw), 1.229rem);
+    --h5-size: clamp(1.247rem, calc(1.21rem + 0.19vw), 1.352rem);
     --h5-weight: 500;
     --h5-line-height: 1.52;
     --h5-letter-spacing: 0.03em;
 
-    --h6-size: clamp(1.088rem, calc(1.066rem + 0.109vw), 1.148rem);
+    --h6-size: clamp(1.197rem, calc(1.173rem + 0.12vw), 1.263rem);
     --h6-weight: 500;
     --h6-line-height: 1.52;
     --h6-letter-spacing: 0.03em;

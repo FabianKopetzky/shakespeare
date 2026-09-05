@@ -3,6 +3,7 @@ import { ref } from "vue";
 import type { StoryVariable } from "../../types/schema.ts";
 import ConfirmDialog from "./ConfirmDialog.vue";
 import StoryVariableInput from "./StoryVariableInput.vue";
+import { useConditionUtils } from "../../utils/conditionUtils.ts";
 
 interface Props {
   variable: StoryVariable;
@@ -16,6 +17,8 @@ const emit = defineEmits<{
 const editorOpen = ref<boolean>(false);
 const showDeleteConfirm = ref<boolean>(false);
 
+const { typeMeta } = useConditionUtils();
+
 function confirmEdit(variable: StoryVariable): void {
   emit("edit", variable);
 }
@@ -26,16 +29,36 @@ function confirmDelete(): void {
 </script>
 
 <template>
-  <div class="flex flex-row gap-4 justify-start items-center">
-    <p>
-      <span class="font-bold mr-4">{{ props.variable.name }}</span
-      >({{ props.variable.type }}, default: {{ props.variable.defaultValue }})
-    </p>
-    <UButton @click="editorOpen = true" icon="material-symbols:edit" />
-    <UButton
-      @click="showDeleteConfirm = true"
-      icon="material-symbols:delete"
-      color="error" />
+  <div class="flex flex-row gap-4 h-10 justify-start items-center bg-elevated">
+    <div class="flex flex-row gap-4 h-full w-full items-center justify-between">
+      <div class="flex flex-row gap-2 items-center justify-start ml-2">
+        <UIcon
+          class="h-6 w-auto aspect-square"
+          :name="typeMeta[props.variable.type].icon" />
+        <span class="font-semibold">{{ props.variable.name }}</span>
+        <code class="ml-4 text-dimmed">{{ props.variable.type }}</code>
+        <span class="ml-4 text-dimmed"
+          >{{ props.variable.defaultValue }}
+          <span class="text-xs opacity-45">(default)</span></span
+        >
+      </div>
+      <div class="flex flex-row">
+        <UButton
+          @click="editorOpen = true"
+          variant="ghost"
+          color="secondary"
+          class="aspect-square h-10 w-auto"
+          :ui="{ base: 'flex items-center justify-center' }"
+          icon="material-symbols:edit-sharp" />
+        <UButton
+          @click="showDeleteConfirm = true"
+          variant="ghost"
+          icon="material-symbols:delete-outline-sharp"
+          class="aspect-square h-10 w-auto"
+          :ui="{ base: 'flex items-center justify-center' }"
+          color="secondary" />
+      </div>
+    </div>
   </div>
   <StoryVariableInput
     v-model:open="editorOpen"

@@ -36,24 +36,38 @@ function deleteEvent(name: string) {
 </script>
 
 <template>
-  <h2>Events</h2>
-
-  <template v-if="events.length > 0">
-    <div v-for="event in events" :key="event.name">
-      <EventItem @edit="editEvent" @delete="deleteEvent" :event="event" />
+  <div>
+    <div class="flex flex-col sm:flex-row gap-2 justify-between mb-12">
+      <div
+        class="flex flex-row gap-2 items-center justify-between sm:justify-start">
+        <h2>Events</h2>
+        <Help
+          title="Events"
+          messageHtml='<p>Text color variables are used to define colors that can color text within dialogues. You can use them to highlight special words within your text, such as <span class="text-primary">danger, hints</span> or <span class="text-primary">quest-relevant info</span>. Changing the color of the variable will also update all texts this variable was used for.<br><br>When compiling the stories, the actual color value will be baked into the text. If you want to reference the defined color variables in Unity, you can enable the setting <span class="text-primary">"Compile color variables"</span> in the settings to compile the defined text colors into the main file of the project.</p>' />
+      </div>
+      <UButton
+        icon="material-symbols:add-box-sharp"
+        @click="addEventModalOpen = true"
+        >New Event</UButton
+      >
     </div>
-  </template>
-  <template v-else>
-    <p>There are no events defined...</p>
-  </template>
 
-  <USeparator class="my-8" />
+    <template v-if="events.length > 0">
+      <div v-for="event in events" :key="event.name">
+        <EventItem @edit="editEvent" @delete="deleteEvent" :event="event" />
+      </div>
+    </template>
+    <template v-else>
+      <div class="flex flex-col items-center justify-center text-muted">
+        <UIcon name="mingcute:empty-box-fill" class="w-12 h-12" />
+        <span>No events defined</span>
+      </div>
+    </template>
 
-  <UButton @click="addEventModalOpen = true">Create new</UButton>
-
-  <EventInput
-    v-model:open="addEventModalOpen"
-    @submit="addEvent"
-    :event="undefined"
-    mode="Create" />
+    <EventInput
+      v-model:open="addEventModalOpen"
+      @submit="addEvent"
+      :event="undefined"
+      mode="Create" />
+  </div>
 </template>

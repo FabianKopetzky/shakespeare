@@ -6,6 +6,7 @@ import TextColorInput from "./TextColorInput.vue";
 import TextColorItem from "./TextColorItem.vue";
 import { storeToRefs } from "pinia";
 import { useCompiler } from "../../composables/compiler.ts";
+import Help from "../widget/Help.vue";
 
 const { dialogues, storyNodes, textColors } = storeToRefs(useContentStore());
 const { resolveColorVariable } = useCompiler();
@@ -57,12 +58,18 @@ function deleteColor(name: string) {
 
 <template>
   <div>
-    <div class="flex flex-row justify-between mb-12">
-      <h2>Text Colors</h2>
+    <div class="flex flex-col lg:flex-row gap-2 justify-between mb-12">
+      <div
+        class="flex flex-row gap-2 items-center justify-between lg:justify-start">
+        <h2>Text Colors</h2>
+        <Help
+          title="Text Colors"
+          messageHtml='<p>Text color variables are used to define colors that can color text within dialogues. You can use them to highlight special words within your text, such as <span class="text-primary">danger, hints</span> or <span class="text-primary">quest-relevant info</span>. Changing the color of the variable will also update all texts this variable was used for.<br><br>When compiling the stories, the actual color value will be baked into the text. If you want to reference the defined color variables in Unity, you can enable the setting <span class="text-primary">"Compile color variables"</span> in the settings to compile the defined text colors into the main file of the project.</p>' />
+      </div>
       <UButton
         icon="material-symbols:add-box-sharp"
         @click="addTextColorModalOpen = true"
-        >New Text Color</UButton
+        >New Color</UButton
       >
     </div>
 
@@ -77,7 +84,10 @@ function deleteColor(name: string) {
       </div>
     </template>
     <template v-else>
-      <p>There are no text colors defined...</p>
+      <div class="flex flex-col items-center justify-center text-muted">
+        <UIcon name="mingcute:empty-box-fill" class="w-12 h-12" />
+        <span>No text colors defined</span>
+      </div>
     </template>
 
     <TextColorInput

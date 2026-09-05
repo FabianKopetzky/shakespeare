@@ -135,7 +135,9 @@ function clear() {
 
         <div class="flex flex-col gap-2 w-full">
           <div class="flex flex-row justify-between items-center w-full">
-            <span class="text-sm font-medium">Parameters</span>
+            <span v-if="params.length > 0" class="text-sm font-medium"
+              >Parameters</span
+            >
             <UButton
               variant="ghost"
               color="neutral"
@@ -144,12 +146,6 @@ function clear() {
               @click="addParam">
               Add parameter
             </UButton>
-          </div>
-
-          <div
-            v-if="params.length === 0"
-            class="text-sm text-muted italic py-2">
-            No parameters defined for this event.
           </div>
 
           <div
@@ -176,8 +172,8 @@ function clear() {
 
             <UButton
               variant="ghost"
-              color="error"
-              icon="i-lucide-trash-2"
+              color="secondary"
+              icon="material-symbols:delete-outline-sharp"
               class="self-end"
               :class="index === 0 ? 'mt-1' : undefined"
               @click="removeParam(index)" />
@@ -198,7 +194,7 @@ function clear() {
   </UModal>
   <ConfirmDialog
     v-model:open="showCreateConfirm"
-    title="Create event"
+    title="Create event?"
     :description="`Are you sure you want to create '${eventName}' with the configured signature? You cannot edit an event schema afterwards.`"
     confirm-label="Create"
     color="primary"

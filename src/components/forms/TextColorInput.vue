@@ -108,7 +108,7 @@ function clear() {
               <UButton
                 variant="outline"
                 color="neutral"
-                class="w-8 h-8 p-0 rounded-full"
+                class="w-8 h-8 p-0"
                 :style="{
                   backgroundColor: HEX_PATTERN.test(colorHex)
                     ? colorHex

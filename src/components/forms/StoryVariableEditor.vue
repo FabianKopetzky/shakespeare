@@ -95,23 +95,37 @@ function deleteVariable(name: string) {
 
 <template>
   <div>
-    <h2>Story Variables</h2>
+    <div class="flex flex-col lg:flex-row gap-2 justify-between mb-12">
+      <div
+        class="flex flex-row gap-2 items-center justify-between lg:justify-start">
+        <h2>Story Variables</h2>
+        <Help
+          title="Story Variables"
+          messageHtml='<p>Story variables hold the state of your project and stories globally. They are used for <span class="text-primary">templating</span> in your dialogue sentences and are responsible for <span class="text-primary">logic</span> in your stories.<span class="text-primary">Branches, Conditions</span> and <span class="text-primary">story nodes</span> use story variables to execute logic.<br><br>Story variables can be mutated in the Shakespeare editor using <span class="text-primary">Operation nodes</span>.<br><br>Story variables can also be read and mutated inside of Unity. Use the <span class="text-primary">GetVariable&lt;T&gt;</span> and <span class="text-primary">SetVariable&lt;T&gt;</span> methods of your <span class="text-primary">ShakespeareCore</span> instance to access variables at runtime.</p>' />
+      </div>
+      <UButton
+        icon="material-symbols:add-box-sharp"
+        @click="addStoryVariableModalOpen = true"
+        >New Variable</UButton
+      >
+    </div>
 
     <template v-if="storyVariables.length > 0">
-      <div v-for="variable in storyVariables" :key="variable.name">
-        <StoryVariableItem
-          @edit="editVariable"
-          @delete="deleteVariable"
-          :variable="variable" />
+      <div class="flex flex-col gap-2">
+        <div v-for="variable in storyVariables" :key="variable.name">
+          <StoryVariableItem
+            @edit="editVariable"
+            @delete="deleteVariable"
+            :variable="variable" />
+        </div>
       </div>
     </template>
     <template v-else>
-      <p>There are no story variables defined...</p>
+      <div class="flex flex-col items-center justify-center text-muted">
+        <UIcon name="mingcute:empty-box-fill" class="w-12 h-12" />
+        <span>No story variables defined</span>
+      </div>
     </template>
-
-    <USeparator class="my-8" />
-
-    <UButton @click="addStoryVariableModalOpen = true">Create new</UButton>
 
     <StoryVariableInput
       v-model:open="addStoryVariableModalOpen"

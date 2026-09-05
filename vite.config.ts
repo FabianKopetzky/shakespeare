@@ -32,13 +32,36 @@ export default defineConfig({
             slots: {
               base: [
                 'rounded-none! border-none! border-0! bg-muted!'
+              ],
+            },
+          },
+          select: {
+            slots: {
+              base: [
+                'rounded-none! border-none! border-0! bg-muted! hover:cursor-pointer!'
+              ],
+              content: 'bg-muted! rounded-none!',
+              item: [
+                'before:rounded-none hover:cursor-pointer!'
+              ]
+            }
+          },
+          selectMenu: {
+            slots: {
+              base: [
+                'rounded-none! border-none! border-0! bg-muted! hover:cursor-pointer!'
+              ],
+              content: 'bg-muted! rounded-none!',
+              item: [
+                'before:rounded-none hover:cursor-pointer!'
               ]
             }
           },
           modal: {
             slots: {
               content: 'rounded-none! border-none!',
-              title: 'text-default!'
+              title: 'text-default!',
+              overlay: 'bg-black/60!'
             }
           },
           fileUpload: {
@@ -46,6 +69,38 @@ export default defineConfig({
               base: [
                 'rounded-none! border-none! border-0! bg-muted! hover:bg-elevated! hover:cursor-pointer!'
               ]
+            }
+          },
+          tabs: {
+              slots: {
+                root: 'rounded-none!',
+                list: 'rounded-none! hover:cursor-pointer!',
+                indicator: 'rounded-none!'
+              }
+          },
+          progress: {
+            slots: {
+              base: 'rounded-none!',
+              indicator: 'rounded-none!'
+            }
+          },
+          toast: {
+            slots: {
+              root: 'rounded-none!',
+              wrapper: 'rounded-none!',
+              progress: 'rounded-none! p-0'
+            }
+          },
+          colorPicker: {
+            slots: {
+              selectorBackground: 'rounded-none!',
+              selector: 'rounded-none!',
+              track: 'rounded-none!'
+            }
+          },
+          popover: {
+            slots: {
+              content: 'rounded-none!'
             }
           }
         }
