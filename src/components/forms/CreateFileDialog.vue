@@ -15,7 +15,7 @@ const author = ref<string>("");
 watch(open, (isOpen) => {
   if (isOpen) {
     author.value = "";
-    title.value = ";";
+    title.value = "";
   }
 });
 

@@ -65,8 +65,8 @@
     letter-spacing: var(--body-letter-spacing);
   }
   @theme {
-    --font-sans: system-ui, sans-serif;
-    --font-serif: "Kameron", system-ui, sans-serif;
+    --font-sans: "Cal Sans", system-ui, sans-serif;
+    --font-serif: "Alegreya SC", system-ui, sans-serif;
     --font-mono: monospace;
 
     /* Type Scale */
@@ -147,29 +147,41 @@
   }
 }
 :root {
-  --ui-bg: var(--color-slate-800);
-  --ui-bg-muted: var(--color-slate-700);
-  --ui-bg-elevated: var(--color-slate-600);
-  --ui-bg-accented: var(--color-slate-500);
-  --ui-bg-inverted: var(--color-slate-400);
+  --color-english-walnut-50: #f5f3f1;
+  --color-english-walnut-100: #e7e2da;
+  --color-english-walnut-200: #d1c6b7;
+  --color-english-walnut-300: #b6a48e;
+  --color-english-walnut-400: #a0886f;
+  --color-english-walnut-500: #917861;
+  --color-english-walnut-600: #7c6252;
+  --color-english-walnut-700: #654d43;
+  --color-english-walnut-800: #56433d;
+  --color-english-walnut-900: #3b2e2b;
+  --color-english-walnut-950: #2a201e;
 
-  --ui-text-dimmed: var(--color-slate-50);
-  --ui-text-muted: var(--color-slate-100);
-  --ui-text-toned: var(--color-slate-200);
-  --ui-text: var(--color-white);
-  --ui-text-highlighted: white;
-  --ui-text-inverted: var(--color-black);
+  --ui-bg: #1b1815;
+  --ui-bg-muted: #151310;
+  --ui-bg-elevated: #292521;
+  --ui-bg-accented: #453d34;
+  --ui-bg-inverted: #ffe3c7;
+
+  --ui-text-dimmed: #827969;
+  --ui-text-muted: #655e52;
+  --ui-text-toned: #dbba7a;
+  --ui-text: #dbceb5;
+  --ui-text-highlighted: #fff7e8;
+  --ui-text-inverted: #231f1d;
 
   --ui-border: var(--color-slate-200);
   --ui-border-muted: var(--color-slate-300);
   --ui-border-accented: var(--color-slate-400);
   --ui-border-inverted: white;
 
-  --ui-primary: var(--color-green-400);
-  --ui-secondary: var(--color-green-500);
-  --ui-success: var(--color-green-300);
-  --ui-info: #c485d7;
-  --ui-warning: #e8da38;
-  --ui-error: #d0406e;
-  --ui-neutral: #7f65bc;
+  --ui-primary: #d7934a;
+  --ui-secondary: #bdaa7d;
+  --ui-success: #9adb79;
+  --ui-info: #dbceb5;
+  --ui-warning: #d6c253;
+  --ui-error: #db6666;
+  --ui-neutral: #796b5e;
 }

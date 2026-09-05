@@ -11,8 +11,15 @@ export default defineConfig({
           button: {
             slots: {
               base: [
-                'cursor-pointer!'
+                'cursor-pointer! rounded-none! px-4! py-2! text-base!'
               ]
+            },
+            variants: {
+              size: {
+                xl: {
+                  base: "px-6! py-3! text-lg!"
+                }
+              }
             }
           }
         }

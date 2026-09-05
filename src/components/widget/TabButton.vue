@@ -10,15 +10,16 @@
     }">
     <UButton
       @click="router.push(props.link)"
-      color="neutral"
-      variant="ghost"
+      :color="isActive ? 'primary' : 'secondary'"
+      :variant="isActive ? 'solid' : 'ghost'"
       class="w-full h-auto aspect-square flex items-center justify-center rounded-none">
       <UIcon :name="props.icon" class="size-9" />
     </UButton>
   </UTooltip>
 </template>
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 interface Props {
   icon: string;
@@ -27,4 +28,9 @@ interface Props {
 }
 const props = defineProps<Props>();
 const router = useRouter();
+const route = useRoute();
+
+const isActive = computed(() =>
+  props.link === "/" ? route.path === "/" : route.path.startsWith(props.link),
+);
 </script>

@@ -58,7 +58,7 @@
               class="bg-elevated p-3 rounded-xl flex flex-col gap-2 w-full">
               <div class="flex flex-row justify-between items-center w-full">
                 <span class="font-bold">{{ arg.name }}</span>
-                <UButtonGroup size="xs">
+                <div>
                   <UButton
                     :color="arg.kind === 'literal' ? 'primary' : 'neutral'"
                     :variant="arg.kind === 'literal' ? 'solid' : 'outline'"
@@ -71,7 +71,7 @@
                     @click="setArgKind(arg, 'variable')">
                     Variable
                   </UButton>
-                </UButtonGroup>
+                </div>
               </div>
 
               <template v-if="arg.kind === 'literal'">
