@@ -155,6 +155,7 @@ function clear() {
             class="w-full"
             :disabled="props.mode !== 'Create'"
             v-model="fieldModel"
+            :leading-icon="fieldMeta[fieldModel].icon"
             :items="modelOptions"
             value-key="value"
             label-key="label" />
@@ -162,7 +163,7 @@ function clear() {
         <UFormField
           class="w-full"
           label="Field name"
-          help="Unique identifier of the custom field.">
+          help="Unique identifier of the custom field">
           <UInput
             class="w-full"
             :disabled="props.mode !== 'Create'"
@@ -171,20 +172,21 @@ function clear() {
         <UFormField
           class="w-full"
           label="Field label"
-          help="How the field is labelled in the editor.">
+          help="How the field is labelled in the editor">
           <UInput class="w-full" v-model="fieldLabel" />
         </UFormField>
 
         <UFormField
           class="w-full"
           label="Data type"
-          help="The kind of value this field holds.">
+          help="The data type of the field">
           <USelect
             class="w-full"
             :disabled="props.mode !== 'Create'"
             :model-value="fieldType"
             :items="typeOptions"
             value-key="value"
+            :leading-icon="typeMeta[fieldType].icon"
             label-key="label"
             @update:model-value="onTypeChange" />
         </UFormField>
@@ -192,7 +194,7 @@ function clear() {
         <UFormField
           class="w-full"
           label="Default value"
-          help="Initial value assigned to the field.">
+          help="Initial value assigned to the field">
           <USelect
             v-if="fieldType === 'Boolean'"
             class="w-full"

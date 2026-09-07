@@ -2,7 +2,7 @@
   <USlideover v-model:open="isOpen" :dismissible="false" :ui="slideoverUi">
     <template #header>
       <div class="flex flex-row justify-between items-center w-full">
-        <p class="text-lg font-bold">{{ editorTitle }}</p>
+        <h3>{{ editorTitle }}</h3>
         <div class="flex flex-row gap-2">
           <UButton
             color="neutral"
@@ -22,27 +22,27 @@
     <template #body>
       <div class="h-full">
         <div class="mb-4">
-          <span class="font-bold">Dialogue Node ID</span>
-          <UInput
-            v-model="nodeKey"
-            icon="material-symbols:key-rounded"
-            :leading="true"
-            :maxlength="64"
-            :disabled="props.mode !== 'Create'"
-            class="w-full mt-2"
-            :class="{ 'opacity-40': props.mode === 'Update' }" />
+          <UFormField
+            class="w-full"
+            label="ID"
+            help="Unique identifier of this dialogue">
+            <UInput
+              v-model="nodeKey"
+              :leading="true"
+              :maxlength="64"
+              :disabled="props.mode !== 'Create'"
+              class="w-full"
+              :class="{ 'opacity-40': props.mode === 'Update' }" />
+          </UFormField>
         </div>
         <div class="mb-4">
-          <span class="font-bold"
-            >Description<span class="text-sm opacity-50">
-              (internal)</span
-            ></span
-          >
-          <UTextarea
-            v-model="nodeDescription"
-            :disabled="props.mode === 'Read'"
-            maxlength="400"
-            class="w-full mt-2" />
+          <UFormField class="w-full" label="Description (internal)">
+            <UTextarea
+              v-model="nodeDescription"
+              :disabled="props.mode === 'Read'"
+              maxlength="400"
+              class="w-full" />
+          </UFormField>
         </div>
 
         <div class="mb-4">

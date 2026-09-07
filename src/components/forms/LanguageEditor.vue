@@ -50,35 +50,49 @@ function deleteLanguage(code: string) {
 </script>
 
 <template>
-  <h2>Languages</h2>
+  <div>
+    <div class="flex flex-col sm:flex-row gap-2 justify-between mb-12">
+      <div
+        class="flex flex-row gap-2 items-center justify-between sm:justify-start">
+        <h2>Languages</h2>
+        <Help
+          title="Languages"
+          messageHtml='<p>Languages allow you to add translations for your stories, dialogues and branches. The default language always holds the ID "<span class=text-primary>default</span>" and its display can be changed to resemble the default language of the project.<br><br>Adding another language will enable translations in the respective editors. You can edit them directly with a reference language or use the <span class=text-primary>Translation Service</span> to export translations to <span class=text-primary>.csv files</span> and reimport them once you are done translating.<br><br>In Unity, all translations of a story are saved separately, so Shakespeare can only load the set language of your application at runtime.</p>' />
+      </div>
+      <UButton
+        icon="material-symbols:add-box-sharp"
+        @click="addLanguageModalOpen = true"
+        >New Language</UButton
+      >
+    </div>
 
-  <div v-if="defaultLanguage" class="mt-8">
-    <LanguageItem
-      @edit="editLanguage"
-      :language="defaultLanguage"
-      :deletable="false" />
-  </div>
-
-  <template v-if="otherLanguages.length > 0">
-    <div v-for="lang in otherLanguages" :key="lang.code">
+    <div v-if="defaultLanguage" class="mt-8">
       <LanguageItem
         @edit="editLanguage"
-        @delete="deleteLanguage"
-        :language="lang"
-        :deletable="true" />
+        :language="defaultLanguage"
+        :deletable="false" />
     </div>
-  </template>
-  <template v-else>
-    <p>There are no more languages defined...</p>
-  </template>
 
-  <USeparator class="my-8" />
+    <template v-if="otherLanguages.length > 0">
+      <div v-for="lang in otherLanguages" :key="lang.code">
+        <LanguageItem
+          @edit="editLanguage"
+          @delete="deleteLanguage"
+          :language="lang"
+          :deletable="true" />
+      </div>
+    </template>
+    <template v-else>
+      <div class="flex flex-col items-center justify-center text-muted">
+        <UIcon name="mingcute:empty-box-fill" class="w-12 h-12" />
+        <span>No translations defined</span>
+      </div>
+    </template>
 
-  <UButton @click="addLanguageModalOpen = true">Create new</UButton>
-
-  <LanguageInput
-    v-model:open="addLanguageModalOpen"
-    @submit="addNewLanguage"
-    :language="undefined"
-    mode="Create" />
+    <LanguageInput
+      v-model:open="addLanguageModalOpen"
+      @submit="addNewLanguage"
+      :language="undefined"
+      mode="Create" />
+  </div>
 </template>

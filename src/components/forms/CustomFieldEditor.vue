@@ -122,11 +122,6 @@ function deleteField(name: string) {
       for (const node of Object.values(storyNodes)) {
         if (!node || node.type !== "branch") continue;
         for (const branch of node.branches) {
-          // was inverted (`if (!branch?.fields?.data)`), which skipped the
-          // filter whenever data actually existed, and crashed when it
-          // didn't (branch.fields.data assigned on an undefined branch.fields).
-          // this now mirrors the guard-and-filter pattern used by every
-          // other case above.
           if (!branch?.fields?.data) continue;
           branch.fields.data = branch.fields.data.filter(
             (f) => f.name !== name,
@@ -147,24 +142,41 @@ function deleteField(name: string) {
 </script>
 
 <template>
-  <h2>Fields</h2>
-
-  <template v-if="customFields.length > 0">
-    <div v-for="field in customFields" :key="field.name">
-      <CustomFieldItem @edit="editField" @delete="deleteField" :field="field" />
+  <div>
+    <div class="flex flex-col sm:flex-row gap-2 justify-between mb-12">
+      <div
+        class="flex flex-row gap-2 items-center justify-between sm:justify-start">
+        <h2>Model Extensions</h2>
+        <Help
+          title="Model Extensions"
+          messageHtml="<p>Custom fields allow you to extend the data models of <span class=text-primary>Stories, Dialogues, Dialogue Sentences</span> and <span class=text-primary>Branches</span>. To extend a model, add a field targeting the desired model and define its data type. In the editor, these fields will now show up for you to edit.<br><br>Custom fields can be used to add your own data, such as <span class=text-primary>character names</span> to dialogues, <span class=text-primary>types</span> to branches or even <span class=text-primary>audio file names</span> to dialogue sentences to add a voice over in your app.<br><br>In Unity, you can access custom fields using <code class=text-primary>CustomFields.GetField(fieldName)</code> on the model to directly resolve the value of that field. These can be used as direct values, point to objects in a game database or in any way you like.</p>" />
+      </div>
+      <UButton
+        icon="material-symbols:add-box-sharp"
+        @click="addCustomFieldModalOpen = true"
+        >New Field</UButton
+      >
     </div>
-  </template>
-  <template v-else>
-    <p>There are no custom fields defined...</p>
-  </template>
 
-  <USeparator class="my-8" />
+    <template v-if="customFields.length > 0">
+      <div v-for="field in customFields" :key="field.name">
+        <CustomFieldItem
+          @edit="editField"
+          @delete="deleteField"
+          :field="field" />
+      </div>
+    </template>
+    <template v-else>
+      <div class="flex flex-col items-center justify-center text-muted">
+        <UIcon name="mingcute:empty-box-fill" class="w-12 h-12" />
+        <span>No model extensions defined</span>
+      </div>
+    </template>
 
-  <UButton @click="addCustomFieldModalOpen = true">Create new</UButton>
-
-  <CustomFieldInput
-    v-model:open="addCustomFieldModalOpen"
-    @submit="addNewField"
-    :field="undefined"
-    mode="Create" />
+    <CustomFieldInput
+      v-model:open="addCustomFieldModalOpen"
+      @submit="addNewField"
+      :field="undefined"
+      mode="Create" />
+  </div>
 </template>

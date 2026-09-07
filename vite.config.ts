@@ -35,6 +35,13 @@ export default defineConfig({
               ],
             },
           },
+          textarea: {
+            slots: {
+              base: [
+                'rounded-none! border-none! border-0! bg-muted!'
+              ],
+            },
+          },
           select: {
             slots: {
               base: [
@@ -101,6 +108,12 @@ export default defineConfig({
           popover: {
             slots: {
               content: 'rounded-none!'
+            }
+          },
+          slideover: {
+            slots: {
+              header: 'bg-elevated!',
+              overlay: 'bg-black/60!'
             }
           }
         }
