@@ -23,13 +23,23 @@
     </UFormField>
 
     <div class="flex-1 min-h-0 overflow-y-auto mt-8">
-      <div v-if="dialogues.length > 0" class="flex flex-col gap-2">
+      <div
+        v-if="dialogues.length > 0 && listedDialogues.length > 0"
+        class="flex flex-col gap-2">
         <DialogueNodeElement
           v-for="node in listedDialogues"
           :key="node?.id"
           :node="node"
           @edit="editNode(node)"
           @delete="deleteNode(node)" />
+      </div>
+      <div
+        v-else-if="dialogues.length > 0 && listedDialogues.length <= 0"
+        class="flex flex-col flex-1 self-center items-center justify-center text-muted">
+        <UIcon
+          name="material-symbols:sentiment-dissatisfied"
+          class="w-12 h-12" />
+        <span>No dialogues match your search</span>
       </div>
       <div v-else>
         <div
