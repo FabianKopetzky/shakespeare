@@ -1,19 +1,45 @@
 <template>
-  <div>
-    <div class="flex flex-row justify-between">
-      <h1>Dialogue Nodes</h1>
-      <UButton @click="createNewNode()" class="h-10" icon="basil:add-solid"
-        >Create new</UButton
+  <div class="flex flex-col h-full">
+    <div class="flex flex-row justify-between items-start">
+      <div>
+        <h1>Dialogues</h1>
+        <span class="self-end text-dimmed text-balance"
+          >Write dialogues and reference them in any story you want!</span
+        >
+      </div>
+      <UButton icon="material-symbols:add-box-sharp" @click="createNewNode()"
+        >New Dialogue</UButton
       >
     </div>
-    <USeparator class="h-6" orientation="horizontal" />
-    <div class="flex flex-col gap-2">
-      <DialogueNodeElement
-        v-for="node in dialogues"
-        :node="node"
-        @edit="editNode(node)"
-        @delete="deleteNode(node)" />
+    <div class="w-full h-0.5 bg-accented mt-12 mb-6" />
+
+    <UFormField class="w-full">
+      <UInput
+        class="w-full"
+        size="lg"
+        placeholder="Search dialogues..."
+        leading-icon="material-symbols:search-sharp"
+        v-model="currentSearch" />
+    </UFormField>
+
+    <div class="flex-1 min-h-0 overflow-y-auto mt-8">
+      <div class="flex flex-col gap-2">
+        <DialogueNodeElement
+          v-for="node in listedDialogues"
+          :key="node?.id"
+          :node="node"
+          @edit="editNode(node)"
+          @delete="deleteNode(node)" />
+      </div>
     </div>
+
+    <div class="mt-4 flex justify-center shrink-0">
+      <UPagination
+        v-model:page="currentPage"
+        :items-per-page="PAGE_SIZE"
+        :total="filteredDialogues.length" />
+    </div>
+
     <DialogueNodeEditor
       v-model:isOpen="editorOpen"
       :node="currentNode"
@@ -21,7 +47,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { type DialogueNode, type FormMode } from "../types/schema.ts";
 import DialogueNodeEditor from "../components/dialogue/DialogueNodeEditor.vue";
 import DialogueNodeElement from "../components/widget/DialogueNodeElement.vue";
@@ -50,4 +76,21 @@ function deleteNode(node: DialogueNode): void {
     dialogues.value.splice(idx, 1);
   }
 }
+
+// PAGINATION & FILTERING
+const PAGE_SIZE = 10;
+
+const currentSearch = ref<string>("");
+const currentPage = ref<number>(1);
+
+const filteredDialogues = computed<DialogueNode[]>(() => {
+  return dialogues.value.filter((d) =>
+    d?.id.toLowerCase().includes(currentSearch.value.toLowerCase()),
+  );
+});
+
+const listedDialogues = computed<DialogueNode[]>(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE;
+  return filteredDialogues.value.slice(start, start + PAGE_SIZE);
+});
 </script>

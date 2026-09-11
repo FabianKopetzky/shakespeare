@@ -64,6 +64,12 @@ export default defineConfig({
               ]
             }
           },
+          dropdownMenu: {
+            slots: {
+              content: 'mt-0 bg-muted rounded-none border-none',
+              item: 'before:rounded-none cursor-pointer!',
+            }
+          },
           modal: {
             slots: {
               content: 'rounded-none! border-none!',

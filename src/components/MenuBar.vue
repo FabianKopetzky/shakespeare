@@ -150,14 +150,14 @@ onMounted(() => {
 <template>
   <div
     data-tauri-drag-region
-    class="flex h-8 items-center bg-default border-b border-default select-none">
+    class="flex h-8 items-center bg-muted border-b border-default select-none">
     <div class="flex items-center gap-0.5 pl-2">
-      <img src="/icon.svg" alt="" class="w-4 h-4 mr-1.5" />
+      <img src="/sp_gradient.png" alt="" class="w-6 h-6 mr-1.5" />
 
       <UDropdownMenu
         v-for="menu in menus"
+        variant="soft"
         :content="{ sideOffset: 0 }"
-        :ui="{ content: 'mt-0' }"
         :items="menu.items"
         @update:open="
           (open: boolean) => {
