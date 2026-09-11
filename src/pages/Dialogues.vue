@@ -13,7 +13,7 @@
     </div>
     <div class="w-full h-0.5 bg-accented mt-12 mb-6" />
 
-    <UFormField class="w-full">
+    <UFormField v-if="dialogues.length > 0" class="w-full">
       <UInput
         class="w-full"
         size="lg"
@@ -23,7 +23,7 @@
     </UFormField>
 
     <div class="flex-1 min-h-0 overflow-y-auto mt-8">
-      <div class="flex flex-col gap-2">
+      <div v-if="dialogues.length > 0" class="flex flex-col gap-2">
         <DialogueNodeElement
           v-for="node in listedDialogues"
           :key="node?.id"
@@ -31,12 +31,26 @@
           @edit="editNode(node)"
           @delete="deleteNode(node)" />
       </div>
+      <div v-else>
+        <div
+          class="flex flex-col flex-1 self-center items-center justify-center text-muted">
+          <UIcon name="mingcute:empty-box-fill" class="w-12 h-12" />
+          <span>No dialogues in the project</span>
+          <UButton
+            class="mt-4"
+            icon="material-symbols:add-box-sharp"
+            @click="createNewNode()"
+            >First dialogue</UButton
+          >
+        </div>
+      </div>
     </div>
 
-    <div class="mt-4 flex justify-center shrink-0">
+    <div v-if="dialogues.length > 0" class="mt-4 flex justify-center shrink-0">
       <UPagination
         v-model:page="currentPage"
         :items-per-page="PAGE_SIZE"
+        sibling-count="1"
         :total="filteredDialogues.length" />
     </div>
 
