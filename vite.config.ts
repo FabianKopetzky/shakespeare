@@ -45,12 +45,29 @@ export default defineConfig({
           select: {
             slots: {
               base: [
-                'rounded-none! border-none! border-0! bg-muted! hover:cursor-pointer!'
+                'rounded-none! border-none! border-0! bg-muted! hover:cursor-pointer! text-base!'
               ],
+              value: 'text-default text-sm!',
               content: 'bg-muted! rounded-none!',
               item: [
                 'before:rounded-none hover:cursor-pointer!'
               ]
+            }
+          },
+          checkbox: {
+            slots: {
+              base: 'rounded-none!'
+            },
+            variants: {
+              size: {
+                xl: {
+                  base: 'size-7',
+                  icon: 'size-5',
+                  container: 'h-8',
+                  wrapper: 'text-base',
+                  root: 'items-center'
+                }
+              }
             }
           },
           selectMenu: {

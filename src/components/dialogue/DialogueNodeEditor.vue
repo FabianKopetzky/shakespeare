@@ -1,23 +1,7 @@
 <template>
   <USlideover v-model:open="isOpen" :dismissible="false" :ui="slideoverUi">
     <template #header>
-      <div class="flex flex-row justify-between items-center w-full">
-        <h3>{{ editorTitle }}</h3>
-        <div class="flex flex-row gap-2">
-          <UButton
-            color="neutral"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="close">
-            <UIcon class="size-12" name="material-symbols:close" />
-          </UButton>
-          <UButton
-            v-if="props.mode !== 'Read'"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="save">
-            <UIcon class="size-12" name="material-symbols:check" />
-          </UButton>
-        </div>
-      </div>
+      <SlideoverHeader :title="editorTitle" @close="close" @save="save" />
     </template>
     <template #body>
       <div class="h-full">

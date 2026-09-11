@@ -3,7 +3,7 @@
     @click="showHelp = true"
     variant="ghost"
     icon="material-symbols:question-mark"
-    class="aspect-square h-10 w-auto"
+    class="aspect-square h-8 w-auto"
     :ui="{ base: 'flex items-center justify-center' }"
     color="secondary" />
 

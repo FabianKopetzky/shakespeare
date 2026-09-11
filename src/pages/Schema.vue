@@ -38,22 +38,22 @@ import TextColorEditor from "../components/forms/TextColorEditor.vue";
 const sections = [
   {
     label: "Languages",
-    icon: "lucide:languages",
+    icon: "material-symbols:translate",
     slot: "languages",
   },
   {
     label: "Variables",
-    icon: "mdi:variable",
+    icon: "material-symbols:code-xml-sharp",
     slot: "variables",
   },
   {
     label: "Events",
-    icon: "mynaui:lightning-solid",
+    icon: "ic:sharp-electric-bolt",
     slot: "events",
   },
   {
     label: "Model Extensions",
-    icon: "proicons:database-add",
+    icon: "mdi:database-plus",
     slot: "model",
   },
 ];

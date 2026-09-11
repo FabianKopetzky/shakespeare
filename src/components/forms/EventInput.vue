@@ -134,7 +134,9 @@ function clear() {
         </UFormField>
 
         <div class="flex flex-col gap-2 w-full">
-          <div class="flex flex-row justify-between items-center w-full">
+          <div
+            class="flex flex-row items-center w-full"
+            :class="params.length > 0 ? 'justify-between' : 'justify-end'">
             <span v-if="params.length > 0" class="text-sm font-medium"
               >Parameters</span
             >

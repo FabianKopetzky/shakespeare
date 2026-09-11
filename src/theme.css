@@ -198,3 +198,9 @@
   background: var(--color-primary);
   color: var(--text-color-inverted);
 }
+
+ul {
+  list-style: square;
+  margin-left: 2rem;
+  margin-top: 1rem;
+}
