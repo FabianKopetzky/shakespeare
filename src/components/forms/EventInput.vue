@@ -144,7 +144,7 @@ function clear() {
             <UButton
               variant="ghost"
               color="neutral"
-              icon="i-lucide-plus"
+              icon="material-symbols:add-box-sharp"
               size="xs"
               @click="addParam">
               Add parameter
@@ -169,6 +169,7 @@ function clear() {
                 class="w-full"
                 v-model="param.type"
                 :items="typeOptions"
+                :leading-icon="typeMeta[param.type].icon"
                 value-key="value"
                 label-key="label" />
             </UFormField>

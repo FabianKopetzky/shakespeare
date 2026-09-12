@@ -53,7 +53,7 @@ function deleteEvent(name: string) {
     </div>
 
     <template v-if="events.length > 0">
-      <div v-for="event in events" :key="event.name">
+      <div v-for="event in events" :key="event.name" class="mb-2">
         <EventItem @edit="editEvent" @delete="deleteEvent" :event="event" />
       </div>
     </template>
