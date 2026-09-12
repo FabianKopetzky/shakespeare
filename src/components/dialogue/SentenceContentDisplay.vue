@@ -14,7 +14,7 @@ const nodes = computed(() => parseContent(props.content ?? ""));
 
 <template>
   <div
-    class="w-full rounded-none! border-none! border-0! bg-muted! shadow-sm ring-1 ring-inset ring-[#4a3f30] focus:ring-1 focus:ring-inset focus:ring-[#4a3f30] outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-75">
+    class="w-full min-h-12 px-3 py-2 rounded-none! border-none! border-0! bg-muted! shadow-sm ring-1 ring-inset ring-[#4a3f30] focus:ring-1 focus:ring-inset focus:ring-[#4a3f30] outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-75">
     <p v-if="content" class="whitespace-pre-wrap leading-relaxed">
       <ContentNodeRenderer :nodes="nodes" :variables="variables" />
     </p>

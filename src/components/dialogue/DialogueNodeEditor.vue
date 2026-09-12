@@ -65,7 +65,7 @@
           </div></SlideoverSection
         >
         <div
-          v-if="props.mode !== 'Read'"
+          v-if="props.mode !== 'Read' && languages.length > 1"
           class="flex flex-row gap-4 items-end justify-between mt-2">
           <div class="flex flex-row gap-4 items-end w-full">
             <UFormField
@@ -135,15 +135,7 @@
             :key="sentence.key"
             :sentence="sentence"
             :current-language="currentLanguageCode"
-            :current-language-display="
-              languages.find((l) => l.code == currentLanguageCode)?.display ||
-              currentLanguageCode
-            "
             :reference-language="isSplit ? referenceLanguageCode : null"
-            :reference-language-display="
-              languages.find((l) => l.code == referenceLanguageCode)?.display ||
-              referenceLanguageCode
-            "
             :is-split="isSplit"
             :variables="storyVariables"
             :colors="textColors"

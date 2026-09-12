@@ -9,26 +9,25 @@
       },
     ]">
     <div class="w-full mt-3">
-      <div class="w-full" :class="isSplit ? 'grid grid-cols-2 gap-4' : ''">
-        <div>
-          <p
-            v-if="isSplit"
-            class="text-xs font-semibold opacity-60 mb-1 uppercase">
-            {{ currentLanguageDisplay }}
-          </p>
+      <div
+        class="w-full"
+        :class="isSplit ? 'grid grid-cols-2 gap-4 items-stretch' : ''">
+        <div class="flex flex-col">
           <RichSentenceEditor
             v-model="currentContent"
+            class="flex-1"
             :variables="variables"
             :colors="colors"
             :view-mode="viewMode" />
         </div>
-        <div v-if="isSplit">
-          <p
-            class="text-xs font-semibold opacity-60 uppercase"
-            :class="{ 'mb-10': props.viewMode === 'edit' }">
-            Reference ({{ referenceLanguageDisplay }})
-          </p>
+        <div v-if="isSplit" class="flex flex-col">
+          <!-- Matches the toolbar's h-7 + mb-2 exactly, so both boxes start at the same y position -->
+          <div
+            v-if="props.viewMode === 'edit'"
+            class="h-7 mb-2 shrink-0"
+            aria-hidden="true" />
           <SentenceContentDisplay
+            class="flex-1"
             :content="referenceContent"
             :variables="variables" />
         </div>
@@ -36,6 +35,7 @@
 
       <div
         v-if="!props.excludeCustomFields && sentenceFieldSchemas.length > 0"
+        v-show="viewMode === 'edit'"
         class="flex flex-row flex-wrap gap-3 mt-2">
         <div
           v-for="fieldSchema in sentenceFieldSchemas"
@@ -80,9 +80,6 @@ interface Props {
   sentence: DialogueSentence;
   currentLanguage: string;
   referenceLanguage: string | null;
-
-  currentLanguageDisplay: string;
-  referenceLanguageDisplay: string;
 
   isSplit: boolean;
   variables: StoryVariable[];

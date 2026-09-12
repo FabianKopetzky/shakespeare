@@ -1,3 +1,121 @@
+<template>
+  <div class="w-full flex flex-col">
+    <div
+      v-if="viewMode === 'edit'"
+      class="flex flex-row gap-2 items-start mb-2 h-7 shrink-0">
+      <UTooltip text="Wrap selection in <b></b>">
+        <UButton
+          icon="material-symbols:format-bold"
+          variant="ghost"
+          color="neutral"
+          size="xs"
+          @mousedown.prevent
+          @click="applyBold" />
+      </UTooltip>
+      <UTooltip text="Wrap selection in <i></i>">
+        <UButton
+          icon="material-symbols:format-italic"
+          variant="ghost"
+          color="neutral"
+          size="xs"
+          @mousedown.prevent
+          @click="applyItalic" />
+      </UTooltip>
+
+      <UPopover>
+        <UTooltip text="Wrap selection in <color=#hex></color>">
+          <UButton
+            icon="material-symbols:format-color-text"
+            variant="ghost"
+            color="neutral"
+            size="xs" />
+        </UTooltip>
+        <template #content>
+          <div class="p-3 flex flex-col gap-3 w-56">
+            <UColorPicker v-model="pendingColor" format="hex" />
+            <div v-if="colors.length > 0" class="flex flex-wrap gap-2">
+              <UTooltip
+                v-for="swatch in colors"
+                :text="`Apply ${swatch.name}`"
+                :delayDuration="50"
+                :content="{
+                  side: 'top',
+                  sideOffset: 5,
+                  collisionPadding: 8,
+                }">
+                <button
+                  :key="swatch.name"
+                  type="button"
+                  class="w-6 h-6 hover:cursor-pointer"
+                  :style="{ backgroundColor: swatch.hex }"
+                  @click="applyColor(swatch.name, true)" />
+              </UTooltip>
+            </div>
+            <UButton
+              size="xs"
+              block
+              @mousedown.prevent
+              @click="applyColor(pendingColor, false)"
+              >Apply color</UButton
+            >
+          </div>
+        </template>
+      </UPopover>
+    </div>
+
+    <div
+      v-if="viewMode === 'edit'"
+      class="relative flex-1 min-h-0 flex flex-col">
+      <UTextarea
+        ref="textareaComponentRef"
+        :value="modelValue"
+        :placeholder="placeholder"
+        rows="3"
+        autoresize
+        class="w-full resize-none flex-1 min-h-full"
+        @input="onInput"
+        @keydown="onKeydown"
+        @keyup="onKeyup"
+        @click="updateAutocomplete"
+        @blur="closeAutocomplete" />
+
+      <div
+        v-if="autocomplete.visible"
+        class="absolute z-50 min-w-48 max-h-48 overflow-y-auto bg-muted border border-accented rounded-none shadow-lg p-1"
+        :style="{
+          top: `${autocomplete.top}px`,
+          left: `${autocomplete.left}px`,
+        }">
+        <button
+          v-for="(item, index) in autocomplete.items"
+          :key="item.name"
+          type="button"
+          class="flex justify-between gap-2 w-full px-2 py-1 rounded-nome text-left hover:bg-elevated/50"
+          :class="{ 'bg-elevated': index === autocomplete.activeIndex }"
+          @mousedown.prevent="acceptAutocomplete(index)">
+          <span class="text-xs">{{ item.name }}</span>
+          <span class="text-xs opacity-60">{{ item.type }}</span>
+        </button>
+      </div>
+
+      <p
+        v-if="liveWarnings.length > 0"
+        class="text-xs text-error-600 mt-1 shrink-0">
+        {{ liveWarnings[0]
+        }}<span v-if="liveWarnings.length > 1">
+          (+{{ liveWarnings.length - 1 }} more)</span
+        >
+      </p>
+    </div>
+
+    <div
+      v-else
+      class="flex-1 min-h-12 px-3 py-2 rounded-none! border-none! border-0! bg-muted! shadow-sm ring-1 ring-inset ring-[#4a3f30] focus:ring-1 focus:ring-inset focus:ring-[#4a3f30] outline-none transition-colors leading-relaxed">
+      <ContentNodeRenderer :nodes="previewNodes" :variables="variables" />
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref } from "vue";
 import type { StoryVariable, TextColor } from "../../types/schema";
@@ -13,7 +131,7 @@ interface Props {
   variables: StoryVariable[];
   colors?: TextColor[];
   placeholder?: string;
-  viewMode: "edit" | "preview"; // now controlled by the parent (global toggle)
+  viewMode: "edit" | "preview";
 }
 const props = withDefaults(defineProps<Props>(), {
   colors: () => [],
@@ -181,125 +299,9 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 function onKeyup(e: KeyboardEvent) {
-  // these are fully handled on keydown; don't let updateAutocomplete
-  // stomp on activeIndex right after we just set it
   if (["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(e.key)) {
     return;
   }
   updateAutocomplete();
 }
 </script>
-
-<template>
-  <div class="w-full">
-    <div
-      v-if="viewMode === 'edit'"
-      class="flex flex-row gap-2 items-start mb-2 h-7">
-      <UTooltip text="Wrap selection in <b></b>">
-        <UButton
-          icon="material-symbols:format-bold"
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          @mousedown.prevent
-          @click="applyBold" />
-      </UTooltip>
-      <UTooltip text="Wrap selection in <i></i>">
-        <UButton
-          icon="material-symbols:format-italic"
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          @mousedown.prevent
-          @click="applyItalic" />
-      </UTooltip>
-
-      <UPopover>
-        <UTooltip text="Wrap selection in <color=#hex></color>">
-          <UButton
-            icon="material-symbols:format-color-text"
-            variant="ghost"
-            color="neutral"
-            size="xs" />
-        </UTooltip>
-        <template #content>
-          <div class="p-3 flex flex-col gap-3 w-56">
-            <UColorPicker v-model="pendingColor" format="hex" />
-            <div v-if="colors.length > 0" class="flex flex-wrap gap-2">
-              <UTooltip
-                v-for="swatch in colors"
-                :text="`Apply ${swatch.name}`"
-                :delayDuration="50"
-                :content="{
-                  side: 'top',
-                  sideOffset: 5,
-                  collisionPadding: 8,
-                }">
-                <button
-                  :key="swatch.name"
-                  type="button"
-                  class="w-6 h-6 hover:cursor-pointer"
-                  :style="{ backgroundColor: swatch.hex }"
-                  @click="applyColor(swatch.name, true)" />
-              </UTooltip>
-            </div>
-            <UButton
-              size="xs"
-              block
-              @mousedown.prevent
-              @click="applyColor(pendingColor, false)"
-              >Apply color</UButton
-            >
-          </div>
-        </template>
-      </UPopover>
-    </div>
-
-    <div v-if="viewMode === 'edit'" class="relative">
-      <UTextarea
-        ref="textareaComponentRef"
-        :value="modelValue"
-        :placeholder="placeholder"
-        rows="3"
-        autoresize
-        class="w-full resize-none"
-        @input="onInput"
-        @keydown="onKeydown"
-        @keyup="onKeyup"
-        @click="updateAutocomplete"
-        @blur="closeAutocomplete" />
-
-      <div
-        v-if="autocomplete.visible"
-        class="absolute z-50 min-w-48 max-h-48 overflow-y-auto bg-muted border border-accented rounded-none shadow-lg p-1"
-        :style="{
-          top: `${autocomplete.top}px`,
-          left: `${autocomplete.left}px`,
-        }">
-        <button
-          v-for="(item, index) in autocomplete.items"
-          :key="item.name"
-          type="button"
-          class="flex justify-between gap-2 w-full px-2 py-1 rounded-nome text-left hover:bg-elevated/50"
-          :class="{ 'bg-elevated': index === autocomplete.activeIndex }"
-          @mousedown.prevent="acceptAutocomplete(index)">
-          <span class="text-xs">{{ item.name }}</span>
-          <span class="text-xs opacity-60">{{ item.type }}</span>
-        </button>
-      </div>
-
-      <p v-if="liveWarnings.length > 0" class="text-xs text-error-600 mt-1">
-        {{ liveWarnings[0]
-        }}<span v-if="liveWarnings.length > 1">
-          (+{{ liveWarnings.length - 1 }} more)</span
-        >
-      </p>
-    </div>
-
-    <div
-      v-else
-      class="px-3 py-2 border border-gray-300 rounded-md min-h-12 leading-relaxed">
-      <ContentNodeRenderer :nodes="previewNodes" :variables="variables" />
-    </div>
-  </div>
-</template>
