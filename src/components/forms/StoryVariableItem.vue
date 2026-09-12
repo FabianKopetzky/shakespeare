@@ -36,7 +36,7 @@ function confirmDelete(): void {
           class="h-6 w-auto aspect-square"
           :name="typeMeta[props.variable.type].icon" />
         <span class="font-semibold">{{ props.variable.name }}</span>
-        <code class="ml-4 text-dimmed">{{ props.variable.type }}</code>
+        <span class="ml-4 text-dimmed">{{ props.variable.type }}</span>
         <span class="ml-4 text-dimmed"
           >{{ props.variable.defaultValue }}
           <span class="text-xs opacity-45">(default)</span></span

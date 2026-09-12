@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useContentStore } from "../../stores/content.ts";
 import type { CustomFieldSchema } from "../../types/schema.ts";
 import CustomFieldItem from "./CustomFieldItem.vue";
@@ -139,6 +139,25 @@ function deleteField(name: string) {
 
   customFields.splice(idx, 1);
 }
+
+const dialogueExtensions = computed(() =>
+  customFields.filter((f) => f.model === "dialogue"),
+);
+const sentenceExtensions = computed(() =>
+  customFields.filter((f) => f.model === "dialogue_sentence"),
+);
+const storyExtensions = computed(() =>
+  customFields.filter((f) => f.model === "story"),
+);
+const branchExtensions = computed(() =>
+  customFields.filter((f) => f.model === "branch"),
+);
+const extensionLists = computed(() => [
+  { label: "Dialogue Extensions", fields: dialogueExtensions.value },
+  { label: "Dialogue Sentence Extensions", fields: sentenceExtensions.value },
+  { label: "Story Extensions", fields: storyExtensions.value },
+  { label: "Branch Extensions", fields: branchExtensions.value },
+]);
 </script>
 
 <template>
@@ -159,12 +178,18 @@ function deleteField(name: string) {
     </div>
 
     <template v-if="customFields.length > 0">
-      <div v-for="field in customFields" :key="field.name">
-        <CustomFieldItem
-          @edit="editField"
-          @delete="deleteField"
-          :field="field" />
-      </div>
+      <template v-for="group in extensionLists" :key="group.label">
+        <div v-if="group.fields.length > 0">
+          <p class="text-dimmed text-sm mb-2">{{ group.label }}</p>
+          <div class="flex flex-col gap-2 mb-8">
+            <CustomFieldItem
+              v-for="field in group.fields"
+              @edit="editField"
+              @delete="deleteField"
+              :field="field" />
+          </div>
+        </div>
+      </template>
     </template>
     <template v-else>
       <div class="flex flex-col items-center justify-center text-muted">

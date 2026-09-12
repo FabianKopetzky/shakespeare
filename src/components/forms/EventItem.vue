@@ -60,7 +60,7 @@ function confirmDelete(): void {
   <UCollapsible v-model:open="open">
     <template #content>
       <div class="ml-4 bg-muted px-4 py-2">
-        <span class="text-muted text-sm">{{
+        <span class="text-muted text-sm select-none">{{
           props.event.params.length > 0
             ? `Parameters (${props.event.params.length})`
             : "No parameters"
@@ -69,8 +69,8 @@ function confirmDelete(): void {
           v-for="param in props.event.params"
           class="flex flex-row justify-start gap-2 items-center">
           <UIcon class="text-dimmed" :name="typeMeta[param.type].icon" />
-          <span>{{ param.name }}</span>
-          <span class="text-dimmed">({{ param.type }})</span>
+          <span class="select-none">{{ param.name }}</span>
+          <span class="text-dimmed select-none">({{ param.type }})</span>
         </div>
       </div>
     </template>

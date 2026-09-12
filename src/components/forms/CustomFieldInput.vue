@@ -163,7 +163,7 @@ function clear() {
         </UFormField>
         <UFormField
           class="w-full"
-          label="Field name"
+          label="Field key"
           help="Unique identifier of the custom field">
           <UInput
             class="w-full"
