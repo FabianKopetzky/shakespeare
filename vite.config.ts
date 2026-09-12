@@ -1,6 +1,12 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import ui from '@nuxt/ui/vite'
+
+const disabledState =
+  'disabled:opacity-50! disabled:cursor-not-allowed! ' +
+  'aria-disabled:opacity-50! aria-disabled:cursor-not-allowed! ' +
+  'data-[disabled]:opacity-50! data-[disabled]:cursor-not-allowed!'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -11,7 +17,8 @@ export default defineConfig({
           button: {
             slots: {
               base: [
-                'cursor-pointer! rounded-none! px-4! py-2! text-base!'
+                'cursor-pointer! rounded-none! px-4! py-2! text-base!',
+                disabledState,
               ]
             },
             variants: {
@@ -31,21 +38,24 @@ export default defineConfig({
           input: {
             slots: {
               base: [
-                'rounded-none! border-none! border-0! bg-muted!'
+                'rounded-none! border-none! border-0! bg-muted!',
+                disabledState,
               ],
             },
           },
           textarea: {
             slots: {
               base: [
-                'rounded-none! border-none! border-0! bg-muted!'
+                'rounded-none! border-none! border-0! bg-muted!',
+                disabledState,
               ],
             },
           },
           select: {
             slots: {
               base: [
-                'rounded-none! border-none! border-0! bg-muted! hover:cursor-pointer! text-base!'
+                'rounded-none! border-none! border-0! bg-muted! hover:cursor-pointer! text-base!',
+                disabledState,
               ],
               value: 'text-default text-sm!',
               content: 'bg-muted! rounded-none!',
@@ -56,7 +66,10 @@ export default defineConfig({
           },
           checkbox: {
             slots: {
-              base: 'rounded-none! hover:cursor-pointer!'
+              base: [
+                'rounded-none! hover:cursor-pointer!',
+                disabledState,
+              ]
             },
             variants: {
               size: {
@@ -73,7 +86,8 @@ export default defineConfig({
           selectMenu: {
             slots: {
               base: [
-                'rounded-none! border-none! border-0! bg-muted! hover:cursor-pointer!'
+                'rounded-none! border-none! border-0! bg-muted! hover:cursor-pointer!',
+                disabledState,
               ],
               content: 'bg-muted! rounded-none!',
               item: [
@@ -97,7 +111,8 @@ export default defineConfig({
           fileUpload: {
             slots: {
               base: [
-                'rounded-none! border-none! border-0! bg-muted! hover:bg-elevated! hover:cursor-pointer!'
+                'rounded-none! border-none! border-0! bg-muted! hover:bg-elevated! hover:cursor-pointer!',
+                disabledState,
               ]
             }
           },
