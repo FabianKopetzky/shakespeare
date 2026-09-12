@@ -5,11 +5,9 @@
     </template>
     <template #body>
       <div class="h-full">
-        <div class="mb-4">
-          <UFormField
-            class="w-full"
-            label="ID"
-            help="Unique identifier of this dialogue">
+        <SlideoverSection label="Properties" />
+        <div class="mb-4 flex flex-row justify-center items-start gap-4">
+          <UFormField class="flex-1" label="ID">
             <UInput
               v-model="nodeKey"
               :leading="true"
@@ -18,10 +16,8 @@
               class="w-full"
               :class="{ 'opacity-40': props.mode === 'Update' }" />
           </UFormField>
-        </div>
-        <div class="mb-4">
-          <UFormField class="w-full" label="Description (internal)">
-            <UTextarea
+          <UFormField class="flex-2" label="Description (internal)">
+            <UInput
               v-model="nodeDescription"
               :disabled="props.mode === 'Read'"
               maxlength="400"
@@ -29,9 +25,10 @@
           </UFormField>
         </div>
 
-        <div class="mb-4">
+        <div class="mb-12">
           <div v-for="fieldSchema in getCustomFieldsForModel('dialogue')">
             <FieldInstanceInput
+              class="mb-2"
               @submit="
                 (value) => {
                   const field = nodeFields?.data?.find(
@@ -50,55 +47,89 @@
           </div>
         </div>
 
-        <USeparator
-          class="h-4"
-          orientation="horizontal"
-          type="solid"
-          size="sm" />
-
-        <div
-          v-if="props.mode !== 'Read'"
-          class="flex flex-row gap-4 items-end justify-between mt-2">
-          <div class="flex flex-row gap-4 items-end">
-            <UFormField label="Editing language">
-              <USelectMenu
-                v-model="currentLanguageCode"
-                :items="languageMenuItems"
-                value-key="value"
-                class="w-52" />
-            </UFormField>
-            <UFormField v-if="isSplit" label="Reference language">
-              <USelectMenu
-                v-model="referenceLanguageCode"
-                :items="referenceLanguageMenuItems"
-                value-key="value"
-                class="w-52" />
-            </UFormField>
-          </div>
-
-          <div class="flex flex-row justify-center gap-2">
+        <SlideoverSection :label="`Sentences (${nodeSentences.length})`">
+          <div class="bg-default">
             <UButton
+              class="ml-4"
+              :color="viewMode === 'edit' ? 'primary' : 'neutral'"
               :variant="viewMode === 'edit' ? 'solid' : 'outline'"
-              color="neutral"
-              size="sm"
               @click="viewMode = 'edit'">
               Edit
             </UButton>
             <UButton
+              :color="viewMode === 'preview' ? 'primary' : 'neutral'"
               :variant="viewMode === 'preview' ? 'solid' : 'outline'"
-              color="neutral"
-              size="sm"
               @click="viewMode = 'preview'">
               Preview
             </UButton>
+          </div></SlideoverSection
+        >
+        <div
+          v-if="props.mode !== 'Read'"
+          class="flex flex-row gap-4 items-end justify-between mt-2">
+          <div class="flex flex-row gap-4 items-end w-full">
+            <UFormField
+              label="Language"
+              :class="isSplit ? 'w-[50%]' : 'w-full'">
+              <USelectMenu
+                v-model="currentLanguageCode"
+                :items="languageMenuItems"
+                class="w-full"
+                :icon="
+                  languageMenuItems.find((i) => i.value == currentLanguageCode)
+                    ?.icon
+                "
+                value-key="value">
+                <template #item-label="{ item }">
+                  <span class="text-sm text-default">{{ item.display }}</span>
+                  <span class="text-sm text-dimmed"> ({{ item.value }})</span>
+                </template>
+                <template #default>
+                  <span class="text-sm text-default">{{
+                    languageMenuItems.find(
+                      (i) => i.value == currentLanguageCode,
+                    )?.display
+                  }}</span>
+                  <span class="text-sm text-dimmed">
+                    ({{ currentLanguageCode }})</span
+                  >
+                </template>
+              </USelectMenu>
+            </UFormField>
+            <UFormField
+              v-if="isSplit"
+              label="Reference language"
+              class="w-[50%]">
+              <USelectMenu
+                v-model="referenceLanguageCode"
+                :items="referenceLanguageMenuItems"
+                class="w-full"
+                :icon="
+                  languageMenuItems.find(
+                    (i) => i.value == referenceLanguageCode,
+                  )?.icon
+                "
+                value-key="value">
+                <template #item-label="{ item }">
+                  <span class="text-sm text-default">{{ item.display }}</span>
+                  <span class="text-sm text-dimmed"> ({{ item.value }})</span>
+                </template>
+                <template #default>
+                  <span class="text-sm text-default">{{
+                    languageMenuItems.find(
+                      (i) => i.value == referenceLanguageCode,
+                    )?.display
+                  }}</span>
+                  <span class="text-sm text-dimmed">
+                    ({{ referenceLanguageCode }})</span
+                  >
+                </template></USelectMenu
+              >
+            </UFormField>
           </div>
         </div>
 
-        <div class="mb-4 pl-8 mt-4">
-          <span class="font-bold"
-            >Sentences ({{ nodeSentences.length ?? 0 }})</span
-          >
-
+        <div class="mb-4 mt-4">
           <DialogueSentenceEditor
             v-for="(sentence, index) in nodeSentences"
             :key="sentence.key"
@@ -116,10 +147,9 @@
             class="w-full flex flex-row justify-end gap-2 pb-4 mb-4">
             <UButton
               @click="createDialogueSentence()"
-              class="flex items-center justify-center mt-2"
-              variant="outline"
+              variant="ghost"
               color="neutral"
-              leading-icon="basil:add-solid"
+              leading-icon="material-symbols:add-box-sharp"
               >Add sentence</UButton
             >
           </div>
@@ -193,12 +223,19 @@ const languageMenuItems = computed(() =>
   languages.value.map((l) => ({
     label: `${l.code} (${l.display})`,
     value: l.code,
+    icon: l.icon,
+    display: l.display,
   })),
 );
 const referenceLanguageMenuItems = computed(() =>
   languages.value
     .filter((l) => l.code !== currentLanguageCode.value)
-    .map((l) => ({ label: `${l.code} (${l.display})`, value: l.code })),
+    .map((l) => ({
+      label: `${l.code} (${l.display})`,
+      value: l.code,
+      icon: l.icon,
+      display: l.display,
+    })),
 );
 
 watch(isOpen, (open) => {

@@ -89,6 +89,7 @@ export default defineConfig({
                 'rounded-none! border-none! border-0! bg-muted! hover:cursor-pointer!',
                 disabledState,
               ],
+              value: 'text-default text-sm!',
               content: 'bg-muted! rounded-none!',
               item: [
                 'before:rounded-none hover:cursor-pointer!'

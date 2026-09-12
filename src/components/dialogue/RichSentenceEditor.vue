@@ -17,7 +17,7 @@ interface Props {
 }
 const props = withDefaults(defineProps<Props>(), {
   colors: () => [],
-  placeholder: "Type sentence content...",
+  placeholder: "Type your text here or type {{ to enter variables",
 });
 
 const emit = defineEmits<{
@@ -26,7 +26,12 @@ const emit = defineEmits<{
 
 const { displayError } = useWidget();
 
-const textareaRef = ref<HTMLTextAreaElement | null>(null);
+const textareaComponentRef = ref<{
+  textareaRef: HTMLTextAreaElement | null;
+} | null>(null);
+const textareaEl = computed(
+  () => textareaComponentRef.value?.textareaRef ?? null,
+);
 const pendingColor = ref<string>("#000000");
 
 const previewNodes = computed(() => parseContent(props.modelValue ?? ""));
@@ -38,12 +43,8 @@ function updateValue(newValue: string) {
   emit("update:modelValue", newValue);
 }
 
-// --- toolbar helpers: these just insert/wrap plain syntax text, the same
-// syntax the user could type by hand. They're a convenience, not a
-// separate representation. ---
-
 function wrapSelection(before: string, after: string) {
-  const el = textareaRef.value;
+  const el = textareaEl.value;
   if (!el) return;
   const start = el.selectionStart;
   const end = el.selectionEnd;
@@ -63,7 +64,7 @@ function wrapSelection(before: string, after: string) {
 }
 
 function insertAtCursor(text: string) {
-  const el = textareaRef.value;
+  const el = textareaEl.value;
   if (!el) return;
   const start = el.selectionStart;
   const end = el.selectionEnd;
@@ -94,17 +95,6 @@ function applyColor(value: string, isVariable: boolean) {
   wrapSelection(`<color=${value}>`, "</color>");
 }
 
-const variableMenuValue = ref<string | null>(null);
-const variableMenuItems = computed(() =>
-  props.variables.map((v) => ({ label: v.name, value: v.name })),
-);
-function onVariableMenuSelect(name: string | null) {
-  if (!name) return;
-  insertAtCursor(`{{ ${name} }}`);
-  variableMenuValue.value = null;
-}
-
-// --- "{{" autocomplete, driven off the textarea's own selection/caret ---
 const autocomplete = reactive({
   visible: false,
   items: [] as StoryVariable[],
@@ -120,7 +110,7 @@ function closeAutocomplete() {
 }
 
 function updateAutocomplete() {
-  const el = textareaRef.value;
+  const el = textareaEl.value;
   if (!el) return closeAutocomplete();
 
   const caret = el.selectionStart;
@@ -147,7 +137,7 @@ function updateAutocomplete() {
 
 function acceptAutocomplete(index: number = autocomplete.activeIndex) {
   const item = autocomplete.items[index];
-  const el = textareaRef.value;
+  const el = textareaEl.value;
   if (!item || !el) return;
 
   const value = props.modelValue ?? "";
@@ -204,13 +194,14 @@ function onKeyup(e: KeyboardEvent) {
   <div class="w-full">
     <div
       v-if="viewMode === 'edit'"
-      class="flex flex-row gap-2 items-center mb-2">
+      class="flex flex-row gap-2 items-start mb-2 h-7">
       <UTooltip text="Wrap selection in <b></b>">
         <UButton
           icon="material-symbols:format-bold"
           variant="ghost"
           color="neutral"
           size="xs"
+          @mousedown.prevent
           @click="applyBold" />
       </UTooltip>
       <UTooltip text="Wrap selection in <i></i>">
@@ -219,8 +210,10 @@ function onKeyup(e: KeyboardEvent) {
           variant="ghost"
           color="neutral"
           size="xs"
+          @mousedown.prevent
           @click="applyItalic" />
       </UTooltip>
+
       <UPopover>
         <UTooltip text="Wrap selection in <color=#hex></color>">
           <UButton
@@ -233,39 +226,43 @@ function onKeyup(e: KeyboardEvent) {
           <div class="p-3 flex flex-col gap-3 w-56">
             <UColorPicker v-model="pendingColor" format="hex" />
             <div v-if="colors.length > 0" class="flex flex-wrap gap-2">
-              <button
+              <UTooltip
                 v-for="swatch in colors"
-                :key="swatch.name"
-                type="button"
-                class="w-6 h-6 rounded-full border border-gray-300"
-                :style="{ backgroundColor: swatch.hex }"
-                :title="swatch.name"
-                @click="applyColor(swatch.name, true)" />
+                :text="`Apply ${swatch.name}`"
+                :delayDuration="50"
+                :content="{
+                  side: 'top',
+                  sideOffset: 5,
+                  collisionPadding: 8,
+                }">
+                <button
+                  :key="swatch.name"
+                  type="button"
+                  class="w-6 h-6 hover:cursor-pointer"
+                  :style="{ backgroundColor: swatch.hex }"
+                  @click="applyColor(swatch.name, true)" />
+              </UTooltip>
             </div>
-            <UButton size="xs" block @click="applyColor(pendingColor, false)"
+            <UButton
+              size="xs"
+              block
+              @mousedown.prevent
+              @click="applyColor(pendingColor, false)"
               >Apply color</UButton
             >
           </div>
         </template>
       </UPopover>
-
-      <USelectMenu
-        v-model="variableMenuValue"
-        :items="variableMenuItems"
-        value-key="value"
-        placeholder="Insert variable"
-        icon="material-symbols:data-object"
-        class="w-44 ml-auto"
-        @update:model-value="onVariableMenuSelect" />
     </div>
 
     <div v-if="viewMode === 'edit'" class="relative">
-      <textarea
-        ref="textareaRef"
+      <UTextarea
+        ref="textareaComponentRef"
         :value="modelValue"
         :placeholder="placeholder"
         rows="3"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md outline-none leading-relaxed resize-y"
+        autoresize
+        class="w-full resize-none"
         @input="onInput"
         @keydown="onKeydown"
         @keyup="onKeyup"
@@ -274,7 +271,7 @@ function onKeyup(e: KeyboardEvent) {
 
       <div
         v-if="autocomplete.visible"
-        class="absolute z-50 min-w-48 max-h-48 overflow-y-auto bg-slate-800 border border-gray-300 rounded-md shadow-lg p-1"
+        class="absolute z-50 min-w-48 max-h-48 overflow-y-auto bg-muted border border-accented rounded-none shadow-lg p-1"
         :style="{
           top: `${autocomplete.top}px`,
           left: `${autocomplete.left}px`,
@@ -283,8 +280,8 @@ function onKeyup(e: KeyboardEvent) {
           v-for="(item, index) in autocomplete.items"
           :key="item.name"
           type="button"
-          class="flex justify-between gap-2 w-full px-2 py-1 rounded text-left hover:bg-neutral-500/10"
-          :class="{ 'bg-neutral-500/30': index === autocomplete.activeIndex }"
+          class="flex justify-between gap-2 w-full px-2 py-1 rounded-nome text-left hover:bg-elevated/50"
+          :class="{ 'bg-elevated': index === autocomplete.activeIndex }"
           @mousedown.prevent="acceptAutocomplete(index)">
           <span class="text-xs">{{ item.name }}</span>
           <span class="text-xs opacity-60">{{ item.type }}</span>
