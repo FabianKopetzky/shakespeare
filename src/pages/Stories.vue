@@ -62,7 +62,7 @@
       <UPagination
         v-model:page="currentPage"
         :items-per-page="PAGE_SIZE"
-        sibling-count="1"
+        :sibling-count="1"
         :total="filteredStories.length" />
     </div>
 

@@ -1,11 +1,26 @@
 <template>
   <div class="h-full">
-    <div>
-      <h1>Settings</h1>
-      <span class="self-end text-dimmed text-balance"
-        >Manage preferences of this project. Settings are stored per project and
-        are directly tied to it.</span
+    <div class="flex flex-row justify-between items-start">
+      <div>
+        <h1>Settings</h1>
+        <div class="max-w-200">
+          <span class="self-end text-dimmed text-balance"
+            >Manage preferences of this project. Settings are stored per
+            project. Some settings are only available in the native app and will
+            not work on the web!</span
+          >
+        </div>
+      </div>
+      <UButton
+        icon="material-symbols:reset-wrench-sharp"
+        @click="resetConfirmOpen = true"
+        >Reset to default</UButton
       >
+      <ConfirmDialog
+        v-model:open="resetConfirmOpen"
+        title="Reset settings?"
+        description="Your project settings are about to be reset to their default. The Unity streaming assets path will remain unchanged. Are you sure you want to proceed?"
+        @confirm="resetSettings()" />
     </div>
     <div class="w-full h-0.5 bg-accented mt-12 mb-6" />
 
@@ -87,6 +102,14 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { useContentStore } from "../stores/content";
+import defaultSettings from "../utils/settings";
+import ConfirmDialog from "../components/forms/ConfirmDialog.vue";
+import { ref } from "vue";
 
 const { settings } = storeToRefs(useContentStore());
+const resetConfirmOpen = ref<boolean>(false);
+function resetSettings(): void {
+  const unityPath = settings.value.unityStreamingAssetsPath;
+  settings.value = { ...defaultSettings, unityStreamingAssetsPath: unityPath };
+}
 </script>

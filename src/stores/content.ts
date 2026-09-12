@@ -17,7 +17,7 @@ export const useContentStore = defineStore('content', () => {
   const customFields = ref<CustomFieldSchema[]>([]);
   const events = ref<Event[]>([]);
 
-  const settings = ref<Preferences>(defaultSettings);
+  const settings = ref<Preferences>(structuredClone(defaultSettings));
 
   return { dialogues, stories, storyNodes, languages, textColors, storyVariables, customFields, events, projectTitle, projectAuthor, settings }
 })

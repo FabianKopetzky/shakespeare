@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import type { Language } from "../../types/schema";
 import LanguageInput from "./LanguageInput.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
-import { storeToRefs } from "pinia";
-import { useContentStore } from "../../stores/content.ts";
 import { defaultLanguageIcon } from "../../utils/languageIcons.ts";
 
 interface Props {

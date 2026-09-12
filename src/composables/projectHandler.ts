@@ -104,7 +104,7 @@ export function useProjectHandler() {
                 contentStore.projectTitle = fallbackTitle;
                 contentStore.projectAuthor = fallbackAuthor;
 
-                contentStore.settings = defaultSettings;
+                contentStore.settings = structuredClone(defaultSettings);
 
                 contentStore.dialogues = [];
                 contentStore.stories = [];
@@ -129,7 +129,7 @@ export function useProjectHandler() {
             contentStore.projectTitle = project.projectTitle ?? fallbackTitle;
             contentStore.projectAuthor = project.projectAuthor ?? fallbackAuthor;
 
-            contentStore.settings = project.settings ?? defaultSettings;
+            contentStore.settings = project.settings ?? structuredClone(defaultSettings);
 
             contentStore.dialogues = project.dialogues ?? [];
             contentStore.stories = project.stories ?? [];
