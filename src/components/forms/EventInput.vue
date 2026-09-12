@@ -4,6 +4,7 @@ import type { FormMode, Event, EventParam, DataType } from "../../types/schema";
 import { useWidget } from "../../composables/widget";
 import { useContentStore } from "../../stores/content";
 import { useConditionUtils } from "../../utils/conditionUtils";
+import { storeToRefs } from "pinia";
 
 interface Props {
   mode: FormMode;
@@ -13,7 +14,7 @@ const props = defineProps<Props>();
 const open = defineModel<boolean>("open", { default: false });
 
 const { displayError } = useWidget();
-const { events } = useContentStore();
+const { events } = storeToRefs(useContentStore());
 
 const eventName = ref<string>("");
 const params = ref<EventParam[]>([]);
@@ -74,7 +75,7 @@ function submit() {
   }
   if (
     props.mode === "Create" &&
-    events.find((e) => e.name == eventName.value)
+    events.value.find((e) => e.name == eventName.value)
   ) {
     displayError("An event with this name already exists!");
     return;

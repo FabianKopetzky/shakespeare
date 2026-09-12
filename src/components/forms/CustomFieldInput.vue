@@ -9,6 +9,7 @@ import {
 import { useWidget } from "../../composables/widget";
 import { useContentStore } from "../../stores/content";
 import { useConditionUtils } from "../../utils/conditionUtils";
+import { storeToRefs } from "pinia";
 
 interface Props {
   mode: FormMode;
@@ -18,7 +19,7 @@ const props = defineProps<Props>();
 const open = defineModel<boolean>("open", { default: false });
 
 const { displayError } = useWidget();
-const { customFields } = useContentStore();
+const { customFields } = storeToRefs(useContentStore());
 
 const fieldName = ref<string>("");
 const fieldLabel = ref<string>("");
@@ -111,7 +112,7 @@ function submit() {
 
   if (
     props.mode === "Create" &&
-    customFields.find((f) => f.name == fieldName.value)
+    customFields.value.find((f) => f.name == fieldName.value)
   ) {
     displayError("A custom field with this name already exists!");
     return;

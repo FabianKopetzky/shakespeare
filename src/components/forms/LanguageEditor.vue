@@ -67,6 +67,7 @@ function deleteLanguage(code: string) {
     </div>
 
     <div v-if="defaultLanguage" class="mt-8">
+      <p class="text-dimmed text-sm mb-2">Default language</p>
       <LanguageItem
         @edit="editLanguage"
         :language="defaultLanguage"
@@ -74,18 +75,14 @@ function deleteLanguage(code: string) {
     </div>
 
     <template v-if="otherLanguages.length > 0">
-      <div v-for="lang in otherLanguages" :key="lang.code">
+      <div class="w-full h-0.5 bg-accented mt-4 mb-4" />
+      <p class="text-dimmed text-sm mb-2">Translations</p>
+      <div v-for="lang in otherLanguages" :key="lang.code" class="mb-2">
         <LanguageItem
           @edit="editLanguage"
           @delete="deleteLanguage"
           :language="lang"
           :deletable="true" />
-      </div>
-    </template>
-    <template v-else>
-      <div class="flex flex-col items-center justify-center text-muted">
-        <UIcon name="mingcute:empty-box-fill" class="w-12 h-12" />
-        <span>No translations defined</span>
       </div>
     </template>
 

@@ -110,7 +110,7 @@ export function useProjectHandler() {
                 contentStore.stories = [];
                 contentStore.storyNodes = {};
 
-                contentStore.languages = [{ code: 'default', display: 'English', isDefault: true }];
+                contentStore.languages = [{ code: 'default', display: 'English', icon: 'flagpack:gb-ukm', isDefault: true }];
                 contentStore.textColors = [];
                 contentStore.storyVariables = [];
                 contentStore.customFields = [];

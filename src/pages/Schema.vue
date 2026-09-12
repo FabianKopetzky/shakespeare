@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full">
+  <div class="h-full flex flex-col">
     <div>
       <h1>Schema</h1>
       <span class="self-end text-dimmed text-balance"
@@ -8,18 +8,27 @@
       >
     </div>
     <div class="w-full h-0.5 bg-accented mt-12 mb-6" />
-    <UTabs :items="sections">
+    <UTabs
+      :items="sections"
+      class="flex-1 min-h-0"
+      :ui="{ content: 'flex-1 min-h-0' }">
       <template #model>
-        <CustomFieldEditor class="mt-8" />
+        <div class="h-full overflow-y-auto mt-8">
+          <CustomFieldEditor />
+        </div>
       </template>
       <template #events>
-        <EventEditor class="mt-8" />
+        <div class="h-full overflow-y-auto mt-8">
+          <EventEditor />
+        </div>
       </template>
       <template #languages>
-        <LanguageEditor class="mt-8" />
+        <div class="h-full overflow-y-auto mt-8">
+          <LanguageEditor />
+        </div>
       </template>
       <template #variables>
-        <div class="flex flex-row h-full gap-12 mt-8">
+        <div class="h-full overflow-y-auto mt-8 flex flex-row gap-12">
           <StoryVariableEditor class="flex-5" />
           <div class="bg-accented w-0.5"></div>
           <TextColorEditor class="flex-4" />
@@ -28,6 +37,7 @@
     </UTabs>
   </div>
 </template>
+
 <script setup lang="ts">
 import CustomFieldEditor from "../components/forms/CustomFieldEditor.vue";
 import EventEditor from "../components/forms/EventEditor.vue";

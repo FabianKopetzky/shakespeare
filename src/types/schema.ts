@@ -169,6 +169,7 @@ export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story 
 export type Language = {
   code: string,
   display: string,
+  icon?: string,
   isDefault: boolean
 }
 export type TextColor = {

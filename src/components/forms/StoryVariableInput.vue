@@ -4,6 +4,7 @@ import type { FormMode, StoryVariable, DataType } from "../../types/schema";
 import { useWidget } from "../../composables/widget";
 import { useContentStore } from "../../stores/content";
 import { useConditionUtils } from "../../utils/conditionUtils";
+import { storeToRefs } from "pinia";
 
 interface Props {
   mode: FormMode;
@@ -13,7 +14,7 @@ const props = defineProps<Props>();
 const open = defineModel<boolean>("open", { default: false });
 
 const { displayError } = useWidget();
-const { storyVariables } = useContentStore();
+const { storyVariables } = storeToRefs(useContentStore());
 
 const variableName = ref<string>("");
 const variableType = ref<DataType>("Integer");
@@ -84,7 +85,7 @@ function submit() {
 
   if (
     props.mode === "Create" &&
-    storyVariables.find((v) => v.name == variableName.value)
+    storyVariables.value.find((v) => v.name == variableName.value)
   ) {
     displayError("A variable with this name already exists!");
     return;
@@ -138,6 +139,7 @@ function clear() {
             :disabled="props.mode !== 'Create'"
             :model-value="variableType"
             :items="typeOptions"
+            :leading-icon="typeMeta[variableType].icon"
             value-key="value"
             label-key="label"
             @update:model-value="onTypeChange" />

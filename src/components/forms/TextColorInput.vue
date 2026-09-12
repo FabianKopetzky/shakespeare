@@ -90,7 +90,7 @@ function clear() {
 <template>
   <UModal
     v-model:open="open"
-    :title="props.mode === 'Create' ? 'Add color' : 'Edit color'">
+    :title="props.mode === 'Create' ? 'Add text color' : 'Edit text color'">
     <template #body>
       <div class="flex flex-col gap-4 items-start">
         <UFormField
@@ -102,7 +102,7 @@ function clear() {
             :disabled="props.mode !== 'Create'"
             v-model="colorName" />
         </UFormField>
-        <UFormField class="w-full" label="Hex" help="e.g. #A1B2C3">
+        <UFormField class="w-full">
           <div class="flex flex-row gap-2 items-center">
             <UPopover :content="{ updatePositionStrategy: 'optimized' }">
               <UButton
