@@ -68,7 +68,7 @@ import { storeToRefs } from "pinia";
 import { useContentStore } from "../../stores/content";
 
 const { fieldMeta } = useConditionUtils();
-const { languages } = storeToRefs(useContentStore());
+const { languages, settings } = storeToRefs(useContentStore());
 
 interface Props {
   node: DialogueNode;
@@ -89,6 +89,7 @@ const descriptionPreview = computed(() => {
 });
 
 const fullyTranslated = computed<boolean>(() => {
+  if (!settings.value.showMissingTranslations) return true;
   if (!props.node?.sentences) return false;
 
   for (const s of props.node?.sentences) {

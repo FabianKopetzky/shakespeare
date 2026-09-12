@@ -56,7 +56,7 @@ export default defineConfig({
           },
           checkbox: {
             slots: {
-              base: 'rounded-none!'
+              base: 'rounded-none! hover:cursor-pointer!'
             },
             variants: {
               size: {

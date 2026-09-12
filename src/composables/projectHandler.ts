@@ -8,6 +8,7 @@ import { exists, mkdir, readDir, readTextFile, writeTextFile } from "@tauri-apps
 
 import { isValidProject } from "./projectValidator";
 import { invoke } from "@tauri-apps/api/core";
+import defaultSettings from "../utils/settings";
 
 export interface ProjectFileEntry {
     name: string,
@@ -37,7 +38,7 @@ export function useProjectHandler() {
         return await join(base, `${projectName}.json`);
     }
     async function getUnityStoryPath(): Promise<string> {
-        if(!contentStore.unityStreamingAssetsPath || contentStore.unityStreamingAssetsPath.length <= 0) return '';
+        if(!contentStore.settings.unityStreamingAssetsPath || contentStore.settings.unityStreamingAssetsPath.length <= 0) return '';
         const base = await getUnityProjectPath();
         try {
             return await invoke<string>('resolve_project_path', { base: base, subfolder: 'Stories'});
@@ -47,10 +48,10 @@ export function useProjectHandler() {
         }
     }
     async function getUnityProjectPath(): Promise<string> {
-        if(!contentStore.unityStreamingAssetsPath || contentStore.unityStreamingAssetsPath.length <= 0) return '';
+        if(!contentStore.settings.unityStreamingAssetsPath || contentStore.settings.unityStreamingAssetsPath.length <= 0) return '';
         
         try {
-            return await invoke<string>('resolve_project_path', { base: contentStore.unityStreamingAssetsPath, subfolder: 'Shakespeare'});
+            return await invoke<string>('resolve_project_path', { base: contentStore.settings.unityStreamingAssetsPath, subfolder: 'Shakespeare'});
         } catch(err) {
             console.error('Error resolving unity project path:', err);
             return '';
@@ -103,7 +104,7 @@ export function useProjectHandler() {
                 contentStore.projectTitle = fallbackTitle;
                 contentStore.projectAuthor = fallbackAuthor;
 
-                contentStore.unityStreamingAssetsPath = '';
+                contentStore.settings = defaultSettings;
 
                 contentStore.dialogues = [];
                 contentStore.stories = [];
@@ -128,7 +129,7 @@ export function useProjectHandler() {
             contentStore.projectTitle = project.projectTitle ?? fallbackTitle;
             contentStore.projectAuthor = project.projectAuthor ?? fallbackAuthor;
 
-            contentStore.unityStreamingAssetsPath = project.unityStreamingAssetsPath ?? '';
+            contentStore.settings = project.settings ?? defaultSettings;
 
             contentStore.dialogues = project.dialogues ?? [];
             contentStore.stories = project.stories ?? [];

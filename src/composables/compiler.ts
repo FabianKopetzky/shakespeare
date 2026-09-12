@@ -37,7 +37,7 @@ export function useCompiler() {
         const data = {
             projectTitle: contentStore.projectTitle,
             projectAuthor: contentStore.projectAuthor,
-            unityStreamingAssetsPath: contentStore.unityStreamingAssetsPath,
+            unityStreamingAssetsPath: contentStore.settings.unityStreamingAssetsPath,
 
             dialogues: contentStore.dialogues,
             stories: contentStore.stories,

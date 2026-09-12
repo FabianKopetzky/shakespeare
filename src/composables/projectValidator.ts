@@ -1,7 +1,9 @@
+import type { Preferences } from "../types/schema";
+
 export function isValidProject(project: any): project is {
     projectTitle?: string;
     projectAuthor?: string;
-    unityStreamingAssetsPath?: string;
+    settings?: Preferences;
     dialogues: any[];
     stories: any[];
     storyNodes: Record<string, any>;

@@ -175,3 +175,16 @@ export type TextColor = {
   name: string, // color variable name identifier
   hex: string // hex of the color
 }
+
+//* SETTINGS
+
+export type Preferences = {
+  unityStreamingAssetsPath: string,
+  allowEmptyDialogues: boolean,
+  compileTextColors: boolean,
+  warnBeforeDiscarding: boolean,
+  warnBeforeClosing: boolean,
+  autoSaveProject: boolean,
+  showAutoSaveMessages: boolean,
+  showMissingTranslations: boolean
+}

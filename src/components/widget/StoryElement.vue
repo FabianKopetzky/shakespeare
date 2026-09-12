@@ -82,7 +82,7 @@ const { fieldMeta } = useConditionUtils();
 
 const showDeleteDialog = ref<boolean>(false);
 const props = defineProps<Props>();
-const { languages, storyNodes } = storeToRefs(useContentStore());
+const { languages, storyNodes, settings } = storeToRefs(useContentStore());
 
 const MAX_DESCRIPTION_CHARS = 20;
 const descriptionPreview = computed(() => {
@@ -93,6 +93,7 @@ const descriptionPreview = computed(() => {
 });
 
 const fullyTranslated = computed<boolean>(() => {
+  if (!settings.value.showMissingTranslations) return true;
   if (!props.story?.nodes) return false;
 
   for (const n of props.story?.nodes) {
