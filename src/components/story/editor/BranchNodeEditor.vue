@@ -80,6 +80,14 @@
               <DialogueSentenceEditor
                 :sentence="branchAsSentence(branch)"
                 :current-language="currentLanguageCode"
+                :current-language-display="
+                  languages.find((l) => l.code == currentLanguageCode)
+                    ?.display || currentLanguageCode
+                "
+                :reference-language-display="
+                  languages.find((l) => l.code == referenceLanguageCode)
+                    ?.display || referenceLanguageCode
+                "
                 :reference-language="isSplit ? referenceLanguageCode : null"
                 :is-split="isSplit"
                 :variables="storyVariables"

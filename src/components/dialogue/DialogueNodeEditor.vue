@@ -129,13 +129,21 @@
           </div>
         </div>
 
-        <div class="mb-4 mt-4">
+        <div class="mb-4 mt-8">
           <DialogueSentenceEditor
             v-for="(sentence, index) in nodeSentences"
             :key="sentence.key"
             :sentence="sentence"
             :current-language="currentLanguageCode"
+            :current-language-display="
+              languages.find((l) => l.code == currentLanguageCode)?.display ||
+              currentLanguageCode
+            "
             :reference-language="isSplit ? referenceLanguageCode : null"
+            :reference-language-display="
+              languages.find((l) => l.code == referenceLanguageCode)?.display ||
+              referenceLanguageCode
+            "
             :is-split="isSplit"
             :variables="storyVariables"
             :colors="textColors"
@@ -144,7 +152,7 @@
 
           <div
             v-if="props.mode !== 'Read'"
-            class="w-full flex flex-row justify-end gap-2 pb-4 mb-4">
+            class="w-full flex flex-row justify-end gap-2 pb-4 my-4">
             <UButton
               @click="createDialogueSentence()"
               variant="ghost"

@@ -13,10 +13,13 @@ const nodes = computed(() => parseContent(props.content ?? ""));
 </script>
 
 <template>
-  <p v-if="content" class="whitespace-pre-wrap leading-relaxed">
-    <ContentNodeRenderer :nodes="nodes" :variables="variables" />
-  </p>
-  <p v-else class="text-gray-400 italic text-sm">
-    No content for this language yet.
-  </p>
+  <div
+    class="w-full rounded-none! border-none! border-0! bg-muted! shadow-sm ring-1 ring-inset ring-[#4a3f30] focus:ring-1 focus:ring-inset focus:ring-[#4a3f30] outline-none transition-colors disabled:cursor-not-allowed disabled:opacity-75">
+    <p v-if="content" class="whitespace-pre-wrap leading-relaxed">
+      <ContentNodeRenderer :nodes="nodes" :variables="variables" />
+    </p>
+    <p v-else class="text-gray-400 italic text-sm">
+      No content for this language yet.
+    </p>
+  </div>
 </template>
