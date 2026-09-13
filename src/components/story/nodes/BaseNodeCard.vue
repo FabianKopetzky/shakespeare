@@ -1,6 +1,9 @@
 <template>
   <UContextMenu :items="menuItems">
-    <div class="story-node" :class="{ 'story-node--entry': isEntry }">
+    <div
+      class="story-node"
+      :style="{ '--accent': data.color }"
+      :class="{ 'story-node--entry': isEntry }">
       <Handle
         type="target"
         :position="Position.Top"
@@ -8,7 +11,10 @@
 
       <div class="story-node__header" :style="{ '--accent': data.color }">
         <span class="story-node__type">{{ data.typeLabel }}</span>
-        <span v-if="isEntry" class="story-node__entry-badge">Entry</span>
+        <UIcon
+          v-if="isEntry"
+          name="material-symbols:flag-sharp"
+          class="story-node__entry-badge size-5" />
       </div>
 
       <div class="story-node__title">{{ data.title }}</div>
@@ -43,6 +49,7 @@ import {
   ENTRY_NODE_ID_KEY,
   STORY_EDITOR_ACTIONS_KEY,
 } from "../../../composables/storyEditorKeys";
+import adjustLightness from "../../../utils/color-adjustments.ts";
 
 // vue-flow passes many more props (selected, dragging, zIndex, ...) that
 // this presentational component doesn't need - inheritAttrs is off so none
@@ -73,13 +80,13 @@ const actions = inject(STORY_EDITOR_ACTIONS_KEY);
 const menuItems = computed<ContextMenuItem[]>(() => [
   {
     label: "Set as entry point",
-    icon: "i-lucide-flag",
+    icon: "material-symbols:flag-sharp",
     disabled: isEntry.value,
     onSelect: () => actions?.setEntryNode(props.id),
   },
   {
     label: "Delete node",
-    icon: "i-lucide-trash-2",
+    icon: "material-symbols:delete-outline-sharp",
     color: "error",
     onSelect: () => actions?.deleteNode(props.id),
   },
@@ -88,21 +95,16 @@ const menuItems = computed<ContextMenuItem[]>(() => [
 
 <style scoped>
 .story-node {
-  min-width: 190px;
-  border-radius: 8px;
-  background: #1e1f24;
-  border: 1px solid #34363f;
-  color: #e7e7ea;
+  min-width: 200px;
+  border-radius: 0;
+  background: var(--ui-bg);
+  border: 1px solid var(--ui-border-muted);
   font-size: 12px;
   position: relative;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
 }
 
 .story-node--entry {
-  border-color: #5ad46b;
-  box-shadow:
-    0 0 0 1px #5ad46b,
-    0 2px 10px rgba(90, 212, 107, 0.35);
+  border: 1px solid var(--accent);
 }
 
 .story-node__header {
@@ -110,30 +112,33 @@ const menuItems = computed<ContextMenuItem[]>(() => [
   align-items: center;
   justify-content: space-between;
   padding: 6px 10px;
-  background: var(--accent, #4c7ef3);
-  border-radius: 8px 8px 0 0;
+  min-height: 2.25rem;
+  background: var(--accent);
   color: #12131a;
   font-weight: 600;
 }
 
 .story-node__type {
+  font-size: 0.8rem;
+  font-weight: 600;
   text-transform: uppercase;
-  font-size: 10px;
+  font-family: var(--font-sans);
   letter-spacing: 0.06em;
+  color: var(--accent);
+
+  @apply brightness-30;
 }
 
 .story-node__entry-badge {
-  font-size: 9px;
-  font-weight: 700;
-  background: #12131a;
-  color: #5ad46b;
-  padding: 1px 6px;
-  border-radius: 4px;
+  color: var(--accent);
+
+  @apply brightness-40;
 }
 
 .story-node__title {
   padding: 9px 10px;
-  font-weight: 500;
+  font-weight: 400;
+  font-size: 11px;
   word-break: break-word;
 }
 
@@ -154,19 +159,20 @@ const menuItems = computed<ContextMenuItem[]>(() => [
 }
 
 .story-node__output-label {
-  font-size: 11px;
-  color: #9a9ba3;
+  font-size: 10px;
+  color: var(--text-color-dimmed);
 }
 
 .story-node__pin {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
-  background: #7d8291;
-  border: 1px solid #12131a;
+  border-radius: 0;
+  background: var(--ui-bg-accented);
+  border: 1px solid var(--ui-border-muted);
 }
 
 .story-node__pin--in {
   left: 50%;
+  background: var(--accent);
 }
 </style>

@@ -56,7 +56,7 @@ export function useNodeRegistry() {
 registerNodeType<StoryNode>({
   type: "story",
   label: "Dialogue",
-  color: "#4c7ef3",
+  color: "#61A8CC",
   createDefault: (id, position) => ({
     id,
     type: "story",
@@ -75,7 +75,7 @@ registerNodeType<StoryNode>({
 registerNodeType<BranchNode>({
   type: "branch",
   label: "Branch",
-  color: "#f2a341",
+  color: "#E0975C",
   createDefault: (id, position) => ({
     id,
     type: "branch",
@@ -102,7 +102,7 @@ registerNodeType<BranchNode>({
 registerNodeType<ConditionNode>({
   type: "condition",
   label: "Condition",
-  color: "#59B774",
+  color: "#61CC61",
   createDefault: (id, position) => ({
     id,
     type: "condition",
@@ -124,7 +124,7 @@ registerNodeType<ConditionNode>({
 registerNodeType<RandomNode>({
   type: "random",
   label: "Random",
-  color: "#9E55B5",
+  color: "#A161CC",
   createDefault: (id, position) => ({
     id,
     type: "random",
@@ -149,7 +149,7 @@ registerNodeType<RandomNode>({
 registerNodeType<OperationNode>({
   type: "operation",
   label: "Operation",
-  color: "#FF5659",
+  color: "#CC6161",
   createDefault: (id, position) => ({
     id,
     type: "operation",
@@ -168,7 +168,7 @@ registerNodeType<OperationNode>({
 registerNodeType<EventNode>({
   type: "event",
   label: "Event",
-  color: "#FF96DD",
+  color: "#E2D16C",
   createDefault: (id, position) => ({
     id,
     type: "event",

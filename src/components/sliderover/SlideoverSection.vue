@@ -11,7 +11,7 @@
 <script setup lang="ts">
 interface Props {
   label: string;
-  stripeColor: string;
+  stripeColor?: string;
 }
 const props = withDefaults(defineProps<Props>(), {
   stripeColor: "bg-accented",
