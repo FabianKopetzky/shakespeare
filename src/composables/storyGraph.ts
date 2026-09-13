@@ -19,6 +19,7 @@ export type StoryNodeCardData = {
   title: string;
   typeLabel: string;
   color: string;
+  icon: string;
   outputs: { id: string; label?: string }[];
 };
 
@@ -63,6 +64,7 @@ export function useStoryGraph(getStory: () => Story) {
           title: def.getTitle(node),
           typeLabel: def.label,
           color: def.color,
+          icon: def.icon,
           outputs: def.getOutputs(node),
         },
       };
@@ -147,6 +149,7 @@ export function useStoryGraph(getStory: () => Story) {
               title: def.getTitle(node),
               typeLabel: def.label,
               color: def.color,
+              icon: def.icon,
               outputs: def.getOutputs(node),
             },
           }

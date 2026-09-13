@@ -10,7 +10,12 @@
         class="story-node__pin story-node__pin--in" />
 
       <div class="story-node__header" :style="{ '--accent': data.color }">
-        <span class="story-node__type">{{ data.typeLabel }}</span>
+        <div class="flex flex-row items-center justify-start gap-2">
+          <UIcon
+            :name="data.icon"
+            class="size-4 text-(--accent) brightness-30" />
+          <span class="story-node__type">{{ data.typeLabel }}</span>
+        </div>
         <UIcon
           v-if="isEntry"
           name="material-symbols:flag-sharp"
@@ -49,11 +54,7 @@ import {
   ENTRY_NODE_ID_KEY,
   STORY_EDITOR_ACTIONS_KEY,
 } from "../../../composables/storyEditorKeys";
-import adjustLightness from "../../../utils/color-adjustments.ts";
 
-// vue-flow passes many more props (selected, dragging, zIndex, ...) that
-// this presentational component doesn't need - inheritAttrs is off so none
-// of them accidentally leak onto the root element.
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
@@ -61,9 +62,6 @@ const props = defineProps<{
   data: StoryNodeCardData;
 }>();
 
-// Injected rather than passed through `data` so that changing which node is
-// the entry point updates instantly, without needing to rebuild every
-// node's data object.
 const entryNodeId = inject(
   ENTRY_NODE_ID_KEY,
   computed(() => null),
@@ -72,11 +70,6 @@ const isEntry = computed(() => entryNodeId.value === props.id);
 
 const actions = inject(STORY_EDITOR_ACTIONS_KEY);
 
-// UContextMenu uses `as-child` internally, so wrapping the node's own root
-// div here does NOT add an extra wrapper element - it merges the trigger's
-// listeners directly onto that div. Right-clicking a node opens this menu;
-// right-clicking empty canvas bubbles past it to the pane's own menu in
-// StoryEditor.vue, since this trigger already marked the event as handled.
 const menuItems = computed<ContextMenuItem[]>(() => [
   {
     label: "Set as entry point",
@@ -167,12 +160,11 @@ const menuItems = computed<ContextMenuItem[]>(() => [
   width: 10px;
   height: 10px;
   border-radius: 0;
-  background: var(--ui-bg-accented);
+  background: var(--ui-text-muted);
   border: 1px solid var(--ui-border-muted);
 }
 
 .story-node__pin--in {
   left: 50%;
-  background: var(--accent);
 }
 </style>

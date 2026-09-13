@@ -10,7 +10,11 @@
         :edge-types="edgeTypes"
         :apply-default="false"
         :delete-key-code="['Backspace', 'Delete']"
-        ha
+        :connection-line-type="ConnectionLineType.Step"
+        :connection-line-style="{
+          stroke: 'var(--ui-text-muted)',
+          strokeWidth: 2.5,
+        }"
         :node-drag-threshold="4"
         :min-zoom="0.15"
         :max-zoom="2"
@@ -46,6 +50,7 @@ import {
   type Connection,
   type NodeChange,
   type EdgeChange,
+  ConnectionLineType,
   type NodeMouseEvent,
   type NodeDragEvent,
 } from "@vue-flow/core";

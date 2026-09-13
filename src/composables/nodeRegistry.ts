@@ -19,13 +19,12 @@ export type OutputPin = {
  */
 export interface NodeTypeDefinition<T extends AnyStoryNode = AnyStoryNode> {
   type: T["type"];
-  label: string; // type badge text, e.g. "Story", "Branch"
-  color: string; // header accent color for this node type
+  label: string;
+  color: string;
+  icon: string;
   createDefault: (id: string, position: { x: number; y: number }) => T;
   getTitle: (node: T) => string;
-  // one output pin per possible outgoing connection. StoryNode has exactly
-  // one; BranchNode has one per branch. A node type with no outputs (e.g. a
-  // future "End" node) can just return [].
+  
   getOutputs: (node: T) => OutputPin[];
   getTargetId: (node: T, handleId: string) => string | null;
   setTargetId: (node: T, handleId: string, targetId: string | null) => void;
@@ -57,6 +56,7 @@ registerNodeType<StoryNode>({
   type: "story",
   label: "Dialogue",
   color: "#61A8CC",
+  icon: 'material-symbols:forum-sharp',
   createDefault: (id, position) => ({
     id,
     type: "story",
@@ -76,6 +76,7 @@ registerNodeType<BranchNode>({
   type: "branch",
   label: "Branch",
   color: "#E0975C",
+  icon: 'material-symbols:arrow-split',
   createDefault: (id, position) => ({
     id,
     type: "branch",
@@ -103,6 +104,7 @@ registerNodeType<ConditionNode>({
   type: "condition",
   label: "Condition",
   color: "#61CC61",
+  icon: 'material-symbols:help-center-sharp',
   createDefault: (id, position) => ({
     id,
     type: "condition",
@@ -125,6 +127,7 @@ registerNodeType<RandomNode>({
   type: "random",
   label: "Random",
   color: "#A161CC",
+  icon: 'famicons:dice-sharp',
   createDefault: (id, position) => ({
     id,
     type: "random",
@@ -150,6 +153,7 @@ registerNodeType<OperationNode>({
   type: "operation",
   label: "Operation",
   color: "#CC6161",
+  icon: 'material-symbols:settings-sharp',
   createDefault: (id, position) => ({
     id,
     type: "operation",
@@ -169,6 +173,7 @@ registerNodeType<EventNode>({
   type: "event",
   label: "Event",
   color: "#E2D16C",
+  icon: 'ic:sharp-electric-bolt',
   createDefault: (id, position) => ({
     id,
     type: "event",
