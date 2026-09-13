@@ -1,7 +1,11 @@
 <template>
   <USlideover v-model:open="isOpen" :dismissible="false">
     <template #header>
-      <SlideoverHeader :title="editorTitle" @close="close" @save="save" />
+      <SlideoverHeader
+        :title="editorTitle"
+        :mode="props.mode"
+        @close="close"
+        @save="save" />
     </template>
     <template #body>
       <div class="h-full">

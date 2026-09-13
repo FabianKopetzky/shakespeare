@@ -3,7 +3,7 @@
     <img src="/sp_gradient.png" class="w-30 h-30 aspect-square select-none" />
     <div>
       <h1 class="text-8xl select-none hero-header">Shakespeare</h1>
-      <p class="text-dimmed font-bold text-xl select-none">
+      <p class="text-dimmed font-semibold text-xl select-none">
         The story editor for Unity.
       </p>
     </div>

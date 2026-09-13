@@ -1,7 +1,11 @@
 <template>
   <USlideover v-model:open="isOpen" :dismissible="false" :ui="slideoverUi">
     <template #header>
-      <SlideoverHeader :title="editorTitle" @close="close" @save="save" />
+      <SlideoverHeader
+        :title="editorTitle"
+        :mode="props.mode"
+        @close="close"
+        @save="save" />
     </template>
     <template #body>
       <div class="h-full">
@@ -28,6 +32,7 @@
         <div class="mb-12">
           <div v-for="fieldSchema in getCustomFieldsForModel('dialogue')">
             <FieldInstanceInput
+              :readonly="props.mode === 'Read'"
               class="mb-2"
               @submit="
                 (value) => {
@@ -48,7 +53,7 @@
         </div>
 
         <SlideoverSection :label="`Sentences (${nodeSentences.length})`">
-          <div class="bg-default">
+          <div v-if="props.mode !== 'Read'" class="bg-default">
             <UButton
               class="ml-4"
               :color="viewMode === 'edit' ? 'primary' : 'neutral'"

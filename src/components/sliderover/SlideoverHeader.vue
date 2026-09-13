@@ -8,7 +8,11 @@
         class="h-12 w-12"
         :ui="{ base: 'flex items-center justify-center' }"
         icon="material-symbols:close"
-        @click="showCancelConfirmation = true">
+        @click="
+          props.mode === 'Read'
+            ? emit('close')
+            : (showCancelConfirmation = true)
+        ">
       </UButton>
       <UButton
         v-if="props.mode !== 'Read'"
@@ -37,9 +41,11 @@ import ConfirmDialog from "../forms/ConfirmDialog.vue";
 
 interface Props {
   title: string;
-  mode: FormMode;
+  mode?: FormMode;
 }
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  mode: "Update",
+});
 
 const emit = defineEmits<{
   (e: "close"): void;

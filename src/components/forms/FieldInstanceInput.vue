@@ -4,6 +4,7 @@
       v-if="props.schema.type === 'Boolean'"
       class="w-full"
       v-model="fieldValue"
+      :disabled="props.readonly"
       :items="[
         { label: 'true', value: true },
         { label: 'false', value: false },
@@ -14,6 +15,7 @@
       v-else
       class="w-full"
       v-model="fieldValue"
+      :disabled="props.readonly"
       :type="props.schema.type === 'Integer' ? 'number' : 'text'"
       :icon="typeMeta[props.schema.type].icon" />
   </UFormField>
@@ -25,9 +27,12 @@ import { useConditionUtils } from "../../utils/conditionUtils";
 
 interface Props {
   schema: CustomFieldSchema;
+  readonly?: boolean;
   defaultValue: string | boolean | number | undefined;
 }
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  readonly: false,
+});
 const emit = defineEmits<{
   (e: "submit", value: string | boolean | number): void;
 }>();
