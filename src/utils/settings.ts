@@ -5,10 +5,12 @@ const defaultSettings: Preferences = {
   compileTextColors: false,
   warnBeforeClosing: true,
   warnBeforeDiscarding: true,
-  allowEmptyDialogues: false,
   autoSaveProject: false,
   showAutoSaveMessages: false,
-  showMissingTranslations: true
+  showMissingTranslations: true,
+  storyGraphPattern: 'lines',
+  storyGraphPatternSize: 4,
+  storyGraphPatternGap: 80,
 };
 
 export default defaultSettings;

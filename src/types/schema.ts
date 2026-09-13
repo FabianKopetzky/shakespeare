@@ -181,11 +181,14 @@ export type TextColor = {
 
 export type Preferences = {
   unityStreamingAssetsPath: string,
-  allowEmptyDialogues: boolean,
   compileTextColors: boolean,
   warnBeforeDiscarding: boolean,
   warnBeforeClosing: boolean,
   autoSaveProject: boolean,
   showAutoSaveMessages: boolean,
-  showMissingTranslations: boolean
+  showMissingTranslations: boolean,
+  
+  storyGraphPattern: string,
+  storyGraphPatternSize: number,
+  storyGraphPatternGap: number,
 }

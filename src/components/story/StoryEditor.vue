@@ -132,7 +132,7 @@ async function upsertStory() {
   const newStory: Story = {
     id: storyKey.value,
     description: storyDescription.value,
-    entryNodeId: null,
+    entryNodeId: props.story?.entryNodeId ?? null,
     nodes: props.story?.nodes ?? [],
     fields: customFields.value ?? createDefaultFieldsForModel("story"),
   };

@@ -60,12 +60,6 @@
       <div class="flex flex-row items-center justify-between gap-4 w-full">
         <UCheckbox
           size="xl"
-          label="Allow empty dialogue sentences"
-          v-model="settings.allowEmptyDialogues" />
-      </div>
-      <div class="flex flex-row items-center justify-between gap-4 w-full">
-        <UCheckbox
-          size="xl"
           label="Warn before discarding editor changes"
           v-model="settings.warnBeforeDiscarding" />
       </div>
@@ -96,6 +90,62 @@
           label="Show missing translations"
           v-model="settings.showMissingTranslations" />
       </div>
+    </div>
+    <div
+      class="w-full h-14 bg-elevated flex flex-row items-center justify-start mb-4 mt-12">
+      <div class="h-full w-2 bg-primary" />
+      <h3 class="ml-4">Appearance</h3>
+    </div>
+
+    <div class="flex flex-col gap-2 w-[50%]">
+      <UFormField class="w-full" label="Story graph pattern">
+        <USelect
+          class="w-full"
+          :items="[
+            {
+              value: 'lines',
+              label: 'Lines',
+              icon: 'material-symbols:table-rows-narrow-sharp',
+            },
+            {
+              value: 'dots',
+              label: 'Dots',
+              icon: 'material-symbols:more-horiz',
+            },
+            {
+              value: 'none',
+              label: 'None',
+              icon: 'material-symbols:close-sharp',
+            },
+          ]"
+          v-model="settings.storyGraphPattern" />
+      </UFormField>
+      <UFormField
+        v-show="settings.storyGraphPattern === 'dots'"
+        class="w-full mt-2"
+        label="Story graph dot size">
+        <div class="flex flex-row justify-start items-center gap-4">
+          <span class="w-9">{{ settings.storyGraphPatternSize }}</span>
+          <USlider
+            :min="1"
+            :max="8"
+            :step="0.2"
+            v-model="settings.storyGraphPatternSize" />
+        </div>
+      </UFormField>
+      <UFormField
+        v-show="settings.storyGraphPattern === 'lines'"
+        class="w-full mt-2"
+        label="Story graph line gap">
+        <div class="flex flex-row justify-start items-center gap-4">
+          <span class="w-9">{{ settings.storyGraphPatternGap }}</span>
+          <USlider
+            :min="20"
+            :max="120"
+            :step="1"
+            v-model="settings.storyGraphPatternGap" />
+        </div>
+      </UFormField>
     </div>
   </div>
 </template>

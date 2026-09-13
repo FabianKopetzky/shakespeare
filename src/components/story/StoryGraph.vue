@@ -1,14 +1,8 @@
 <template>
   <UContextMenu :items="paneMenuItems">
     <div
-      class="story-editor relative rounded-3xl overflow-hidden"
+      class="story-editor relative rounded-none border border-accented overflow-hidden"
       @contextmenu="rememberPanePos">
-      <!-- <div
-      v-if="story"
-      class="absolute top-4 left-4 p-4 z-20 bg-muted rounded-2xl">
-      <h3>{{ story.id }}</h3>
-      <span>{{ story.description }}</span>
-    </div> -->
       <VueFlow
         :nodes="flowNodes"
         :edges="flowEdges"
@@ -16,6 +10,7 @@
         :edge-types="edgeTypes"
         :apply-default="false"
         :delete-key-code="['Backspace', 'Delete']"
+        ha
         :node-drag-threshold="4"
         :min-zoom="0.15"
         :max-zoom="2"
@@ -25,7 +20,18 @@
         @connect="onConnect"
         @node-click="onNodeClick"
         @node-drag-stop="onNodeDragStop">
-        <Background variant="lines" :gap="50" pattern-color="#FFFFFF15" />
+        <Background
+          :variant="
+            settings.storyGraphPattern !== 'none'
+              ? (settings.storyGraphPattern as BackgroundVariantType)
+              : 'lines'
+          "
+          :bg-color="
+            settings.storyGraphPattern === 'none' ? 'var(--ui-bg-muted)' : ''
+          "
+          :gap="settings.storyGraphPatternGap"
+          :size="settings.storyGraphPatternSize"
+          pattern-color="var(--ui-bg-elevated)" />
         <Controls />
       </VueFlow>
     </div>
@@ -43,7 +49,7 @@ import {
   type NodeMouseEvent,
   type NodeDragEvent,
 } from "@vue-flow/core";
-import { Background } from "@vue-flow/background";
+import { Background, type BackgroundVariantType } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import type { ContextMenuItem } from "@nuxt/ui";
 import StoryEdge from "./StoryEdge.vue";
@@ -55,6 +61,8 @@ import {
 } from "../../composables/storyEditorKeys";
 import { useWidget } from "../../composables/widget.ts"; // adjust path to match your project
 import type { AnyStoryNode, Story } from "../../types/schema";
+import { storeToRefs } from "pinia";
+import { useContentStore } from "../../stores/content.ts";
 
 const props = defineProps<{ story: Story }>();
 const emit = defineEmits<{
@@ -64,6 +72,7 @@ const emit = defineEmits<{
 }>();
 
 const { displayError } = useWidget();
+const { settings } = storeToRefs(useContentStore());
 
 const graph = useStoryGraph(() => props.story);
 const {
@@ -208,6 +217,6 @@ const paneMenuItems = computed<ContextMenuItem[]>(() =>
   width: 100%;
   height: 100%;
   min-height: 600px;
-  background: #0b1221;
+  background: var(--ui-bg-muted);
 }
 </style>
