@@ -1,50 +1,31 @@
 <template>
   <USlideover v-model:open="isOpen" :dismissible="false">
     <template #header>
-      <div class="flex flex-row justify-between items-center w-full">
-        <p class="text-lg font-bold">{{ editorTitle }}</p>
-        <div class="flex flex-row gap-2">
-          <UButton
-            color="neutral"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="close">
-            <UIcon class="size-12" name="material-symbols:close" />
-          </UButton>
-          <UButton
-            v-if="props.mode !== 'Read'"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="save">
-            <UIcon class="size-12" name="material-symbols:check" />
-          </UButton>
-        </div>
-      </div>
+      <SlideoverHeader :title="editorTitle" @close="close" @save="save" />
     </template>
     <template #body>
       <div class="h-full">
-        <div class="mb-4">
-          <span class="font-bold">Story ID</span>
-          <UInput
-            v-model="storyKey"
-            icon="material-symbols:key-rounded"
-            :leading="true"
-            :maxlength="64"
-            :disabled="props.mode !== 'Create'"
-            class="w-full mt-2"
-            :class="{ 'opacity-40': props.mode === 'Update' }" />
-        </div>
-        <div class="mb-4">
-          <span class="font-bold"
-            >Description<span class="text-sm opacity-50">
-              (internal)</span
-            ></span
-          >
-          <UTextarea
-            v-model="storyDescription"
-            maxlength="400"
-            class="w-full mt-2" />
+        <SlideoverSection label="Properties" />
+        <div class="mb-4 flex flex-row justify-center items-start gap-4">
+          <UFormField class="flex-1" label="ID">
+            <UInput
+              v-model="storyKey"
+              :leading="true"
+              :maxlength="64"
+              :disabled="props.mode !== 'Create'"
+              class="w-full"
+              :class="{ 'opacity-40': props.mode === 'Update' }" />
+          </UFormField>
+          <UFormField class="flex-2" label="Description (internal)">
+            <UInput
+              v-model="storyDescription"
+              :disabled="props.mode === 'Read'"
+              maxlength="400"
+              class="w-full" />
+          </UFormField>
         </div>
 
-        <div class="mb-4">
+        <div>
           <div v-for="fieldSchema in getCustomFieldsForModel('story')">
             <FieldInstanceInput
               @submit="
