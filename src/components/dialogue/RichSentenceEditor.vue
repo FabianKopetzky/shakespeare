@@ -2,65 +2,75 @@
   <div class="w-full flex flex-col">
     <div
       v-if="viewMode === 'edit'"
-      class="flex flex-row gap-2 items-start mb-2 h-7 shrink-0">
-      <UTooltip text="Wrap selection in <b></b>">
-        <UButton
-          icon="material-symbols:format-bold"
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          @mousedown.prevent
-          @click="applyBold" />
-      </UTooltip>
-      <UTooltip text="Wrap selection in <i></i>">
-        <UButton
-          icon="material-symbols:format-italic"
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          @mousedown.prevent
-          @click="applyItalic" />
-      </UTooltip>
-
-      <UPopover>
-        <UTooltip text="Wrap selection in <color=#hex></color>">
+      class="flex flex-row items-start justify-between mb-2 h-7 shrink-0">
+      <div class="flex flex-row gap-2 items-start">
+        <UTooltip text="Wrap selection in <b></b>">
           <UButton
-            icon="material-symbols:format-color-text"
+            icon="material-symbols:format-bold"
             variant="ghost"
             color="neutral"
-            size="xs" />
+            size="xs"
+            @mousedown.prevent
+            @click="applyBold" />
         </UTooltip>
-        <template #content>
-          <div class="p-3 flex flex-col gap-3 w-56">
-            <UColorPicker v-model="pendingColor" format="hex" />
-            <div v-if="colors.length > 0" class="flex flex-wrap gap-2">
-              <UTooltip
-                v-for="swatch in colors"
-                :text="`Apply ${swatch.name}`"
-                :delayDuration="50"
-                :content="{
-                  side: 'top',
-                  sideOffset: 5,
-                  collisionPadding: 8,
-                }">
-                <button
-                  :key="swatch.name"
-                  type="button"
-                  class="w-6 h-6 hover:cursor-pointer"
-                  :style="{ backgroundColor: swatch.hex }"
-                  @click="applyColor(swatch.name, true)" />
-              </UTooltip>
-            </div>
+        <UTooltip text="Wrap selection in <i></i>">
+          <UButton
+            icon="material-symbols:format-italic"
+            variant="ghost"
+            color="neutral"
+            size="xs"
+            @mousedown.prevent
+            @click="applyItalic" />
+        </UTooltip>
+
+        <UPopover>
+          <UTooltip text="Wrap selection in <color=#hex></color>">
             <UButton
-              size="xs"
-              block
-              @mousedown.prevent
-              @click="applyColor(pendingColor, false)"
-              >Apply color</UButton
-            >
-          </div>
-        </template>
-      </UPopover>
+              icon="material-symbols:format-color-text"
+              variant="ghost"
+              color="neutral"
+              size="xs" />
+          </UTooltip>
+          <template #content>
+            <div class="p-3 flex flex-col gap-3 w-56">
+              <UColorPicker v-model="pendingColor" format="hex" />
+              <div v-if="colors.length > 0" class="flex flex-wrap gap-2">
+                <UTooltip
+                  v-for="swatch in colors"
+                  :text="`Apply ${swatch.name}`"
+                  :delayDuration="50"
+                  :content="{
+                    side: 'top',
+                    sideOffset: 5,
+                    collisionPadding: 8,
+                  }">
+                  <button
+                    :key="swatch.name"
+                    type="button"
+                    class="w-6 h-6 hover:cursor-pointer"
+                    :style="{ backgroundColor: swatch.hex }"
+                    @click="applyColor(swatch.name, true)" />
+                </UTooltip>
+              </div>
+              <UButton
+                size="xs"
+                block
+                @mousedown.prevent
+                @click="applyColor(pendingColor, false)"
+                >Apply color</UButton
+              >
+            </div>
+          </template>
+        </UPopover>
+      </div>
+
+      <UDropdownMenu :items="actionMenuItems">
+        <UButton
+          icon="material-symbols:more-vert"
+          color="neutral"
+          variant="ghost"
+          size="xs" />
+      </UDropdownMenu>
     </div>
 
     <div
@@ -126,20 +136,42 @@ import ContentNodeRenderer from "./ContentNodeRenderer.vue";
 
 const HEX_PATTERN = /^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
 
+// Shared shape for the "..." action menu, consumed by callers (e.g.
+// DialogueSentenceEditor / EditBranchNode) that inject extra items such as
+// branch conditions. Kept intentionally minimal/structural rather than
+// importing Nuxt UI's DropdownMenuItem type, so adjust if your UDropdownMenu
+// items type requires more fields (kbds, to, children, etc.).
+export interface SentenceActionMenuItem {
+  label: string;
+  icon?: string;
+  color?: "error" | "neutral" | "primary";
+  disabled?: boolean;
+  onSelect?: () => void;
+}
+
 interface Props {
   modelValue: string;
   variables: StoryVariable[];
   colors?: TextColor[];
   placeholder?: string;
   viewMode: "edit" | "preview";
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+  extraMenuItems?: SentenceActionMenuItem[][];
 }
 const props = withDefaults(defineProps<Props>(), {
   colors: () => [],
   placeholder: "Type your text here or type {{ to enter variables",
+  canMoveUp: true,
+  canMoveDown: true,
+  extraMenuItems: () => [],
 });
 
 const emit = defineEmits<{
   (e: "update:modelValue", value: string): void;
+  (e: "remove"): void;
+  (e: "move-up"): void;
+  (e: "move-down"): void;
 }>();
 
 const { displayError } = useWidget();
@@ -156,6 +188,40 @@ const previewNodes = computed(() => parseContent(props.modelValue ?? ""));
 const liveWarnings = computed(() =>
   validateContent(props.modelValue ?? "", props.variables, props.colors),
 );
+
+const actionMenuItems = computed<SentenceActionMenuItem[][]>(() => {
+  const groups: SentenceActionMenuItem[][] = [
+    [
+      {
+        label: "Move up",
+        icon: "material-symbols:arrow-upward",
+        disabled: !props.canMoveUp,
+        onSelect: () => emit("move-up"),
+      },
+      {
+        label: "Move down",
+        icon: "material-symbols:arrow-downward",
+        disabled: !props.canMoveDown,
+        onSelect: () => emit("move-down"),
+      },
+    ],
+  ];
+
+  if (props.extraMenuItems.length > 0) {
+    groups.push(...props.extraMenuItems);
+  }
+
+  groups.push([
+    {
+      label: "Remove",
+      icon: "material-symbols:delete-outline-sharp",
+      color: "error",
+      onSelect: () => emit("remove"),
+    },
+  ]);
+
+  return groups;
+});
 
 function updateValue(newValue: string) {
   emit("update:modelValue", newValue);

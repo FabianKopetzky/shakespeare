@@ -145,7 +145,11 @@
             :variables="storyVariables"
             :colors="textColors"
             :view-mode="viewMode"
-            @remove="removeSentence(index)" />
+            :can-move-up="index > 0"
+            :can-move-down="index < nodeSentences.length - 1"
+            @remove="removeSentence(index)"
+            @move-up="moveSentence(index, -1)"
+            @move-down="moveSentence(index, 1)" />
 
           <div
             v-if="props.mode !== 'Read'"
@@ -295,6 +299,12 @@ function createDialogueSentence() {
 }
 function removeSentence(index: number) {
   nodeSentences.value.splice(index, 1);
+}
+function moveSentence(index: number, direction: -1 | 1) {
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= nodeSentences.value.length) return;
+  const arr = nodeSentences.value;
+  [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
 }
 
 function validateAllSentences(): string[] {

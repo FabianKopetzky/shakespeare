@@ -99,7 +99,7 @@
             v-for="(branch, index) in branches"
             :key="branch.id"
             :items="branchContextMenuItems(index)">
-            <div class="relative my-12">
+            <div class="relative mt-4">
               <DialogueSentenceEditor
                 :sentence="branchAsSentence(branch)"
                 :current-language="currentLanguageCode"
@@ -109,7 +109,12 @@
                 :colors="textColors"
                 :view-mode="viewMode"
                 :exclude-custom-fields="true"
-                @remove="removeBranch(index)" />
+                :can-move-up="index > 0"
+                :can-move-down="index < branches.length - 1"
+                :extra-menu-items="branchExtraMenuItems(index)"
+                @remove="removeBranch(index)"
+                @move-up="moveBranch(index, -1)"
+                @move-down="moveBranch(index, 1)" />
 
               <div
                 v-if="branchFieldSchemas.length > 0"
@@ -165,7 +170,9 @@
                           : 'material-symbols:add-box-sharp'
                       "
                       @click="openConditionEditor(index)">
-                      {{ branch.condition ? "Edit" : "Add condition" }}
+                      {{
+                        branch.condition ? "Edit condition" : "Add condition"
+                      }}
                     </UButton>
                     <UButton
                       v-if="branch.condition"
@@ -215,6 +222,7 @@ import { useWidget } from "../../../composables/widget.ts";
 import { useConditionUtils } from "../../../utils/conditionUtils.ts";
 import { validateContent } from "../../../utils/dialogueContent.ts";
 import DialogueSentenceEditor from "../../dialogue/DialogueSentenceEditor.vue";
+import { type SentenceActionMenuItem } from "../../dialogue/RichSentenceEditor.vue";
 import ConditionInput from "../../forms/ConditionInput.vue";
 import { storeToRefs } from "pinia";
 import { useCustomFieldsUtils } from "../../../utils/customFieldsUtils.ts";
@@ -358,6 +366,25 @@ function moveBranch(index: number, direction: -1 | 1) {
   [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
 }
 
+// Single source of truth for the "Add/Edit condition" entry, shared by the
+// right-click card menu and the RichSentenceEditor "..." menu below.
+function branchConditionMenuItem(index: number): SentenceActionMenuItem {
+  const branch = branches.value[index];
+  return {
+    label: branch.condition ? "Edit condition" : "Add condition",
+    icon: branch.condition
+      ? "material-symbols:edit-sharp"
+      : "material-symbols:add-box-sharp",
+    onSelect: () => openConditionEditor(index),
+  };
+}
+
+// Injected into DialogueSentenceEditor -> RichSentenceEditor's "..." menu,
+// between "Move up/down" and "Remove".
+function branchExtraMenuItems(index: number): SentenceActionMenuItem[][] {
+  return [[branchConditionMenuItem(index)]];
+}
+
 function branchContextMenuItems(index: number) {
   return [
     [
@@ -374,19 +401,11 @@ function branchContextMenuItems(index: number) {
         onSelect: () => moveBranch(index, 1),
       },
     ],
-    [
-      {
-        label: branches.value[index].condition
-          ? "Edit condition"
-          : "Add condition",
-        icon: "material-symbols:rule",
-        onSelect: () => openConditionEditor(index),
-      },
-    ],
+    [branchConditionMenuItem(index)],
     [
       {
         label: "Delete",
-        icon: "material-symbols:delete-outline",
+        icon: "material-symbols:delete-outline-sharp",
         color: "error",
         onSelect: () => removeBranch(index),
       },
