@@ -80,6 +80,6 @@ function confirmDelete(): void {
     :description="`Are you sure you want to delete '${props.field.name}'? All instances of this field will be deleted. This cannot be undone.`"
     confirm-label="Delete"
     color="error"
-    icon="material-symbols:delete-outline"
+    icon="material-symbols:delete-outline-sharp"
     @confirm="confirmDelete" />
 </template>

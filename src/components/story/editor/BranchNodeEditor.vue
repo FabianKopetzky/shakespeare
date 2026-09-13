@@ -1,82 +1,105 @@
 <template>
   <USlideover v-model:open="isOpen" :dismissible="false" :ui="slideoverUi">
     <template #header>
-      <div class="flex flex-row justify-between items-center w-full">
-        <p class="text-lg font-bold">Edit branch node</p>
-        <div class="flex flex-row gap-2">
-          <UButton
-            color="neutral"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="close">
-            <UIcon class="size-12" name="material-symbols:close" />
-          </UButton>
-          <UButton
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="save">
-            <UIcon class="size-12" name="material-symbols:check" />
-          </UButton>
-        </div>
-      </div>
+      <SlideoverHeader
+        title="Edit branch node"
+        mode="Update"
+        @close="close"
+        @save="save" />
     </template>
     <template #body>
       <div class="h-full">
-        <div class="flex flex-row gap-4 items-end justify-between mt-2">
-          <div class="flex flex-row gap-4 items-end">
-            <UFormField label="Editing language">
-              <USelectMenu
-                v-model="currentLanguageCode"
-                :items="languageMenuItems"
-                value-key="value"
-                class="w-52" />
-            </UFormField>
-            <UFormField v-if="isSplit" label="Reference language">
-              <USelectMenu
-                v-model="referenceLanguageCode"
-                :items="referenceLanguageMenuItems"
-                value-key="value"
-                class="w-52" />
-            </UFormField>
-          </div>
-
-          <div class="flex flex-row justify-center gap-2">
+        <SlideoverSection :label="`Branches (${branches.length ?? 0})`">
+          <div class="bg-default">
             <UButton
+              class="ml-4"
+              :color="viewMode === 'edit' ? 'primary' : 'neutral'"
               :variant="viewMode === 'edit' ? 'solid' : 'outline'"
-              color="neutral"
               size="sm"
               @click="viewMode = 'edit'">
               Edit
             </UButton>
             <UButton
+              :color="viewMode === 'preview' ? 'primary' : 'neutral'"
               :variant="viewMode === 'preview' ? 'solid' : 'outline'"
-              color="neutral"
               size="sm"
               @click="viewMode = 'preview'">
               Preview
             </UButton>
           </div>
+        </SlideoverSection>
+
+        <div
+          v-if="languages.length > 1"
+          class="flex flex-row gap-4 items-end justify-between mt-2">
+          <div class="flex flex-row gap-4 items-end w-full">
+            <UFormField
+              label="Editing language"
+              :class="isSplit ? 'w-[50%]' : 'w-full'">
+              <USelectMenu
+                v-model="currentLanguageCode"
+                :items="languageMenuItems"
+                class="w-full"
+                :icon="
+                  languageMenuItems.find((i) => i.value == currentLanguageCode)
+                    ?.icon
+                "
+                value-key="value">
+                <template #item-label="{ item }">
+                  <span class="text-sm text-default">{{ item.display }}</span>
+                  <span class="text-sm text-dimmed"> ({{ item.value }})</span>
+                </template>
+                <template #default>
+                  <span class="text-sm text-default">{{
+                    languageMenuItems.find(
+                      (i) => i.value == currentLanguageCode,
+                    )?.display
+                  }}</span>
+                  <span class="text-sm text-dimmed">
+                    ({{ currentLanguageCode }})</span
+                  >
+                </template>
+              </USelectMenu>
+            </UFormField>
+            <UFormField
+              v-if="isSplit"
+              label="Reference language"
+              class="w-[50%]">
+              <USelectMenu
+                v-model="referenceLanguageCode"
+                :items="referenceLanguageMenuItems"
+                class="w-full"
+                :icon="
+                  languageMenuItems.find(
+                    (i) => i.value == referenceLanguageCode,
+                  )?.icon
+                "
+                value-key="value">
+                <template #item-label="{ item }">
+                  <span class="text-sm text-default">{{ item.display }}</span>
+                  <span class="text-sm text-dimmed"> ({{ item.value }})</span>
+                </template>
+                <template #default>
+                  <span class="text-sm text-default">{{
+                    languageMenuItems.find(
+                      (i) => i.value == referenceLanguageCode,
+                    )?.display
+                  }}</span>
+                  <span class="text-sm text-dimmed">
+                    ({{ referenceLanguageCode }})</span
+                  >
+                </template>
+              </USelectMenu>
+            </UFormField>
+          </div>
         </div>
 
-        <div class="mb-4 pl-8 mt-4">
-          <span class="font-bold">Branches ({{ branches.length ?? 0 }})</span>
-
+        <div class="mb-4 mt-4">
           <UContextMenu
             v-for="(branch, index) in branches"
             :key="branch.id"
             :items="branchContextMenuItems(index)">
-            <div class="border border-default rounded-lg p-4 mt-3 relative">
-              <div class="flex flex-row justify-between items-center mb-3">
-                <span class="font-semibold text-sm opacity-70"
-                  >Branch {{ index + 1 }}</span
-                >
-                <UDropdownMenu :items="branchContextMenuItems(index)">
-                  <UButton
-                    icon="material-symbols:more-vert"
-                    color="neutral"
-                    variant="ghost"
-                    size="xs" />
-                </UDropdownMenu>
-              </div>
-
+            <div class="relative my-12">
               <DialogueSentenceEditor
                 :sentence="branchAsSentence(branch)"
                 :current-language="currentLanguageCode"
@@ -90,6 +113,7 @@
 
               <div
                 v-if="branchFieldSchemas.length > 0"
+                v-show="viewMode === 'edit'"
                 class="flex flex-row flex-wrap gap-3 mt-2">
                 <div
                   v-for="fieldSchema in branchFieldSchemas"
@@ -115,7 +139,7 @@
                 </div>
               </div>
 
-              <div class="mt-3 pt-3 border-t border-default">
+              <div v-show="viewMode === 'edit'" class="mt-3 pt-3">
                 <div class="flex flex-row justify-between items-start gap-2">
                   <div class="flex flex-col gap-1 min-w-0">
                     <span class="text-xs font-semibold opacity-70"
@@ -126,19 +150,19 @@
                       class="text-sm text-muted truncate">
                       {{ conditionToString(branch.condition) }}
                     </span>
-                    <span v-else class="text-sm text-muted italic">
-                      Always shown
+                    <span v-else class="text-sm text-muted">
+                      This branch is always shown
                     </span>
                   </div>
                   <div class="flex flex-row gap-1 shrink-0">
                     <UButton
-                      size="xs"
-                      variant="soft"
+                      size="sm"
+                      variant="ghost"
                       color="neutral"
                       :icon="
                         branch.condition
-                          ? 'material-symbols:edit-outline'
-                          : 'material-symbols:add'
+                          ? 'material-symbols:edit-sharp'
+                          : 'material-symbols:add-box-sharp'
                       "
                       @click="openConditionEditor(index)">
                       {{ branch.condition ? "Edit" : "Add condition" }}
@@ -147,8 +171,8 @@
                       v-if="branch.condition"
                       size="xs"
                       variant="ghost"
-                      color="error"
-                      icon="material-symbols:close"
+                      color="neutral"
+                      icon="material-symbols:delete-outline-sharp"
                       @click="clearBranchCondition(index)" />
                   </div>
                 </div>
@@ -156,13 +180,12 @@
             </div>
           </UContextMenu>
 
-          <div class="w-full flex flex-row justify-end gap-2">
+          <div class="w-full flex flex-row justify-end gap-2 pb-4 my-4">
             <UButton
               @click="createBranch()"
-              class="flex items-center justify-center mt-3"
-              variant="outline"
+              variant="ghost"
               color="neutral"
-              leading-icon="basil:add-solid"
+              leading-icon="material-symbols:add-box-sharp"
               >Add branch</UButton
             >
           </div>
@@ -244,12 +267,19 @@ const languageMenuItems = computed(() =>
   languages.value.map((l) => ({
     label: `${l.code} (${l.display})`,
     value: l.code,
+    icon: l.icon,
+    display: l.display,
   })),
 );
 const referenceLanguageMenuItems = computed(() =>
   languages.value
     .filter((l) => l.code !== currentLanguageCode.value)
-    .map((l) => ({ label: `${l.code} (${l.display})`, value: l.code })),
+    .map((l) => ({
+      label: `${l.code} (${l.display})`,
+      value: l.code,
+      icon: l.icon,
+      display: l.display,
+    })),
 );
 
 const conditionEditorOpen = ref(false);
@@ -290,7 +320,7 @@ watch(isOpen, (open) => {
     defaultLanguage.value?.code ?? languages.value[0]?.code ?? "";
   referenceLanguageCode.value =
     defaultLanguage.value?.code ?? languages.value[0]?.code ?? "";
-  viewMode.value = "preview"; // reset each time the node is opened
+  viewMode.value = "edit"; // reset each time the node is opened
   conditionEditorOpen.value = false;
   editingBranchIndex.value = null;
 });

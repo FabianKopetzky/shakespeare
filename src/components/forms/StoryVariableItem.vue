@@ -72,6 +72,6 @@ function confirmDelete(): void {
     :description="`Are you sure you want to delete '${props.variable.name}'? All references of the variables will be replaced by their default value. This cannot be undone.`"
     confirm-label="Delete"
     color="error"
-    icon="material-symbols:delete-outline"
+    icon="material-symbols:delete-outline-sharp"
     @confirm="confirmDelete" />
 </template>

@@ -87,6 +87,6 @@ function confirmDelete(): void {
     :description="`Are you sure you want to delete '${props.event.name}'? All references in event nodes will be reset. This cannot be undone.`"
     confirm-label="Delete"
     color="error"
-    icon="material-symbols:delete-outline"
+    icon="material-symbols:delete-outline-sharp"
     @confirm="confirmDelete" />
 </template>

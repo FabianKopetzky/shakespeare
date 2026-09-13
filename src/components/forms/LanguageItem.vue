@@ -68,6 +68,6 @@ function confirmDelete(): void {
     :description="`Are you sure you want to delete '${props.language.display}' (${props.language.code})? This cannot be undone.`"
     confirm-label="Delete"
     color="error"
-    icon="material-symbols:delete-outline"
+    icon="material-symbols:delete-outline-sharp"
     @confirm="confirmDelete" />
 </template>

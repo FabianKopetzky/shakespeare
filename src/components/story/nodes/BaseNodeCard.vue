@@ -161,7 +161,7 @@ const menuItems = computed<ContextMenuItem[]>(() => [
   height: 10px;
   border-radius: 0;
   background: var(--ui-text-muted);
-  border: 1px solid var(--ui-border-muted);
+  border: 1px solid var(--ui-text-dimmed);
 }
 
 .story-node__pin--in {
