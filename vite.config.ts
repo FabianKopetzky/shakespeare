@@ -43,6 +43,12 @@ export default defineConfig({
               ],
             },
           },
+          contextMenu: {
+            slots: {
+              content: 'border-none! rounded-none! hover:cursor-pointer',
+              item: 'before:rounded-none!'
+            }
+          },
           textarea: {
             slots: {
               base: [
