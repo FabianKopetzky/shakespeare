@@ -18,8 +18,8 @@ const nodes = computed(() => parseContent(props.content ?? ""));
     <p v-if="content" class="whitespace-pre-wrap leading-relaxed">
       <ContentNodeRenderer :nodes="nodes" :variables="variables" />
     </p>
-    <p v-else class="text-gray-400 italic text-sm">
-      No content for this language yet.
+    <p v-else class="text-dimmed text-sm">
+      No content for this language yet...
     </p>
   </div>
 </template>
