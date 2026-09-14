@@ -4,26 +4,14 @@
     :dismissible="false"
     class="w-[40vw] min-w-100 max-w-none">
     <template #header>
-      <div class="flex flex-row justify-between items-center w-full">
-        <p class="text-lg font-bold">Edit operation node</p>
-        <div class="flex flex-row gap-2">
-          <UButton
-            color="neutral"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="close">
-            <UIcon class="size-12" name="material-symbols:close" />
-          </UButton>
-          <UButton
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="save">
-            <UIcon class="size-12" name="material-symbols:check" />
-          </UButton>
-        </div>
-      </div>
+      <SlideoverHeader
+        title="Edit operation node"
+        @close="close"
+        @save="save" />
     </template>
     <template #body>
       <div class="h-full">
-        <div v-if="operation" class="mb-4">
+        <!-- <div v-if="operation" class="mb-4">
           <span
             >Performs the following operation on the selected variable:</span
           >
@@ -31,15 +19,10 @@
             class="bg-elevated mt-2 p-2 rounded-xl flex flex-col justify-start items-start">
             <span class="font-bold">{{ operationToString(operation) }}</span>
           </div>
-        </div>
-
+        </div> -->
+        <SlideoverSection label="Properties" />
         <div class="flex flex-col gap-4 justify-start items-start">
-          <span class="font-bold">Edit operation</span>
-
-          <UFormField
-            class="w-full"
-            label="Variable to modify"
-            help="The variable that will be changed.">
+          <UFormField class="w-full" label="Variable to modify">
             <USelectMenu
               class="w-full"
               placeholder="Select variable"
@@ -50,58 +33,58 @@
               @update:model-value="onSelectVariable" />
           </UFormField>
 
-          <UFormField
+          <div
             v-if="variableName"
-            class="w-full"
-            label="Action"
-            help="What to do to the variable's current value.">
-            <USelect
-              class="w-full"
-              v-model="action"
-              :items="actionItems"
-              value-key="value"
-              label-key="label"
-              @update:model-value="onSelectAction" />
-          </UFormField>
-
-          <UFormField
-            v-if="variableName"
-            class="w-full"
-            :label="targetLabel"
-            help="Value used for this operation.">
-            <div class="flex flex-row gap-1">
-              <USelectMenu
-                :model-value="targetSelection"
-                :items="targetItems"
+            class="flex flex-row items-center justify-center gap-4 w-full">
+            <UFormField class="flex-2" label="Action">
+              <USelect
+                class="w-full"
+                v-model="action"
+                :items="actionItems"
                 value-key="value"
                 label-key="label"
-                class="w-40"
-                @update:model-value="onSelectTarget" />
+                @update:model-value="onSelectAction" />
+            </UFormField>
 
-              <template v-if="targetKind === 'literal'">
-                <USelect
-                  v-if="selectedType === 'Boolean'"
-                  v-model="targetLiteralValue"
-                  :items="['true', 'false']"
-                  class="flex-1" />
-                <UInput
-                  v-else
-                  v-model="targetLiteralValue"
-                  :type="selectedType === 'Integer' ? 'number' : 'text'"
-                  :icon="selectedType ? typeMeta[selectedType].icon : undefined"
-                  placeholder="Value"
-                  class="flex-1" />
-              </template>
-            </div>
-          </UFormField>
+            <UFormField class="flex-3" :label="targetLabel">
+              <div class="flex flex-row gap-2">
+                <USelectMenu
+                  :model-value="targetSelection"
+                  :items="targetItems"
+                  value-key="value"
+                  label-key="label"
+                  class="w-40"
+                  @update:model-value="onSelectTarget" />
 
-          <UBadge
-            v-if="selectedType"
-            :color="typeMeta[selectedType].color"
-            :icon="typeMeta[selectedType].icon"
-            variant="subtle">
-            {{ typeMeta[selectedType].label }}
-          </UBadge>
+                <template v-if="targetKind === 'literal'">
+                  <USelect
+                    v-if="selectedType === 'Boolean'"
+                    v-model="targetLiteralValue"
+                    :items="['true', 'false']"
+                    class="flex-1" />
+                  <UInput
+                    v-else
+                    v-model="targetLiteralValue"
+                    :type="selectedType === 'Integer' ? 'number' : 'text'"
+                    :icon="
+                      selectedType ? typeMeta[selectedType].icon : undefined
+                    "
+                    placeholder="Value"
+                    class="flex-1" />
+                </template>
+              </div>
+            </UFormField>
+          </div>
+        </div>
+        <div v-if="variableName" class="mt-8">
+          <SlideoverSection label="Operation" />
+          <div
+            class="bg-muted mt-2 p-4 rounded-none border-accented border flex flex-row justify-start items-center gap-2">
+            <UIcon name="material-symbols:settings-sharp" class="size-5" />
+            <span class="font-semibold">{{
+              operationToString(buildOperation())
+            }}</span>
+          </div>
         </div>
       </div>
     </template>
@@ -143,7 +126,6 @@ const LITERAL_SENTINEL = "__literal__";
 
 type ActionValue = "set" | "add" | "subtract";
 
-// --- form state ---
 const variableName = ref<string>("");
 const action = ref<ActionValue>("set");
 const targetKind = ref<"literal" | "variable">("literal");
@@ -170,7 +152,6 @@ const allActionItems: { label: string; value: ActionValue }[] = [
   { label: "Subtract", value: "subtract" },
 ];
 
-// add/subtract only make sense for Integer variables
 const actionItems = computed(() => {
   if (selectedType.value === "Integer") return allActionItems;
   return allActionItems.filter((a) => a.value === "set");
@@ -182,9 +163,6 @@ const targetLabel = computed(() => {
   return "New value";
 });
 
-// target dropdown: literal option + variables matching the modified variable's type
-// (excluding the variable itself, since assigning to/from itself is redundant for set,
-// and meaningless for add/subtract)
 const targetItems = computed(() => {
   const literalItem = {
     label: "Literal value",
