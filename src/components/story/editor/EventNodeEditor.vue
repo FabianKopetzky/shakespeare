@@ -4,25 +4,11 @@
     :dismissible="false"
     class="w-[40vw] min-w-100 max-w-none">
     <template #header>
-      <div class="flex flex-row justify-between items-center w-full">
-        <p class="text-lg font-bold">Edit event node</p>
-        <div class="flex flex-row gap-2">
-          <UButton
-            color="neutral"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="close">
-            <UIcon class="size-12" name="material-symbols:close" />
-          </UButton>
-          <UButton
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="save">
-            <UIcon class="size-12" name="material-symbols:check" />
-          </UButton>
-        </div>
-      </div>
+      <SlideoverHeader title="Edit event node" @close="close" @save="save" />
     </template>
     <template #body>
-      <div class="h-full flex flex-col justify-start items-start gap-4">
+      <div class="h-full">
+        <SlideoverSection label="Properties" />
         <UFormField
           class="w-full"
           label="Event"
@@ -39,25 +25,50 @@
             <UButton
               color="neutral"
               variant="outline"
-              icon="i-lucide-plus"
+              icon="material-symbols:add-box-sharp"
               @click="createEventModalOpen = true">
               New
             </UButton>
           </div>
         </UFormField>
 
-        <template v-if="selectedEvent">
+        <div v-if="selectedEvent" class="mt-8">
+          <SlideoverSection label="Event" />
           <div
-            v-if="selectedEvent.params.length > 0"
-            class="flex flex-col gap-3 w-full">
-            <span class="text-sm font-medium">Parameters</span>
+            class="bg-muted mt-2 p-4 rounded-none border-accented border flex flex-col justify-start items-start">
+            <div
+              class="flex flex-row items-center justify-start gap-2"
+              :class="{ 'mb-5': selectedEvent.params.length > 0 }">
+              <UIcon name="ic:sharp-electric-bolt" class="size-5" />
+              <span class="font-semibold"
+                >{{ selectedEvent.name }}
+                <span class="font-medium text-dimmed"
+                  >({{ selectedEvent.params.length }}
+                  {{
+                    selectedEvent.params.length === 1
+                      ? "parameter"
+                      : "parameters"
+                  }})</span
+                ></span
+              >
+            </div>
 
             <div
-              v-for="arg in args"
+              v-for="(arg, index) in args"
               :key="arg.name"
-              class="bg-elevated p-3 rounded-xl flex flex-col gap-2 w-full">
+              :class="{ 'mt-4': index !== 0 }"
+              class="bg-default border border-muted p-3 flex flex-col gap-2 w-full">
               <div class="flex flex-row justify-between items-center w-full">
-                <span class="font-bold">{{ arg.name }}</span>
+                <div class="flex flex-row items-center justify-start gap-1">
+                  <UIcon
+                    :name="typeMeta[paramType(arg.name) as DataType].icon" />
+                  <span
+                    >{{ arg.name }}
+                    <span class="text-dimmed"
+                      >({{ paramType(arg.name) }})</span
+                    ></span
+                  >
+                </div>
                 <div>
                   <UButton
                     :color="arg.kind === 'literal' ? 'primary' : 'neutral'"
@@ -110,13 +121,7 @@
               </template>
             </div>
           </div>
-          <span v-else class="text-sm text-muted italic">
-            This event does not take any parameters.
-          </span>
-        </template>
-        <span v-else class="text-sm text-muted italic">
-          Select an event to configure its parameters.
-        </span>
+        </div>
       </div>
     </template>
   </USlideover>

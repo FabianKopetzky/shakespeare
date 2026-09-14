@@ -24,7 +24,7 @@
               <UButton
                 color="neutral"
                 variant="outline"
-                icon="i-lucide-plus"
+                icon="material-symbols:add-box-sharp"
                 @click="openCreateView">
                 New
               </UButton>
