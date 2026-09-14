@@ -4,63 +4,55 @@
     :dismissible="false"
     class="w-[40vw] min-w-100 max-w-none">
     <template #header>
-      <div class="flex flex-row justify-between items-center w-full">
-        <p class="text-lg font-bold">Edit random node</p>
-        <div class="flex flex-row gap-2">
-          <UButton
-            color="neutral"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="close">
-            <UIcon class="size-12" name="material-symbols:close" />
-          </UButton>
-          <UButton
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="save">
-            <UIcon class="size-12" name="material-symbols:check" />
-          </UButton>
-        </div>
-      </div>
+      <SlideoverHeader title="Edit random node" @close="close" @save="save" />
     </template>
     <template #body>
-      <div class="flex flex-col gap-4">
-        <div v-if="!branches || branches.length === 0">
-          No branches yet. Add one to get started.
-        </div>
+      <div class="h-full">
+        <SlideoverSection label="Branches" />
+        <div class="flex flex-col gap-4">
+          <div v-if="!branches || branches.length === 0">
+            No branches yet. Add one to get started.
+          </div>
 
-        <div
-          v-for="branch in branches"
-          :key="branch.id"
-          class="flex flex-col gap-2 border border-gray-700 rounded-lg p-3">
-          <div class="flex flex-row items-center gap-2">
-            <div class="flex flex-col flex-1">
-              <label class="text-xs text-gray-400 mb-1">Weight</label>
+          <div
+            v-for="(branch, index) in branches"
+            :key="branch.id"
+            class="mb-2">
+            <div class="flex flex-row justify-between items-center">
+              <span class="font-semibold"
+                >Branch {{ index + 1 }}
+                <span class="font-medium text-dimmed">
+                  | {{ chanceFor(branch) }}%</span
+                ></span
+              >
+              <UButton
+                size="xs"
+                variant="ghost"
+                color="neutral"
+                icon="material-symbols:delete-outline-sharp"
+                @click="removeBranch(branch.id)" />
+            </div>
+
+            <UFormField class="w-full" label="Weight">
               <UInput
                 v-model.number="branch.weight"
                 type="number"
                 :min="0"
                 step="1"
+                class="w-full"
                 placeholder="Weight" />
-            </div>
-            <UButton
-              color="error"
-              variant="ghost"
-              class="rounded-full h-9 w-9 flex justify-center items-center self-end"
-              @click="removeBranch(branch.id)">
-              <UIcon class="size-8" name="material-symbols:delete-outline" />
-            </UButton>
+            </UFormField>
           </div>
 
-          <p class="text-xs text-gray-400">Chance: {{ chanceFor(branch) }}%</p>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            class="self-end"
+            @click="addBranch">
+            <UIcon name="material-symbols:add-box-sharp" />
+            Add branch
+          </UButton>
         </div>
-
-        <UButton
-          color="neutral"
-          variant="soft"
-          class="self-start"
-          @click="addBranch">
-          <UIcon name="material-symbols:add" class="mr-1" />
-          Add branch
-        </UButton>
       </div>
     </template>
   </USlideover>
@@ -91,14 +83,6 @@ const node = ref<RandomNode>();
 const branches = ref<RandomBranch[]>([]);
 
 const editorOpen = ref<boolean>(false);
-
-// options for target selection — adjust `label` field to match your node schema
-const targetOptions = computed(() =>
-  Object.values(storyNodes).map((n: AnyStoryNode) => ({
-    label: (n as any).title ?? (n as any).name ?? n.id,
-    value: n.id,
-  })),
-);
 
 const totalWeight = computed(() =>
   (branches.value ?? []).reduce((sum, b) => sum + (b.weight || 0), 0),
@@ -132,6 +116,10 @@ function addBranch(): void {
 }
 
 function removeBranch(id: string | number): void {
+  if (branches.value.length <= 1) {
+    displayError("A random node is required to have at least one branch!");
+    return;
+  }
   branches.value = (branches.value ?? []).filter((b) => b.id !== id);
 }
 

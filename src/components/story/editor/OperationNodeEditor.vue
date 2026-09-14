@@ -11,15 +11,6 @@
     </template>
     <template #body>
       <div class="h-full">
-        <!-- <div v-if="operation" class="mb-4">
-          <span
-            >Performs the following operation on the selected variable:</span
-          >
-          <div
-            class="bg-elevated mt-2 p-2 rounded-xl flex flex-col justify-start items-start">
-            <span class="font-bold">{{ operationToString(operation) }}</span>
-          </div>
-        </div> -->
         <SlideoverSection label="Properties" />
         <div class="flex flex-col gap-4 justify-start items-start">
           <UFormField class="w-full" label="Variable to modify">

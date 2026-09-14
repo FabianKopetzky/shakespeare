@@ -7,16 +7,6 @@ export type OutputPin = {
   id: string; // unique per node, used as the vue-flow source handle id
   label?: string; // shown next to the pin, e.g. a branch's label
 };
-
-/**
- * Everything the editor needs to know about a node type, without knowing
- * anything about *how* it's rendered. All node types share the same visual
- * shell (BaseNodeCard) - to add a new node type later:
- *   1. add its shape to `AnyStoryNode` in types/schema.ts
- *   2. write one `registerNodeType(...)` call below
- * Nothing else in the editor (canvas, drag, connect, delete, context menu)
- * needs to change.
- */
 export interface NodeTypeDefinition<T extends AnyStoryNode = AnyStoryNode> {
   type: T["type"];
   label: string;
@@ -81,7 +71,7 @@ registerNodeType<BranchNode>({
     id,
     type: "branch",
     position,
-    branches: [],
+    branches: []
   }),
   getTitle: (node) =>
     node.branches.length === 1
@@ -132,7 +122,13 @@ registerNodeType<RandomNode>({
     id,
     type: "random",
     position,
-    branches: []
+    branches: [
+      {
+        id: crypto.randomUUID(),
+        targetId: null,
+        weight: 1
+      }
+    ]
   }),
   getTitle: (node) => node.branches.length > 0 ? `Selects one of ${node.branches.length} branches at random` : 'No random branches assigned',
   getOutputs: (node) => {
