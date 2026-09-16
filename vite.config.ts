@@ -43,6 +43,11 @@ export default defineConfig({
               ],
             },
           },
+          badge: {
+            slots: {
+              base: 'rounded-none!'
+            }
+          },
           contextMenu: {
             slots: {
               content: 'border-none! rounded-none! hover:cursor-pointer',

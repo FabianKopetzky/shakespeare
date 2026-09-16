@@ -163,8 +163,6 @@ function removeClause(id: number) {
   if (clauses.value.length === 0) clauses.value = [emptyClause()];
 }
 
-// The type is "locked" (derived, not user-selectable) whenever either side
-// is a variable that's actually been selected.
 function lockedType(clause: ClauseForm): DataType | undefined {
   if (clause.left.kind === "variable" && clause.left.variableName) {
     return variableType(clause.left.variableName);
@@ -179,8 +177,6 @@ function isValueTypeEditable(clause: ClauseForm): boolean {
   return lockedType(clause) === undefined;
 }
 
-// Single dropdown per side: "Literal value" + "Create new variable" + existing
-// variables, filtered by whatever type the OTHER side already locked in (if any).
 function operandItems(clause: ClauseForm, side: "left" | "right") {
   const other = side === "left" ? clause.right : clause.left;
   const otherLock =
@@ -189,15 +185,15 @@ function operandItems(clause: ClauseForm, side: "left" | "right") {
       : undefined;
 
   const literalItem = {
-    label: "Literal value",
+    label: "Literal",
     value: LITERAL_SENTINEL,
-    icon: "i-lucide-pencil",
+    icon: "material-symbols:edit-sharp",
   };
 
   const createItem = {
-    label: "Create new variable...",
+    label: "New",
     value: CREATE_SENTINEL,
-    icon: "i-lucide-plus",
+    icon: "material-symbols:add-box-sharp",
   };
 
   const variableItems = props.variables
@@ -218,7 +214,6 @@ function operandSelection(operand: OperandForm): string {
     : LITERAL_SENTINEL;
 }
 
-// Reset the operator if it's no longer valid for the clause's current type
 function reconcileOperator(clause: ClauseForm) {
   if (
     clause.valueType !== "Integer" &&
@@ -244,7 +239,6 @@ function applyVariableToOperand(
   clause.valueType = type;
   reconcileOperator(clause);
 
-  // reset the other side if it no longer matches the newly locked type
   if (other.kind === "variable" && other.variableName) {
     if (variableType(other.variableName) !== type) other.variableName = "";
   } else {
@@ -252,7 +246,6 @@ function applyVariableToOperand(
   }
 }
 
-// --- Inline "create new variable" flow ---
 const createVariableOpen = ref(false);
 const pendingTarget = ref<{
   clause: ClauseForm;
@@ -386,36 +379,48 @@ function clearCondition() {
           v-for="(clause, index) in clauses"
           :key="clause.id"
           class="flex flex-col gap-2">
-          <div class="flex flex-col gap-2 p-3 border border-default rounded-lg">
-            <!-- Value type: editable dropdown when both sides are literal, badge when locked by a variable -->
-            <div class="flex flex-col gap-1">
-              <span class="text-xs text-muted">Type</span>
-              <USelect
+          <div class="flex flex-col gap-2 p-3 bg-muted border border-accented">
+            <div class="flex flex-row gap-1 items-start justify-between">
+              <div
                 v-if="isValueTypeEditable(clause)"
-                :model-value="clause.valueType"
-                :items="
-                  typeOptions.map((t) => ({
-                    label: typeMeta[t].label,
-                    value: t,
-                    icon: typeMeta[t].icon,
-                  }))
-                "
-                value-key="value"
-                label-key="label"
-                class="w-28"
-                @update:model-value="onSelectValueType(clause, $event)" />
+                class="flex flex-col items-start justify-start gap-1">
+                <span class="text-xs text-muted">Constrain type</span>
+                <USelect
+                  :model-value="clause.valueType"
+                  :items="
+                    typeOptions.map((t) => ({
+                      label: typeMeta[t].label,
+                      value: t,
+                      icon: typeMeta[t].icon,
+                    }))
+                  "
+                  value-key="value"
+                  label-key="label"
+                  class="w-28"
+                  @update:model-value="onSelectValueType(clause, $event)" />
+              </div>
               <UBadge
                 v-else
-                :color="typeMeta[clause.valueType].color"
+                color="neutral"
                 :icon="typeMeta[clause.valueType].icon"
                 variant="subtle"
                 class="h-8 items-center">
                 {{ typeMeta[clause.valueType].label }}
               </UBadge>
+              <div class="flex flex-row gap-2 items-center justify-end">
+                <span>{{
+                  `${clause.left.kind === "literal" ? (clause.left.literalValue ? clause.left.literalValue : "<?>") : clause.left.variableName ? clause.left.variableName.toString() : "<?>"} ${clause.operator} ${clause.right.kind === "literal" ? (clause.right.literalValue ? clause.right.literalValue : "<?>") : clause.right.variableName ? clause.right.variableName.toString() : "<?>"}`
+                }}</span>
+                <UButton
+                  icon="material-symbols:delete-outline-sharp"
+                  variant="ghost"
+                  color="neutral"
+                  @click="removeClause(clause.id)" />
+              </div>
             </div>
-            <div class="flex flex-row flex-wrap gap-3 items-end">
-              <!-- Left operand -->
-              <div class="flex flex-col gap-1 min-w-36">
+            <div
+              class="flex flex-row w-full justify-between gap-2 items-center overflow-x-scroll">
+              <div class="flex flex-col gap-1 flex-1">
                 <span class="text-xs text-muted">Left</span>
                 <div class="flex flex-row gap-1">
                   <USelectMenu
@@ -444,8 +449,7 @@ function clearCondition() {
                 </div>
               </div>
 
-              <!-- Operator -->
-              <div class="flex flex-col gap-1">
+              <div class="flex flex-col gap-1 w-20">
                 <span class="text-xs text-muted">Operator</span>
                 <USelect
                   v-model="clause.operator"
@@ -455,8 +459,7 @@ function clearCondition() {
                   class="w-20" />
               </div>
 
-              <!-- Right operand -->
-              <div class="flex flex-col gap-1 min-w-36">
+              <div class="flex flex-col gap-1 flex-1 items-end">
                 <span class="text-xs text-muted">Right</span>
                 <div class="flex flex-row gap-1">
                   <USelectMenu
@@ -484,37 +487,35 @@ function clearCondition() {
                   </template>
                 </div>
               </div>
-
-              <UButton
-                icon="i-lucide-trash-2"
-                variant="ghost"
-                color="error"
-                class="ml-auto"
-                @click="removeClause(clause.id)" />
             </div>
           </div>
-          <!-- Connector to next clause -->
+
           <div v-if="index < clauses.length - 1" class="flex justify-center">
             <USelect
               v-model="clause.connector"
               :items="connectorOptions"
-              class="w-24" />
+              class="w-24 mt-1" />
           </div>
         </div>
 
         <UButton
-          variant="soft"
-          icon="i-lucide-plus"
-          class="self-start"
+          variant="ghost"
+          icon="material-symbols:add-box-sharp"
+          class="self-end"
+          color="neutral"
           @click="addClause">
-          Add condition
+          Add clause
         </UButton>
       </div>
     </template>
     <template #footer>
       <div class="flex flex-row gap-2 justify-between w-full">
-        <UButton variant="ghost" color="error" @click="clearCondition">
-          Clear condition
+        <UButton
+          variant="ghost"
+          color="error"
+          icon="material-symbols:delete-outline-sharp"
+          @click="clearCondition">
+          Reset condition
         </UButton>
         <div class="flex flex-row gap-2">
           <UButton variant="ghost" color="neutral" @click="open = false">
