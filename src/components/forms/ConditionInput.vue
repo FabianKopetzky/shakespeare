@@ -38,7 +38,7 @@ type OperandKind = "literal" | "variable";
 interface OperandForm {
   kind: OperandKind;
   variableName: string | (string | number | boolean);
-  literalValue: string; // raw, parsed against clause.valueType on submit
+  literalValue: string;
 }
 
 interface ClauseForm {
@@ -46,8 +46,8 @@ interface ClauseForm {
   left: OperandForm;
   operator: ComparisonOperator;
   right: OperandForm;
-  valueType: DataType; // shared type for both sides of this clause
-  connector: LogicalOperator; // connector to NEXT clause; ignored for last
+  valueType: DataType;
+  connector: LogicalOperator;
 }
 
 const allOperatorOptions: { label: string; value: ComparisonOperator }[] = [
@@ -59,7 +59,6 @@ const allOperatorOptions: { label: string; value: ComparisonOperator }[] = [
   { label: "≥", value: ">=" },
 ];
 
-// Only these operators are valid for non-numeric types
 const equalityOnlyOperators: ComparisonOperator[] = ["==", "!="];
 
 function operatorOptions(clause: ClauseForm) {
@@ -177,13 +176,7 @@ function isValueTypeEditable(clause: ClauseForm): boolean {
   return lockedType(clause) === undefined;
 }
 
-function operandItems(clause: ClauseForm, side: "left" | "right") {
-  const other = side === "left" ? clause.right : clause.left;
-  const otherLock =
-    other.kind === "variable" && other.variableName
-      ? variableType(other.variableName)
-      : undefined;
-
+function operandItems(clause: ClauseForm) {
   const literalItem = {
     label: "Literal",
     value: LITERAL_SENTINEL,
@@ -197,7 +190,7 @@ function operandItems(clause: ClauseForm, side: "left" | "right") {
   };
 
   const variableItems = props.variables
-    .filter((v) => !otherLock || v.type === otherLock)
+    .filter((v) => v.type === clause.valueType)
     .map((v) => ({
       label: v.name,
       value: v.name,
@@ -207,7 +200,6 @@ function operandItems(clause: ClauseForm, side: "left" | "right") {
   return [[literalItem, createItem], [...variableItems]];
 }
 
-// what the dropdown itself should show as selected value
 function operandSelection(operand: OperandForm): string {
   return operand.kind === "variable"
     ? operand.variableName?.toString()
@@ -425,7 +417,7 @@ function clearCondition() {
                 <div class="flex flex-row gap-1">
                   <USelectMenu
                     :model-value="operandSelection(clause.left)"
-                    :items="operandItems(clause, 'left')"
+                    :items="operandItems(clause)"
                     value-key="value"
                     label-key="label"
                     class="w-36"
@@ -464,7 +456,7 @@ function clearCondition() {
                 <div class="flex flex-row gap-1">
                   <USelectMenu
                     :model-value="operandSelection(clause.right)"
-                    :items="operandItems(clause, 'right')"
+                    :items="operandItems(clause)"
                     value-key="value"
                     label-key="label"
                     class="w-36"
