@@ -24,11 +24,7 @@
     </div>
     <div class="w-full h-0.5 bg-accented mt-12 mb-6" />
 
-    <div
-      class="w-full h-14 bg-elevated flex flex-row items-center justify-start mb-4">
-      <div class="h-full w-2 bg-primary" />
-      <h3 class="ml-4">Unity</h3>
-    </div>
+    <PageSection title="Unity" />
 
     <div class="flex flex-col gap-2 w-[50%]">
       <UFormField class="w-full" label="Unity Streaming Assets Path">
@@ -50,11 +46,7 @@
       </div>
     </div>
 
-    <div
-      class="w-full h-14 bg-elevated flex flex-row items-center justify-start mb-4 mt-12">
-      <div class="h-full w-2 bg-primary" />
-      <h3 class="ml-4">Editor</h3>
-    </div>
+    <PageSection title="Editor" />
 
     <div class="flex flex-col gap-2 w-[50%] mt-4">
       <div class="flex flex-row items-center justify-between gap-4 w-full">
@@ -91,11 +83,8 @@
           v-model="settings.showMissingTranslations" />
       </div>
     </div>
-    <div
-      class="w-full h-14 bg-elevated flex flex-row items-center justify-start mb-4 mt-12">
-      <div class="h-full w-2 bg-primary" />
-      <h3 class="ml-4">Appearance</h3>
-    </div>
+
+    <PageSection title="Appearance" />
 
     <div class="flex flex-col gap-2 w-[50%]">
       <UFormField class="w-full" label="Story graph pattern">
@@ -111,11 +100,6 @@
               value: 'dots',
               label: 'Dots',
               icon: 'material-symbols:more-horiz',
-            },
-            {
-              value: 'none',
-              label: 'None',
-              icon: 'material-symbols:close-sharp',
             },
           ]"
           v-model="settings.storyGraphPattern" />
@@ -147,6 +131,7 @@
         </div>
       </UFormField>
     </div>
+    <div class="h-12" />
   </div>
 </template>
 <script setup lang="ts">
@@ -155,6 +140,7 @@ import { useContentStore } from "../stores/content";
 import defaultSettings from "../utils/settings";
 import ConfirmDialog from "../components/forms/ConfirmDialog.vue";
 import { ref } from "vue";
+import PageSection from "../components/widget/PageSection.vue";
 
 const { settings } = storeToRefs(useContentStore());
 const resetConfirmOpen = ref<boolean>(false);
