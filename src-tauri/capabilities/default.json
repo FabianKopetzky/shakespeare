@@ -19,6 +19,7 @@
     "fs:allow-app-read",
     "store:default",
     "dialog:default",
-    "fs:scope-app-recursive"
+    "fs:scope-app-recursive",
+    "shell:allow-open"
   ]
 }
