@@ -192,3 +192,10 @@ export type Preferences = {
   storyGraphPatternSize: number,
   storyGraphPatternGap: number,
 }
+
+//* META
+export type MetaData = {
+  createdAt: string,
+  lastEdited: string,
+  version: string
+}

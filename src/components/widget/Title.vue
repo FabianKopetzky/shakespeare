@@ -24,8 +24,7 @@
         <FlipCard
           icon="material-symbols:auto-stories-sharp"
           title="Create."
-          content="Bring your stories to life with an interactive and intuitive story
-      graph." />
+          content="Plan and write interactive stories with an intuitive and easy-to-use story graph." />
         <FlipCard
           icon="material-symbols:code-sharp"
           title="Code."

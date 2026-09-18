@@ -10,6 +10,7 @@ import { isValidProject } from "./projectValidator";
 import { invoke } from "@tauri-apps/api/core";
 import defaultSettings from "../utils/settings";
 
+export const SHAKESPEARE_VERSION = "0.0 Beta";
 export interface ProjectFileEntry {
     name: string,
     path: string
@@ -105,6 +106,11 @@ export function useProjectHandler() {
                 contentStore.projectAuthor = fallbackAuthor;
 
                 contentStore.settings = structuredClone(defaultSettings);
+                contentStore.meta = {
+                    createdAt: new Date(Date.now()).toLocaleDateString(),
+                    lastEdited: new Date(Date.now()).toLocaleDateString(),
+                    version: SHAKESPEARE_VERSION
+                };
 
                 contentStore.dialogues = [];
                 contentStore.stories = [];
@@ -130,6 +136,11 @@ export function useProjectHandler() {
             contentStore.projectAuthor = project.projectAuthor ?? fallbackAuthor;
 
             contentStore.settings = project.settings ?? structuredClone(defaultSettings);
+            contentStore.meta = project.meta ?? {
+                createdAt: new Date(Date.now()).toLocaleDateString(),
+                lastEdited: new Date(Date.now()).toLocaleDateString(),
+                version: SHAKESPEARE_VERSION
+            };
 
             contentStore.dialogues = project.dialogues ?? [];
             contentStore.stories = project.stories ?? [];

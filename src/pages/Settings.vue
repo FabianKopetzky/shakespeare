@@ -3,7 +3,7 @@
     <div class="flex flex-row justify-between items-start">
       <div>
         <h1>Settings</h1>
-        <div class="max-w-200">
+        <div class="max-w-150">
           <span class="self-end text-dimmed text-balance"
             >Manage preferences of this project. Settings are stored per
             project. Some settings are only available in the native app and will
