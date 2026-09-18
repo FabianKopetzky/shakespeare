@@ -1,24 +1,47 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 import { useContentStore } from "../../stores/content.ts";
 import type { CustomFieldSchema } from "../../types/schema.ts";
 import CustomFieldItem from "./CustomFieldItem.vue";
 import CustomFieldInput from "./CustomFieldInput.vue";
+import { useAppStore } from "../../stores/app.ts";
+import { useProjectHandler } from "../../composables/projectHandler.ts";
+import { storeToRefs } from "pinia";
 
-const { customFields, dialogues, stories, storyNodes } = useContentStore();
+const { customFields, dialogues, stories, storyNodes, settings } =
+  storeToRefs(useContentStore());
 const addCustomFieldModalOpen = ref<boolean>(false);
 
-function addNewField(field: CustomFieldSchema) {
-  customFields.push(field);
+const { isNativeApp, currentProjectPath } = storeToRefs(useAppStore());
+const { saveCurrentProject } = useProjectHandler();
+
+async function addNewField(field: CustomFieldSchema) {
+  customFields.value.push(field);
 
   ensureCustomFields(field);
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
-function editField(field: CustomFieldSchema) {
-  const idx = customFields.findIndex((f) => f.name == field.name);
-  if (idx >= 0 && idx < customFields.length) {
-    customFields[idx] = field;
+async function editField(field: CustomFieldSchema) {
+  const idx = customFields.value.findIndex((f) => f.name == field.name);
+  if (idx >= 0 && idx < customFields.value.length) {
+    customFields.value[idx] = field;
 
     ensureCustomFields(field);
+  }
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
   }
 }
 
@@ -26,7 +49,7 @@ function ensureCustomFields(field: CustomFieldSchema) {
   // add the field to all existing instances
   switch (field.model) {
     case "dialogue":
-      for (const dialogue of dialogues) {
+      for (const dialogue of dialogues.value) {
         if (!dialogue) continue;
         if (!dialogue?.fields) dialogue.fields = { data: [] };
         const includes = dialogue?.fields?.data.find(
@@ -41,7 +64,7 @@ function ensureCustomFields(field: CustomFieldSchema) {
       }
       break;
     case "dialogue_sentence":
-      for (const dialogue of dialogues) {
+      for (const dialogue of dialogues.value) {
         if (!dialogue) continue;
         for (const sentence of dialogue.sentences) {
           if (!sentence) continue;
@@ -66,7 +89,7 @@ function ensureCustomFields(field: CustomFieldSchema) {
           if (!branch) continue;
           if (!branch.fields) branch.fields = { data: [] };
           const includes = branch?.fields?.data?.find(
-            (f) => f.name === field.name,
+            (f: any) => f.name === field.name,
           );
           if (!includes) {
             branch?.fields?.data.push({
@@ -78,7 +101,7 @@ function ensureCustomFields(field: CustomFieldSchema) {
       }
       break;
     case "story":
-      for (const story of stories) {
+      for (const story of stories.value) {
         if (!story) continue;
         if (!story.fields) story.fields = { data: [] };
         const includes = story?.fields?.data.find((f) => f.name === field.name);
@@ -92,15 +115,15 @@ function ensureCustomFields(field: CustomFieldSchema) {
       break;
   }
 }
-function deleteField(name: string) {
-  const idx = customFields.findIndex((f) => f.name == name);
+async function deleteField(name: string) {
+  const idx = customFields.value.findIndex((f) => f.name == name);
   if (idx < 0) return;
 
   // clean up fields
-  const field = customFields[idx];
+  const field = customFields.value[idx];
   switch (field.model) {
     case "dialogue":
-      for (const dialogue of dialogues) {
+      for (const dialogue of dialogues.value) {
         if (!dialogue?.fields?.data) continue;
         dialogue.fields.data = dialogue?.fields?.data.filter(
           (f) => f.name !== name,
@@ -108,7 +131,7 @@ function deleteField(name: string) {
       }
       break;
     case "dialogue_sentence":
-      for (const dialogue of dialogues) {
+      for (const dialogue of dialogues.value) {
         if (!dialogue) continue;
         for (const sentence of dialogue.sentences) {
           if (!sentence?.fields?.data) continue;
@@ -124,33 +147,41 @@ function deleteField(name: string) {
         for (const branch of node.branches) {
           if (!branch?.fields?.data) continue;
           branch.fields.data = branch.fields.data.filter(
-            (f) => f.name !== name,
+            (f: any) => f.name !== name,
           );
         }
       }
       break;
     case "story":
-      for (const story of stories) {
+      for (const story of stories.value) {
         if (!story?.fields?.data) continue;
         story.fields.data = story?.fields?.data.filter((f) => f.name !== name);
       }
       break;
   }
 
-  customFields.splice(idx, 1);
+  customFields.value.splice(idx, 1);
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
 
 const dialogueExtensions = computed(() =>
-  customFields.filter((f) => f.model === "dialogue"),
+  customFields.value.filter((f) => f.model === "dialogue"),
 );
 const sentenceExtensions = computed(() =>
-  customFields.filter((f) => f.model === "dialogue_sentence"),
+  customFields.value.filter((f) => f.model === "dialogue_sentence"),
 );
 const storyExtensions = computed(() =>
-  customFields.filter((f) => f.model === "story"),
+  customFields.value.filter((f) => f.model === "story"),
 );
 const branchExtensions = computed(() =>
-  customFields.filter((f) => f.model === "branch"),
+  customFields.value.filter((f) => f.model === "branch"),
 );
 const extensionLists = computed(() => [
   { label: "Dialogue Extensions", fields: dialogueExtensions.value },

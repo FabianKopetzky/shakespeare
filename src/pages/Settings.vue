@@ -29,7 +29,10 @@
     <div class="flex flex-col gap-2 w-[50%]">
       <UFormField class="w-full" label="Unity Streaming Assets Path">
         <div class="flex flex-row items-center gap-4">
-          <UInput class="w-full" v-model="settings.unityStreamingAssetsPath" />
+          <UInput
+            :disabled="!isNativeApp"
+            class="w-full"
+            v-model="settings.unityStreamingAssetsPath" />
           <Help
             title="Streaming Assets Path"
             messageHtml='<p>Provide the base path to the <span class="text-primary">StreamingAssets</span> folder of your unity project. The folder should be located at the base of the project:<br><br> <code class="text-primary">YourProject/Assets/StreamingAssets</code><br><br> Shakespeare will then infer the correct main and story path from the project structure. Make sure your project is configured correctly.</p>' />
@@ -57,6 +60,7 @@
       </div>
       <div class="flex flex-row items-center justify-between gap-4 w-full">
         <UCheckbox
+          :disabled="!isNativeApp"
           size="xl"
           label="Auto-save project"
           v-model="settings.autoSaveProject" />
@@ -64,14 +68,18 @@
           title="Auto Save"
           messageHtml='<p>If checked, your project will be <span class="text-primary">saved automatically</span> whenever you confirm changes in your project:<br><ul><li>When you create new objects</li><li>When you edit objects</li><li>When you modify story flows</li></ul></p>' />
       </div>
-      <div class="flex flex-row items-center justify-between gap-4 w-full">
+      <div
+        v-if="settings.autoSaveProject"
+        class="flex flex-row items-center justify-between gap-4 w-full">
         <UCheckbox
+          :disabled="!isNativeApp"
           size="xl"
           label="Show auto-save messages"
           v-model="settings.showAutoSaveMessages" />
       </div>
       <div class="flex flex-row items-center justify-between gap-4 w-full">
         <UCheckbox
+          :disabled="!isNativeApp"
           size="xl"
           label="Warn before quitting app"
           v-model="settings.warnBeforeClosing" />
@@ -141,8 +149,10 @@ import defaultSettings from "../utils/settings";
 import ConfirmDialog from "../components/forms/ConfirmDialog.vue";
 import { ref } from "vue";
 import PageSection from "../components/widget/PageSection.vue";
+import { useAppStore } from "../stores/app.ts";
 
 const { settings } = storeToRefs(useContentStore());
+const { isNativeApp } = storeToRefs(useAppStore());
 const resetConfirmOpen = ref<boolean>(false);
 function resetSettings(): void {
   const unityPath = settings.value.unityStreamingAssetsPath;

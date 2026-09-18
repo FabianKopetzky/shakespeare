@@ -1,27 +1,48 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { useContentStore } from "../../stores/content.ts";
 import type { StoryVariable } from "../../types/schema.ts";
 import StoryVariableItem from "./StoryVariableItem.vue";
 import StoryVariableInput from "./StoryVariableInput.vue";
 import { storeToRefs } from "pinia";
 import { useCompiler } from "../../composables/compiler.ts";
+import { useAppStore } from "../../stores/app.ts";
+import { useProjectHandler } from "../../composables/projectHandler.ts";
 
-const { storyVariables, dialogues, storyNodes } =
+const { storyVariables, dialogues, storyNodes, settings } =
   storeToRefs(useContentStore());
 const { resolveStoryVariable } = useCompiler();
 const addStoryVariableModalOpen = ref<boolean>(false);
 
-function addNewVariable(variable: StoryVariable) {
+const { isNativeApp, currentProjectPath } = storeToRefs(useAppStore());
+const { saveCurrentProject } = useProjectHandler();
+
+async function addNewVariable(variable: StoryVariable) {
   storyVariables.value.push(variable);
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
-function editVariable(variable: StoryVariable) {
+async function editVariable(variable: StoryVariable) {
   const idx = storyVariables.value.findIndex((v) => v.name == variable.name);
   if (idx >= 0 && idx < storyVariables.value.length) {
     storyVariables.value[idx] = variable;
   }
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
-function deleteVariable(name: string) {
+async function deleteVariable(name: string) {
   const idx = storyVariables.value.findIndex((v) => v.name == name);
   if (idx < 0) return;
 
@@ -90,6 +111,14 @@ function deleteVariable(name: string) {
   }
 
   storyVariables.value.splice(idx, 1);
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
 </script>
 

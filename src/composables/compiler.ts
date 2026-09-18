@@ -37,7 +37,6 @@ export function useCompiler() {
         const data = {
             projectTitle: contentStore.projectTitle,
             projectAuthor: contentStore.projectAuthor,
-            unityStreamingAssetsPath: contentStore.settings.unityStreamingAssetsPath,
 
             dialogues: contentStore.dialogues,
             stories: contentStore.stories,
@@ -47,7 +46,10 @@ export function useCompiler() {
             languages: contentStore.languages,
             storyVariables: contentStore.storyVariables,
             customFields: contentStore.customFields,
-            events: contentStore.events
+            events: contentStore.events,
+
+            meta: contentStore.meta,
+            settings: contentStore.settings
         }
 
         return data;
@@ -60,6 +62,10 @@ export function useCompiler() {
         const data = {
             languages: languages,
             variables: variables
+        }
+
+        if(contentStore.settings.compileTextColors) {
+            Object.assign(data,  {textColors: contentStore.textColors });
         }
 
         return data;

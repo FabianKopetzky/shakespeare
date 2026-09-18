@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { useContentStore } from "../../stores/content";
 import type { TextColor } from "../../types/schema";
 import TextColorInput from "./TextColorInput.vue";
@@ -7,21 +7,44 @@ import TextColorItem from "./TextColorItem.vue";
 import { storeToRefs } from "pinia";
 import { useCompiler } from "../../composables/compiler.ts";
 import Help from "../widget/Help.vue";
+import { useAppStore } from "../../stores/app.ts";
+import { useProjectHandler } from "../../composables/projectHandler.ts";
 
-const { dialogues, storyNodes, textColors } = storeToRefs(useContentStore());
+const { dialogues, storyNodes, textColors, settings } =
+  storeToRefs(useContentStore());
 const { resolveColorVariable } = useCompiler();
+
+const { isNativeApp, currentProjectPath } = storeToRefs(useAppStore());
+const { saveCurrentProject } = useProjectHandler();
+
 const addTextColorModalOpen = ref<boolean>(false);
 
-function addNewColor(color: TextColor) {
+async function addNewColor(color: TextColor) {
   textColors.value.push(color);
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
-function editColor(color: TextColor) {
+async function editColor(color: TextColor) {
   const idx = textColors.value.findIndex((c) => c.name == color.name);
   if (idx >= 0 && idx < textColors.value.length) {
     textColors.value[idx] = color;
   }
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
-function deleteColor(name: string) {
+async function deleteColor(name: string) {
   const idx = textColors.value.findIndex((c) => c.name == name);
   if (idx < 0) return;
 
@@ -53,6 +76,14 @@ function deleteColor(name: string) {
   }
 
   textColors.value.splice(idx, 1);
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
 </script>
 

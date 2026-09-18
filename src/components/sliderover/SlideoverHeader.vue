@@ -9,8 +9,8 @@
         :ui="{ base: 'flex items-center justify-center' }"
         icon="material-symbols:close"
         @click="
-          props.mode === 'Read'
-            ? emit('close')
+          props.mode === 'Read' || !settings.warnBeforeDiscarding
+            ? close
             : (showCancelConfirmation = true)
         ">
       </UButton>
@@ -21,7 +21,7 @@
         class="h-12 w-12"
         :ui="{ base: 'flex items-center justify-center' }"
         icon="material-symbols:check"
-        @click="emit('save')">
+        @click="save">
       </UButton>
     </div>
   </div>
@@ -32,12 +32,20 @@
     confirm-label="Discard changes"
     cancel-label="Back to editing"
     @cancel="showCancelConfirmation = false"
-    @confirm="emit('close')" />
+    @confirm="close" />
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import type { FormMode } from "../../types/schema";
 import ConfirmDialog from "../forms/ConfirmDialog.vue";
+import { storeToRefs } from "pinia";
+import { useContentStore } from "../../stores/content.ts";
+import { useAppStore } from "../../stores/app.ts";
+import { useProjectHandler } from "../../composables/projectHandler.ts";
+
+const { settings } = storeToRefs(useContentStore());
+const { isNativeApp, currentProjectPath } = storeToRefs(useAppStore());
+const { saveCurrentProject } = useProjectHandler();
 
 interface Props {
   title: string;
@@ -53,4 +61,19 @@ const emit = defineEmits<{
 }>();
 
 const showCancelConfirmation = ref<boolean>(false);
+
+async function save(): Promise<void> {
+  emit("save");
+  await nextTick();
+
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
+}
+function close(): void {
+  emit("close");
+}
 </script>

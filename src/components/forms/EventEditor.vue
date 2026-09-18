@@ -1,24 +1,45 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { useContentStore } from "../../stores/content.ts";
 import type { Event } from "../../types/schema.ts";
 import EventItem from "./EventItem.vue";
 import EventInput from "./EventInput.vue";
 import { storeToRefs } from "pinia";
+import { useAppStore } from "../../stores/app.ts";
+import { useProjectHandler } from "../../composables/projectHandler.ts";
 
-const { events, storyNodes } = storeToRefs(useContentStore());
+const { events, storyNodes, settings } = storeToRefs(useContentStore());
 const addEventModalOpen = ref<boolean>(false);
 
-function addEvent(event: Event) {
+const { isNativeApp, currentProjectPath } = storeToRefs(useAppStore());
+const { saveCurrentProject } = useProjectHandler();
+
+async function addEvent(event: Event) {
   events.value.push(event);
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
-function editEvent(event: Event) {
+async function editEvent(event: Event) {
   const idx = events.value.findIndex((e) => e.name == event.name);
   if (idx >= 0 && idx < events.value.length) {
     events.value[idx] = event;
   }
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
-function deleteEvent(name: string) {
+async function deleteEvent(name: string) {
   const idx = events.value.findIndex((e) => e.name == name);
   if (idx < 0) return;
 
@@ -32,6 +53,14 @@ function deleteEvent(name: string) {
     }
   }
   events.value.splice(idx, 1);
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
 }
 </script>
 
