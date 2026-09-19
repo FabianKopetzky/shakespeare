@@ -60,11 +60,15 @@ const fileItems = computed(() => [
     },
   ],
   [
-    {
-      label: "Save",
-      disabled: !projectLoaded.value,
-      onSelect: () => saveCurrentProject(app.currentProjectPath, true),
-    },
+    ...(projectLoaded.value
+      ? [
+          {
+            label: "Save",
+            disabled: !projectLoaded.value,
+            onSelect: () => saveCurrentProject(app.currentProjectPath, true),
+          },
+        ]
+      : []),
   ],
   [{ label: "Quit", onSelect: () => appWindow?.close() }],
 ]);
@@ -121,14 +125,18 @@ const menus = computed(() => [
     title: "File",
     items: fileItems.value,
   },
-  {
-    title: "Translations",
-    items: languageItems.value,
-  },
-  {
-    title: "Export",
-    items: compileItems,
-  },
+  ...(projectLoaded.value
+    ? [
+        {
+          title: "Translations",
+          items: languageItems.value,
+        },
+        {
+          title: "Export",
+          items: compileItems,
+        },
+      ]
+    : []),
 ]);
 
 function minimize() {

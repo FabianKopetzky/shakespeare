@@ -40,6 +40,8 @@ const emit = defineEmits<{
           class="h-auto w-8 aspect-square flex items-center justify-center" />
       </UTooltip>
     </div>
-    <Help title="Story Graph" message-html="<p>Test</p>" />
+    <Help
+      title="Story Graph"
+      message-html="<p>The story graph is used to draft and create interactive stories.<br><br><span class='text-primary font-semibold'>Nodes</span><br>Create nodes using the toolbar or right click in the editor. Configure the node to your liking by clicking on it (play a dialogue, execute logic...). Drag connections from the output pins to the desired next node. Right click a node to set it as the graph's starting point or to delete it.<br><br><span class='font-semibold text-primary'>Connections</span><br>A connection is a line from a node output to a node input. Simply drag from a pin to create a connection. To delete a connection, click on it to select it and press the <span class=text-toned>delete</span> key on your keyboard, or delete the node the connection leads to.</p>" />
   </div>
 </template>

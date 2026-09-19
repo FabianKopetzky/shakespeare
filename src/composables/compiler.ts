@@ -35,7 +35,7 @@ export function useCompiler() {
     }
 
     function getProjectData(): any {
-        const currentDate = new Date(Date.now()).toLocaleString();
+        const currentDate = new Date(Date.now()).toLocaleDateString();
         const data = {
             projectTitle: contentStore.projectTitle,
             projectAuthor: contentStore.projectAuthor,
