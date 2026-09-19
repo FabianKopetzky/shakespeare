@@ -11,9 +11,12 @@ import {
 } from "../composables/projectHandler.ts";
 import ExportTranslationsDialog from "./forms/ExportTranslationsDialog.vue";
 import ImportTranslationsDialog from "./forms/ImportTranslationsDialog.vue";
+import { useRouter } from "vue-router";
 
 const app = useAppStore();
 const { projectLoaded, isNativeApp } = storeToRefs(useAppStore());
+
+const router = useRouter();
 
 const appWindow = isNativeApp.value ? getCurrentWindow() : null;
 
@@ -32,7 +35,10 @@ const projects = ref<ProjectFileEntry[]>([]);
 const projectItems = computed(() => {
   return projects.value.map((p) => ({
     label: p.name,
-    onSelect: () => openProject(p.path),
+    onSelect: () => {
+      openProject(p.path);
+      router.push("/");
+    },
   }));
 });
 

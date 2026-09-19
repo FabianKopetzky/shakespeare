@@ -1,5 +1,6 @@
 import { useContentStore } from "../stores/content";
 import type { AnyStoryNode, BranchNode, CustomFields, RandomNode, StoryNode } from "../types/schema";
+import { SHAKESPEARE_VERSION } from "./projectHandler";
 
 export function useCompiler() {
     const contentStore = useContentStore();
@@ -34,6 +35,7 @@ export function useCompiler() {
     }
 
     function getProjectData(): any {
+        const currentDate = new Date(Date.now()).toLocaleString();
         const data = {
             projectTitle: contentStore.projectTitle,
             projectAuthor: contentStore.projectAuthor,
@@ -48,9 +50,13 @@ export function useCompiler() {
             customFields: contentStore.customFields,
             events: contentStore.events,
 
-            meta: contentStore.meta,
+            meta: { ...contentStore.meta, lastEdited: currentDate, version: SHAKESPEARE_VERSION },
             settings: contentStore.settings
         }
+
+        // update contentStore data immediately
+        contentStore.meta!.lastEdited = currentDate;
+        contentStore.meta!.version = SHAKESPEARE_VERSION;
 
         return data;
     }

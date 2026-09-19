@@ -23,7 +23,7 @@ async function onConfirm() {
   if (!res) return;
 
   displaySuccess(`Successfully imported project ${json.value.projectTitle}`);
-  router.push("/dialogues");
+  router.push("/");
 
   open.value = false;
 }
