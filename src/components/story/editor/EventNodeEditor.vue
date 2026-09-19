@@ -4,7 +4,10 @@
     :dismissible="false"
     class="w-[40vw] min-w-100 max-w-none">
     <template #header>
-      <SlideoverHeader title="Edit event node" @close="close" @save="save" />
+      <SlideoverHeader
+        title="Edit event node"
+        @close="close"
+        :save-content="save" />
     </template>
     <template #body>
       <div class="h-full">
@@ -252,18 +255,18 @@ watch(isOpen, (open) => {
   }
 });
 
-function save(): void {
+function save(): boolean {
   const targetNode: AnyStoryNode = storyNodes[props.eventNodeId];
   if (!targetNode) {
     displayError(
       `An error occurred: Node "${props.eventNodeId}" does not exist (anymore)`,
     );
-    return;
+    return false;
   }
 
   if (!eventName.value) {
     displayError("No event selected");
-    return;
+    return false;
   }
 
   for (const arg of args.value) {
@@ -274,12 +277,12 @@ function save(): void {
         (arg.value === "" || isNaN(Number(arg.value)))
       ) {
         displayError(`Parameter "${arg.name}" must be a valid number`);
-        return;
+        return false;
       }
     } else {
       if (!arg.value || arg.value === "") {
         displayError(`No variable selected for parameter "${arg.name}"`);
-        return;
+        return false;
       }
     }
   }
@@ -287,6 +290,8 @@ function save(): void {
   updateEventNode();
   emit("onsave", props.eventNodeId);
   isOpen.value = false;
+
+  return true;
 }
 
 function close(): void {

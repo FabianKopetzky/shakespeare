@@ -5,7 +5,7 @@
         :title="editorTitle"
         :mode="props.mode"
         @close="close"
-        @save="save" />
+        :save-content="save" />
     </template>
     <template #body>
       <div class="h-full">
@@ -331,16 +331,16 @@ function validateAllSentences(): string[] {
   return errors;
 }
 
-function save(): void {
+function save(): boolean {
   if (!nodeKey.value || nodeKey.value.length <= 0) {
     displayError("The ID of a dialogue node cannot be null!");
-    return;
+    return false;
   }
   if (!/^[A-Za-z0-9_]+$/.test(nodeKey.value)) {
     displayError(
       "Only alphanumeric values and '_' are allowed for a node key!",
     );
-    return;
+    return false;
   }
   if (
     props.mode === "Create" &&
@@ -349,11 +349,11 @@ function save(): void {
     displayError(
       `A dialogue node with the ID "${nodeKey.value}" already exists!`,
     );
-    return;
+    return false;
   }
   if (nodeSentences.value.length === 0) {
     displayError("Add at least one sentence before saving.");
-    return;
+    return false;
   }
 
   const contentErrors = validateAllSentences();
@@ -365,12 +365,14 @@ function save(): void {
             contentErrors.length > 2 ? "s" : ""
           })`,
     );
-    return;
+    return false;
   }
 
   upsertDialogueNode();
   emit("onsave", nodeKey.value);
   isOpen.value = false;
+
+  return true;
 }
 function close(): void {
   isOpen.value = false;

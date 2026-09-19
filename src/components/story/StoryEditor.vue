@@ -5,7 +5,7 @@
         :title="editorTitle"
         :mode="props.mode"
         @close="close"
-        @save="save" />
+        :save-content="save" />
     </template>
     <template #body>
       <div class="h-full">
@@ -106,27 +106,29 @@ const editorTitle = computed(() => {
   }
 });
 
-function save(): void {
+function save(): boolean {
   if (!storyKey.value || storyKey.value.length <= 0) {
     displayError("The ID of a story cannot be null!");
-    return;
+    return false;
   }
   if (!/^[A-Za-z0-9_]+$/.test(storyKey.value)) {
     displayError(
       "Only alphanumeric values and '_' are allowed for the story key!",
     );
-    return;
+    return false;
   }
   if (
     props.mode === "Create" &&
     stories.find((s) => s?.id === storyKey.value)
   ) {
     displayError(`A story with the ID "${storyKey.value}" already exists!`);
-    return;
+    return false;
   }
 
   upsertStory();
   isOpen.value = false;
+
+  return true;
 }
 function close(): void {
   isOpen.value = false;

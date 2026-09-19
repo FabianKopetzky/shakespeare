@@ -7,7 +7,7 @@
       <SlideoverHeader
         title="Edit condition node"
         @close="close"
-        @save="save" />
+        :save-content="save" />
     </template>
     <template #body>
       <div class="h-full">
@@ -93,18 +93,20 @@ watch(isOpen, (open) => {
   }
 });
 
-function save(): void {
+function save(): boolean {
   const node: AnyStoryNode = storyNodes[props.conditionNodeId];
   if (!node) {
     displayError(
       `An error occurred: Node "${props.conditionNodeId}" does not exist (anymore)`,
     );
-    return;
+    return false;
   }
 
   updateConditionNode();
   emit("onsave", props.conditionNodeId);
   isOpen.value = false;
+
+  return true;
 }
 function close(): void {
   isOpen.value = false;

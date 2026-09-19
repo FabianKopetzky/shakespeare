@@ -5,7 +5,7 @@
         title="Edit branch node"
         mode="Update"
         @close="close"
-        @save="save" />
+        :save-content="save" />
     </template>
     <template #body>
       <div class="h-full">
@@ -437,17 +437,17 @@ function validateAllBranches(): string[] {
   return errors;
 }
 
-function save(): void {
+function save(): boolean {
   const node: AnyStoryNode = storyNodes.value[props.branchNodeId];
   if (!node) {
     displayError(
       `An error occurred: Node "${props.branchNodeId}" does not exist (anymore)`,
     );
-    return;
+    return false;
   }
   if (branches.value.length === 0) {
     displayError("Add at least one branch before saving.");
-    return;
+    return false;
   }
 
   const contentErrors = validateAllBranches();
@@ -459,12 +459,14 @@ function save(): void {
             contentErrors.length > 2 ? "s" : ""
           })`,
     );
-    return;
+    return false;
   }
 
   updateBranchNode();
   emit("onsave", props.branchNodeId);
   isOpen.value = false;
+
+  return true;
 }
 function close(): void {
   isOpen.value = false;

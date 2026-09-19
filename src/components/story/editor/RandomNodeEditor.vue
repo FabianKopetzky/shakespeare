@@ -4,7 +4,10 @@
     :dismissible="false"
     class="w-[40vw] min-w-100 max-w-none">
     <template #header>
-      <SlideoverHeader title="Edit random node" @close="close" @save="save" />
+      <SlideoverHeader
+        title="Edit random node"
+        @close="close"
+        :save-content="save" />
     </template>
     <template #body>
       <div class="h-full">
@@ -123,32 +126,34 @@ function removeBranch(id: string | number): void {
   branches.value = (branches.value ?? []).filter((b) => b.id !== id);
 }
 
-function save(): void {
+function save(): boolean {
   const node: AnyStoryNode = storyNodes[props.randomNodeId];
   if (!node) {
     displayError(
       `An error occurred: Node "${props.randomNodeId}" does not exist (anymore)`,
     );
-    return;
+    return false;
   }
 
   if (!branches.value || branches.value.length <= 0) {
     displayError(
       "Cannot save node without any branches. Please add a branch to continue.",
     );
-    return;
+    return false;
   }
 
   if (totalWeight.value <= 0) {
     displayError(
       "Total weight of 0 is not allowed. Please make sure to add the desired weight to branches!",
     );
-    return;
+    return false;
   }
 
   updateRandomNode();
   emit("onsave", props.randomNodeId);
   isOpen.value = false;
+
+  return true;
 }
 function close(): void {
   isOpen.value = false;

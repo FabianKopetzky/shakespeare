@@ -50,6 +50,7 @@ const { saveCurrentProject } = useProjectHandler();
 interface Props {
   title: string;
   mode?: FormMode;
+  saveContent: () => boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   mode: "Update",
@@ -57,13 +58,14 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   (e: "close"): void;
-  (e: "save"): void;
 }>();
 
 const showCancelConfirmation = ref<boolean>(false);
 
 async function save(): Promise<void> {
-  emit("save");
+  const ok = props.saveContent();
+
+  if (!ok) return;
   await nextTick();
 
   if (settings.value.autoSaveProject && isNativeApp) {

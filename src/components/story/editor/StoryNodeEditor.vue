@@ -4,7 +4,10 @@
     :dismissible="false"
     class="w-[40vw] min-w-100 max-w-none">
     <template #header>
-      <SlideoverHeader title="Edit dialogue node" @close="close" @save="save" />
+      <SlideoverHeader
+        title="Edit dialogue node"
+        @close="close"
+        :save-content="save" />
     </template>
     <template #body>
       <div class="h-full">
@@ -155,18 +158,20 @@ watch(isOpen, (open) => {
   }
 });
 
-function save(): void {
+function save(): boolean {
   const node: AnyStoryNode = storyNodes[props.storyNodeId];
   if (!node) {
     displayError(
       `An error occurred: Node "${props.storyNodeId}" does not exist (anymore)`,
     );
-    return;
+    return false;
   }
 
   updateStoryNode();
   emit("onsave", props.storyNodeId);
   isOpen.value = false;
+
+  return true;
 }
 function close(): void {
   isOpen.value = false;

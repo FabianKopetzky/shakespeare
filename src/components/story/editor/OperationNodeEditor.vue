@@ -7,7 +7,7 @@
       <SlideoverHeader
         title="Edit operation node"
         @close="close"
-        @save="save" />
+        :save-content="save" />
     </template>
     <template #body>
       <div class="h-full">
@@ -301,21 +301,23 @@ function buildOperation(): Operation {
   };
 }
 
-function save(): void {
+function save(): boolean {
   const node: AnyStoryNode = storyNodes[props.operationNodeId];
   if (!node) {
     displayError(
       `An error occurred: Node "${props.operationNodeId}" does not exist (anymore)`,
     );
-    return;
+    return false;
   }
 
-  if (!validate()) return;
+  if (!validate()) return false;
 
   operation.value = buildOperation();
   updateOperationNode();
   emit("onsave", props.operationNodeId);
   isOpen.value = false;
+
+  return true;
 }
 function close(): void {
   isOpen.value = false;
