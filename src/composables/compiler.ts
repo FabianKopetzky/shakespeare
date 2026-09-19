@@ -31,7 +31,7 @@ export function useCompiler() {
                 value: field.value
             }
         });
-        return entries;
+        return { entries: entries };
     }
 
     function getProjectData(): any {
