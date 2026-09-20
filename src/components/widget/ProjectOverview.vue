@@ -13,7 +13,9 @@
       </div>
       <div class="flex flex-row-reverse items-start justify-end gap-2">
         <UButton color="primary" variant="solid">Exit project</UButton>
-        <UButton color="secondary" variant="soft">Open location</UButton>
+        <UButton v-if="isNativeApp" color="secondary" variant="soft"
+          >Open location</UButton
+        >
       </div>
     </div>
     <div class="w-full h-0.5 bg-accented mt-12 mb-6" />
@@ -85,6 +87,7 @@
         >
       </div>
       <UButton
+        v-if="isNativeApp"
         @click="showDeleteConfirm = true"
         color="error"
         variant="soft"
@@ -92,14 +95,16 @@
         >Delete project</UButton
       >
     </div>
-    <p>or manage your local projects:</p>
-    <UButton
-      icon="material-symbols:lists-sharp"
-      class="mt-4"
-      variant="solid"
-      color="primary"
-      >Project list</UButton
-    >
+    <div v-if="isNativeApp">
+      <p>or manage your local projects:</p>
+      <UButton
+        icon="material-symbols:lists-sharp"
+        class="mt-4"
+        variant="solid"
+        color="primary"
+        >Project list</UButton
+      >
+    </div>
     <div class="h-12" />
   </div>
   <ProjectList v-model:open="projectListOpen" />
@@ -122,6 +127,7 @@ import ProjectList from "../forms/ProjectList.vue";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import CreateFileDialog from "../forms/CreateFileDialog.vue";
+import { useAppStore } from "../../stores/app.ts";
 
 const router = useRouter();
 
@@ -138,6 +144,8 @@ const {
   textColors,
   customFields,
 } = storeToRefs(useContentStore());
+
+const { isNativeApp } = storeToRefs(useAppStore());
 
 const projectListOpen = ref<boolean>(false);
 const showDeleteConfirm = ref<boolean>(false);
