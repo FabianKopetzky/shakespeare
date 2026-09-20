@@ -2,7 +2,7 @@
   <div class="w-full h-full">
     <div class="flex flex-row justify-between items-start">
       <div>
-        <p class="text-muted -mb-2">{{ getGreetingMessage() }}</p>
+        <p class="text-muted -mb-2">{{ greetingMessage }}</p>
         <h1>{{ projectTitle }}</h1>
         <div class="max-w-200">
           <span class="self-end text-dimmed text-balance"
@@ -12,7 +12,7 @@
         </div>
       </div>
       <div class="flex flex-row-reverse items-start justify-end gap-2">
-        <UButton @click="unloadProject" color="primary" variant="solid"
+        <UButton @click="showExitConfirm = true" color="primary" variant="solid"
           >Exit project</UButton
         >
         <UButton
@@ -124,6 +124,14 @@
     color="error"
     icon="material-symbols:delete-outline-sharp"
     @confirm="deleteOpenProject" />
+  <ConfirmDialog
+    v-model:open="showExitConfirm"
+    title="Exit project"
+    :description="`Are you sure you want to exit ${projectTitle}? Changes in your current project will not be saved. Verify that your current project is saved before exiting it.`"
+    confirm-label="Exit"
+    color="primary"
+    icon="material-symbols:close"
+    @confirm="unloadProject" />
 </template>
 
 <script setup lang="ts">
@@ -131,7 +139,7 @@ import { storeToRefs } from "pinia";
 import { useContentStore } from "../../stores/content";
 import StatsCard from "./StatsCard.vue";
 import ProjectList from "../forms/ProjectList.vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import CreateFileDialog from "../forms/CreateFileDialog.vue";
 import { useAppStore } from "../../stores/app.ts";
@@ -160,48 +168,28 @@ const { isNativeApp, currentProjectPath } = storeToRefs(useAppStore());
 
 const projectListOpen = ref<boolean>(false);
 const showDeleteConfirm = ref<boolean>(false);
+const showExitConfirm = ref<boolean>(false);
 const editProjectTitleOpen = ref<boolean>(false);
-
-const earlyMorningMessages = [
-  `Already up, ${projectAuthor.value}?`,
-  `Early shift, ${projectAuthor.value}?`,
-];
-const morningMessages = [
-  `Good morning, ${projectAuthor.value}!`,
-  `Let's get to work, ${projectAuthor.value}!`,
-];
-const afternoonMessages = [
-  `Afternoon, ${projectAuthor.value}!`,
-  `Good day, ${projectAuthor.value}!`,
-];
-const eveningMessages = [
-  `Good evening, ${projectAuthor.value}!`,
-  `Let's finish for today, ${projectAuthor.value}!`,
-];
-const nightMessages = [
-  `Good night, ${projectAuthor.value}!`,
-  `Still up, ${projectAuthor.value}?`,
-];
 
 async function deleteOpenProject(): Promise<void> {
   const res = await deleteProject(projectTitle.value);
   if (res) router.push("/");
 }
-function getGreetingMessage(): string {
-  const time = new Date(Date.now()).getHours();
+const greetingMessage = computed<string>(() => {
+  const name = projectAuthor.value;
+  const hour = new Date().getHours();
 
-  if (time >= 4 && time <= 6)
-    return earlyMorningMessages[
-      Math.floor(Math.random() * earlyMorningMessages.length)
-    ];
-  else if (time >= 7 && time <= 12)
-    return morningMessages[Math.floor(Math.random() * morningMessages.length)];
-  else if (time >= 13 && time <= 16)
-    return afternoonMessages[
-      Math.floor(Math.random() * afternoonMessages.length)
-    ];
-  else if (time >= 17 && time <= 21)
-    return eveningMessages[Math.floor(Math.random() * eveningMessages.length)];
-  else return nightMessages[Math.floor(Math.random() * nightMessages.length)];
-}
+  let messages: string[];
+  if (hour >= 4 && hour <= 6)
+    messages = [`Already up, ${name}?`, `Early shift, ${name}?`];
+  else if (hour >= 7 && hour <= 12)
+    messages = [`Good morning, ${name}!`, `Let's get to work, ${name}!`];
+  else if (hour >= 13 && hour <= 16)
+    messages = [`Afternoon, ${name}!`, `Good day, ${name}!`];
+  else if (hour >= 17 && hour <= 21)
+    messages = [`Good evening, ${name}!`, `Let's finish for today, ${name}!`];
+  else messages = [`Good night, ${name}!`, `Still up, ${name}?`];
+
+  return messages[Math.floor(Math.random() * messages.length)];
+});
 </script>

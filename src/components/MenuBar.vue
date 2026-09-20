@@ -12,6 +12,7 @@ import {
 import ExportTranslationsDialog from "./forms/ExportTranslationsDialog.vue";
 import ImportTranslationsDialog from "./forms/ImportTranslationsDialog.vue";
 import { useRouter } from "vue-router";
+import { useContentStore } from "../stores/content.ts";
 
 const app = useAppStore();
 const { projectLoaded, isNativeApp } = storeToRefs(useAppStore());
@@ -19,6 +20,8 @@ const { projectLoaded, isNativeApp } = storeToRefs(useAppStore());
 const router = useRouter();
 
 const appWindow = isNativeApp.value ? getCurrentWindow() : null;
+
+const { languages } = storeToRefs(useContentStore());
 
 const {
   exportProject,
@@ -127,10 +130,14 @@ const menus = computed(() => [
   },
   ...(projectLoaded.value
     ? [
-        {
-          title: "Translations",
-          items: languageItems.value,
-        },
+        ...(languages.value.length > 1
+          ? [
+              {
+                title: "Translations",
+                items: languageItems.value,
+              },
+            ]
+          : []),
         {
           title: "Export",
           items: compileItems,

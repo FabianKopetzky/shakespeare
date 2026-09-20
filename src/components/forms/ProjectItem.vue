@@ -91,7 +91,7 @@ function confirmOpen(): void {
   <ConfirmDialog
     v-model:open="showOpenConfirm"
     title="Open project"
-    :description="`Are you sure you want to open ${props.project.name}? Changes in your current project will not be saved. Verify that you current project is saved before opening a new project.`"
+    :description="`Are you sure you want to open ${props.project.name}? Changes in your current project will not be saved. Verify that your current project is saved before opening a new project.`"
     confirm-label="Open"
     color="primary"
     icon="material-symbols:file-open-sharp"

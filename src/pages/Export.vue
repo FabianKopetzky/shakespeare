@@ -111,7 +111,7 @@
       </div>
     </div>
     <PageSection title="Translations" />
-    <div class="flex flex-col gap-2 mt-4 w-[70%]">
+    <div v-if="languages.length > 1" class="flex flex-col gap-2 mt-4 w-[70%]">
       <p>
         Export all translations into a single .csv file and edit them all at
         once, give them to a translator or automatically translate them. Import
@@ -136,6 +136,15 @@
         >
       </div>
     </div>
+    <div
+      v-else
+      class="flex flex-col flex-1 self-center items-center justify-center text-muted">
+      <UIcon name="mingcute:empty-box-fill" class="w-12 h-12" />
+      <span
+        >No translations in your project. You need at least one additional
+        language in your project to use the translation service.</span
+      >
+    </div>
     <div class="h-12" />
   </div>
   <ExportTranslationsDialog v-model:open="exportTranslationsOpen" />
@@ -146,6 +155,7 @@ import { storeToRefs } from "pinia";
 import { useProjectHandler } from "../composables/projectHandler";
 import { useAppStore } from "../stores/app";
 import { ref } from "vue";
+import { useContentStore } from "../stores/content";
 const {
   exportProject,
   downloadCompiledStories,
@@ -155,6 +165,7 @@ const {
 } = useProjectHandler();
 
 const { isNativeApp, currentProjectPath } = storeToRefs(useAppStore());
+const { languages } = storeToRefs(useContentStore());
 
 function compileAndDownloadAll(): void {
   downloadCompiledProject();
