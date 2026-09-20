@@ -22,12 +22,15 @@ const router = useRouter();
 const { projectLoaded, isNativeApp } = storeToRefs(useAppStore());
 const { projectTitle, projectAuthor } = storeToRefs(useContentStore());
 
-const { createProject } = useProjectHandler();
+const { createProject, renameCurrentProject } = useProjectHandler();
+const { displayError, displaySuccess } = useWidget();
 
 const title = ref<string>("");
 const author = ref<string>("");
 
 const showUpdateConfirm = ref<boolean>(false);
+const MAX_TITLE_LENGTH = 100;
+const RESERVED_FILENAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
 
 watch(open, (isOpen) => {
   if (isOpen) {
@@ -42,27 +45,49 @@ watch(open, (isOpen) => {
   }
 });
 
-const { displayError, displaySuccess } = useWidget();
+//* VALIDATION
 
-function confirmUpdateProject(): void {}
-
-async function onConfirm(): Promise<void> {
+function validate(): boolean {
   if (!title.value) {
     displayError("Project title cannot be empty");
-    return;
+    return false;
+  }
+  if (title.value.length > MAX_TITLE_LENGTH) {
+    displayError(
+      `Project title is too long (max. ${MAX_TITLE_LENGTH} characters)`,
+    );
+    return false;
   }
   if (!/^[A-Za-z0-9_]+$/.test(title.value)) {
     displayError(
       "Only alphanumeric values and '_' are allowed for the project title",
     );
-    return;
+    return false;
   }
-  if (!author.value) {
+  if (RESERVED_FILENAMES.test(title.value)) {
+    displayError(`'${title.value}' is a reserved name and cannot be used`);
+    return false;
+  }
+  if (!author.value.trim()) {
     displayError("Project author cannot be empty");
-    return;
+    return false;
   }
+  return true;
+}
 
-  const res = await createProject(title.value, author.value);
+//* ACTIONS
+function onSubmit(): void {
+  if (props.mode === "Create") {
+    onConfirm();
+  } else {
+    onUpdate();
+  }
+}
+
+async function onConfirm(): Promise<void> {
+  if (!validate()) return;
+
+  const res = await createProject(title.value, author.value.trim());
   if (!res) return;
 
   displaySuccess(`Successfully created project ${title.value}`);
@@ -73,6 +98,28 @@ async function onConfirm(): Promise<void> {
 
   open.value = false;
 }
+
+function onUpdate(): void {
+  if (!validate()) return;
+
+  if (
+    title.value === projectTitle.value &&
+    author.value.trim() === projectAuthor.value
+  ) {
+    open.value = false;
+    return;
+  }
+
+  showUpdateConfirm.value = true;
+}
+
+async function confirmUpdateProject(): Promise<void> {
+  const res = await renameCurrentProject(title.value, author.value.trim());
+  if (!res) return;
+
+  open.value = false;
+}
+
 function onCancel() {
   open.value = false;
 }
@@ -98,17 +145,9 @@ function onCancel() {
         <UButton variant="ghost" color="neutral" @click="onCancel">
           Cancel
         </UButton>
-        <UButton
-          @click="
-            () => {
-              if (props.mode === 'Create') onConfirm();
-              else showUpdateConfirm = true;
-            }
-          "
-          >{{
-            props.mode === "Create" ? "Create project" : "Update project"
-          }}</UButton
-        >
+        <UButton @click="onSubmit">{{
+          props.mode === "Create" ? "Create project" : "Update project"
+        }}</UButton>
       </div>
     </template>
   </UModal>

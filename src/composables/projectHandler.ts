@@ -4,11 +4,12 @@ import { useCompiler } from "./compiler";
 import { useWidget } from "./widget";
 
 import { appDataDir, join } from "@tauri-apps/api/path";
-import { exists, mkdir, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readDir, readTextFile, remove, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 
 import { isValidProject } from "./projectValidator";
 import { invoke } from "@tauri-apps/api/core";
 import defaultSettings from "../utils/settings";
+import { revealItemInDir } from "@tauri-apps/plugin-opener";
 
 export const SHAKESPEARE_VERSION = "0.0 Beta";
 export interface ProjectFileEntry {
@@ -79,6 +80,12 @@ export function useProjectHandler() {
         })));
 
         return projects;
+    }
+
+    async function isProjectNameTaken(name: string, ignorePath?: string): Promise<boolean> {
+        const projects = await getProjects();
+        const lower = name.toLowerCase();
+        return projects.some(p => p.path !== ignorePath && p.name.toLowerCase() === lower);
     }
 
     async function removeOldProjectFileIfExistsUnity(): Promise<void> {
@@ -161,6 +168,13 @@ export function useProjectHandler() {
         }
     }
 
+    function unloadProject(): void {
+        // reuse the reset logic, then mark the app as having no project open
+        loadProjectDataToStore(null, '', '');
+        appStore.projectLoaded = false;
+        appStore.currentProjectPath = '';
+    }
+
     //* PROJECT HANDLING
     function downloadFile(content: string, type: 'application/json' | 'text/csv', fileName: string): void {
         const blob = new Blob([content], { type: type });
@@ -233,11 +247,130 @@ export function useProjectHandler() {
 
         return true;
     }
-    async function renameCurrentProject(title: string, author: string): Promise<boolean> {
-        return false;
+    async function renameCurrentProject(newTitle: string, newAuthor: string): Promise<boolean> {
+        if(!appStore.projectLoaded) {
+            displayError('Could not rename project: No project is currently open');
+            return false;
+        }
+
+        const oldTitle = contentStore.projectTitle;
+        const oldAuthor = contentStore.projectAuthor;
+
+        if(!appStore.isNativeApp) {
+            contentStore.projectTitle = newTitle;
+            contentStore.projectAuthor = newAuthor;
+            displaySuccess(`Successfully renamed project to '${newTitle}'`);
+            return true;
+        }
+
+        const oldPath = appStore.currentProjectPath;
+        let renamedOnDisk = false;
+        let newPath = oldPath;
+
+        try {
+            newPath = await getProjectPath(newTitle);
+
+            if(newPath !== oldPath) {
+                if(await isProjectNameTaken(newTitle, oldPath)) {
+                    displayError(`Could not rename project: A project named '${newTitle}' already exists`);
+                    return false;
+                }
+
+                
+                if(oldPath && await fileExists(oldPath)) {
+                    await rename(oldPath, newPath);
+                    renamedOnDisk = true;
+                }
+            }
+
+            contentStore.projectTitle = newTitle;
+            contentStore.projectAuthor = newAuthor;
+            appStore.currentProjectPath = newPath;
+
+           
+            if(!await saveCurrentProject(newPath)) {
+                throw new Error('The project file could not be written');
+            }
+
+            displaySuccess(`Successfully renamed project to '${newTitle}'`);
+            return true;
+        } catch(err) {
+            console.error('Failed to rename project:', err);
+
+            
+            contentStore.projectTitle = oldTitle;
+            contentStore.projectAuthor = oldAuthor;
+            appStore.currentProjectPath = oldPath;
+
+            if(renamedOnDisk) {
+                try {
+                    await rename(newPath, oldPath);
+                } catch(rollbackErr) {
+                    console.error('Failed to roll back project file rename:', rollbackErr);
+                }
+            }
+
+            displayError(`An error occurred renaming project '${oldTitle}': ${err}`);
+            return false;
+        }
     }
+    async function openProjectInExplorer(path: string): Promise<boolean> {
+        if(!appStore.isNativeApp) return false;
+ 
+        if(!path || path.length <= 0) {
+            displayError('Could not open project location: No project is currently open');
+            return false;
+        }
+ 
+        try {
+            if(!await fileExists(path)) {
+                displayError(`Could not open project location: The file ${path} no longer exists`);
+                return false;
+            }
+ 
+            await revealItemInDir(path);
+            return true;
+        } catch(err) {
+            console.error('Failed to reveal project in explorer:', err);
+            displayError(`An error occurred opening the project location: ${err}`);
+            return false;
+        }
+    }
+
     async function deleteProject(projectName: string): Promise<boolean> {
-        return false;
+        
+        if(!appStore.isNativeApp) {
+            if(!appStore.projectLoaded || contentStore.projectTitle !== projectName) {
+                displayError(`Could not delete project '${projectName}': It is not currently open`);
+                return false;
+            }
+
+            unloadProject();
+            displaySuccess(`Project '${projectName}' was removed from the editor. Previously exported files are not affected`);
+            return true;
+        }
+
+        try {
+            const projects = await getProjects();
+            const entry = projects.find(p => p.name === projectName);
+            if(!entry) {
+                displayError(`Could not delete project '${projectName}': The project file was not found`);
+                return false;
+            }
+
+            await remove(entry.path);
+
+            if(appStore.currentProjectPath === entry.path) {
+                unloadProject();
+            }
+
+            displaySuccess(`Successfully deleted project '${projectName}'`);
+            return true;
+        } catch(err) {
+            console.error('Failed to delete project:', err);
+            displayError(`An error occurred deleting project '${projectName}': ${err}`);
+            return false;
+        }
     }
     async function openProject(path: string): Promise<boolean> {
         if(!appStore.isNativeApp) return false;
@@ -356,6 +489,8 @@ export function useProjectHandler() {
         renameCurrentProject,
         deleteProject,
         saveCurrentProject,
+        openProjectInExplorer,
+        unloadProject,
         getProjects,
         openProject,
         downloadCompiledProject,

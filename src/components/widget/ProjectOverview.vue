@@ -12,8 +12,14 @@
         </div>
       </div>
       <div class="flex flex-row-reverse items-start justify-end gap-2">
-        <UButton color="primary" variant="solid">Exit project</UButton>
-        <UButton v-if="isNativeApp" color="secondary" variant="soft"
+        <UButton @click="unloadProject" color="primary" variant="solid"
+          >Exit project</UButton
+        >
+        <UButton
+          v-if="isNativeApp"
+          @click="openProjectInExplorer(currentProjectPath)"
+          color="secondary"
+          variant="soft"
           >Open location</UButton
         >
       </div>
@@ -98,6 +104,7 @@
     <div v-if="isNativeApp">
       <p>or manage your local projects:</p>
       <UButton
+        @click="projectListOpen = true"
         icon="material-symbols:lists-sharp"
         class="mt-4"
         variant="solid"
@@ -116,7 +123,7 @@
     confirm-label="Delete"
     color="error"
     icon="material-symbols:delete-outline-sharp"
-    @confirm="deleteProject" />
+    @confirm="deleteOpenProject" />
 </template>
 
 <script setup lang="ts">
@@ -128,8 +135,12 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import CreateFileDialog from "../forms/CreateFileDialog.vue";
 import { useAppStore } from "../../stores/app.ts";
+import { useProjectHandler } from "../../composables/projectHandler.ts";
 
 const router = useRouter();
+
+const { unloadProject, deleteProject, openProjectInExplorer } =
+  useProjectHandler();
 
 const {
   projectTitle,
@@ -145,7 +156,7 @@ const {
   customFields,
 } = storeToRefs(useContentStore());
 
-const { isNativeApp } = storeToRefs(useAppStore());
+const { isNativeApp, currentProjectPath } = storeToRefs(useAppStore());
 
 const projectListOpen = ref<boolean>(false);
 const showDeleteConfirm = ref<boolean>(false);
@@ -172,7 +183,10 @@ const nightMessages = [
   `Still up, ${projectAuthor.value}?`,
 ];
 
-async function deleteProject(): Promise<void> {}
+async function deleteOpenProject(): Promise<void> {
+  const res = await deleteProject(projectTitle.value);
+  if (res) router.push("/");
+}
 function getGreetingMessage(): string {
   const time = new Date(Date.now()).getHours();
 
