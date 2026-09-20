@@ -110,6 +110,11 @@ function submit() {
     displayError("Language code cannot be empty!");
     return;
   }
+  if (languageCode.value.length >= 8) {
+    displayError("Language code cannot be larger than 7 characters");
+    return;
+  }
+
   if (!/^[A-Za-z0-9_]+$/.test(languageCode.value)) {
     displayError(
       "Only alphanumeric values and '_' are allowed for the language code",
@@ -120,7 +125,10 @@ function submit() {
     displayError("Language display cannot be empty!");
     return;
   }
-
+  if (languageDisplay.value.length >= 20) {
+    displayError("Language display cannot be larger than 19 characters");
+    return;
+  }
   if (
     props.mode === "Create" &&
     languages.value.find((l) => l.code == languageCode.value)

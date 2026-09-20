@@ -86,12 +86,20 @@ function submit() {
     displayError("Field name cannot be empty");
     return;
   }
+  if (fieldName.value.length >= 25) {
+    displayError("Field name be longer than 24 characters");
+    return;
+  }
   if (!/^[A-Za-z0-9_]+$/.test(fieldName.value)) {
     displayError("Only alphanumeric values and '_' are allowed a field name");
     return;
   }
   if (!fieldLabel.value || fieldLabel.value.length <= 0) {
     displayError("Field label cannot be empty");
+    return;
+  }
+  if (fieldLabel.value.length >= 30) {
+    displayError("Field label be longer than 29 characters");
     return;
   }
   if (!fieldType.value || fieldType.value.length <= 0) {

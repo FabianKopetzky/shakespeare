@@ -342,6 +342,10 @@ function save(): boolean {
     );
     return false;
   }
+  if (nodeKey.value.length >= 30) {
+    displayError("Node key cannot be larger than 29 characters");
+    return false;
+  }
   if (
     props.mode === "Create" &&
     dialogues.value.find((n) => n?.id === nodeKey.value)

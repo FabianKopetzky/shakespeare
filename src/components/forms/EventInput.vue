@@ -67,6 +67,11 @@ function submit() {
     displayError("Event name cannot be empty");
     return;
   }
+
+  if (eventName.value.length >= 30) {
+    displayError("Event name cannot be larger than 29 characters");
+    return;
+  }
   if (!isValidIdentifier(eventName.value)) {
     displayError(
       "Only alphanumeric values and '_' are allowed in an event name",
@@ -90,6 +95,10 @@ function submit() {
       displayError(
         "Only alphanumeric values and '_' are allowed in a parameter name",
       );
+      return;
+    }
+    if (param.name.length >= 20) {
+      displayError("A parameter name cannot be larger than 19 characters");
       return;
     }
     if (!param.type || param.type.length <= 0) {

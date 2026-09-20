@@ -111,6 +111,10 @@ function save(): boolean {
     displayError("The ID of a story cannot be null!");
     return false;
   }
+  if (storyKey.value.length >= 30) {
+    displayError("Story key cannot be larger than 29 characters");
+    return false;
+  }
   if (!/^[A-Za-z0-9_]+$/.test(storyKey.value)) {
     displayError(
       "Only alphanumeric values and '_' are allowed for the story key!",

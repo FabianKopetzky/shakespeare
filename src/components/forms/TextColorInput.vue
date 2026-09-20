@@ -50,6 +50,10 @@ function submit() {
     displayError("Color name cannot be empty!");
     return;
   }
+  if (colorName.value.length >= 20) {
+    displayError("Variable name cannot be larger than 19 characters");
+    return;
+  }
   if (!NAME_PATTERN.test(colorName.value)) {
     displayError(
       "Color name can only contain letters and numbers, and must start with a letter!",

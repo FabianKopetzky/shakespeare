@@ -29,7 +29,7 @@ const title = ref<string>("");
 const author = ref<string>("");
 
 const showUpdateConfirm = ref<boolean>(false);
-const MAX_TITLE_LENGTH = 100;
+const MAX_TITLE_LENGTH = 30;
 const RESERVED_FILENAMES = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
 
 watch(open, (isOpen) => {
@@ -70,6 +70,10 @@ function validate(): boolean {
   }
   if (!author.value.trim()) {
     displayError("Project author cannot be empty");
+    return false;
+  }
+  if (author.value.length >= 35) {
+    displayError("Project author is too long (max. 34 characters)");
     return false;
   }
   return true;

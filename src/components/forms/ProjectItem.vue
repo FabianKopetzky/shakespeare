@@ -35,7 +35,7 @@ function confirmOpen(): void {
     <div class="flex flex-row gap-4 h-full w-full items-center justify-between">
       <div class="flex flex-row gap-2 items-center justify-start ml-2">
         <UIcon class="h-6 w-auto aspect-square" name="mdi:feather" />
-        <span class="font-semibold">{{ props.project.name }}</span>
+        <p class="font-semibold max-w-50 truncate">{{ props.project.name }}</p>
         <p class="ml-2 text-dimmed max-w-50 truncate">
           {{ props.project.path }}
         </p>
