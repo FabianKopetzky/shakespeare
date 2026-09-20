@@ -56,13 +56,74 @@
         :count="customFields.length" />
     </div>
     <PageSection title="Project Management" />
+    <p>
+      Quickly get started with
+      <span class="text-toned">{{ projectTitle }}</span> here:
+    </p>
+    <div class="my-4 flex flex-row justify-between gap-4 items-center">
+      <div class="flex flex-row items-center justify-start gap-4">
+        <UButton
+          @click="editProjectTitleOpen = true"
+          icon="material-symbols:edit-sharp"
+          color="primary"
+          variant="solid"
+          >Edit project</UButton
+        >
+        <UButton
+          @click="router.push('/export')"
+          color="secondary"
+          variant="soft"
+          icon="material-symbols:code-sharp"
+          >Compile project</UButton
+        >
+        <UButton
+          icon="material-symbols:settings-sharp"
+          @click="router.push('/settings')"
+          color="secondary"
+          variant="soft"
+          >Project settings</UButton
+        >
+      </div>
+      <UButton
+        @click="showDeleteConfirm = true"
+        color="error"
+        variant="soft"
+        icon="material-symbols:delete-outline-sharp"
+        >Delete project</UButton
+      >
+    </div>
+    <p>or manage your local projects:</p>
+    <UButton
+      icon="material-symbols:lists-sharp"
+      class="mt-4"
+      variant="solid"
+      color="primary"
+      >Project list</UButton
+    >
+    <div class="h-12" />
   </div>
+  <ProjectList v-model:open="projectListOpen" />
+  <CreateFileDialog v-model:open="editProjectTitleOpen" mode="Update" />
+  <ConfirmDialog
+    v-model:open="showDeleteConfirm"
+    title="Delete project"
+    :description="`Are you sure you want to delete the project ${projectTitle} by ${projectAuthor}? The project file will be removed from your disk, but already compiled or downloaded files remain untouched. This cannot be undone.`"
+    confirm-label="Delete"
+    color="error"
+    icon="material-symbols:delete-outline-sharp"
+    @confirm="deleteProject" />
 </template>
 
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { useContentStore } from "../../stores/content";
 import StatsCard from "./StatsCard.vue";
+import ProjectList from "../forms/ProjectList.vue";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import CreateFileDialog from "../forms/CreateFileDialog.vue";
+
+const router = useRouter();
 
 const {
   projectTitle,
@@ -77,6 +138,10 @@ const {
   textColors,
   customFields,
 } = storeToRefs(useContentStore());
+
+const projectListOpen = ref<boolean>(false);
+const showDeleteConfirm = ref<boolean>(false);
+const editProjectTitleOpen = ref<boolean>(false);
 
 const earlyMorningMessages = [
   `Already up, ${projectAuthor.value}?`,
@@ -98,6 +163,8 @@ const nightMessages = [
   `Good night, ${projectAuthor.value}!`,
   `Still up, ${projectAuthor.value}?`,
 ];
+
+async function deleteProject(): Promise<void> {}
 function getGreetingMessage(): string {
   const time = new Date(Date.now()).getHours();
 
@@ -107,11 +174,11 @@ function getGreetingMessage(): string {
     ];
   else if (time >= 7 && time <= 12)
     return morningMessages[Math.floor(Math.random() * morningMessages.length)];
-  else if (time >= 13 && time <= 17)
+  else if (time >= 13 && time <= 16)
     return afternoonMessages[
       Math.floor(Math.random() * afternoonMessages.length)
     ];
-  else if (time >= 18 && time <= 21)
+  else if (time >= 17 && time <= 21)
     return eveningMessages[Math.floor(Math.random() * eveningMessages.length)];
   else return nightMessages[Math.floor(Math.random() * nightMessages.length)];
 }

@@ -16,7 +16,12 @@
           size="xl"
           >Import Project</UButton
         >
-        <UButton v-else variant="soft" color="secondary" size="xl"
+        <UButton
+          v-else
+          variant="soft"
+          color="secondary"
+          size="xl"
+          @click="projectListOpen = true"
           >Open Project</UButton
         >
       </div>
@@ -75,6 +80,7 @@
 
   <ImportFileDialog v-model:open="showImportDialogue" />
   <CreateFileDialog v-model:open="showCreateNewDialogue" />
+  <ProjectList v-model:open="projectListOpen" />
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
@@ -86,11 +92,13 @@ import { storeToRefs } from "pinia";
 import { useAppStore } from "../../stores/app.ts";
 
 import { open } from "@tauri-apps/plugin-shell";
+import ProjectList from "../forms/ProjectList.vue";
 
 const { isNativeApp } = storeToRefs(useAppStore());
 
 const showImportDialogue = ref<boolean>(false);
 const showCreateNewDialogue = ref<boolean>(false);
+const projectListOpen = ref<boolean>(false);
 
 async function openLink(link: string): Promise<void> {
   if (isNativeApp.value) {

@@ -233,6 +233,12 @@ export function useProjectHandler() {
 
         return true;
     }
+    async function renameCurrentProject(title: string, author: string): Promise<boolean> {
+        return false;
+    }
+    async function deleteProject(projectName: string): Promise<boolean> {
+        return false;
+    }
     async function openProject(path: string): Promise<boolean> {
         if(!appStore.isNativeApp) return false;
         try {
@@ -347,6 +353,8 @@ export function useProjectHandler() {
         exportProject,
         importProject,
         createProject,
+        renameCurrentProject,
+        deleteProject,
         saveCurrentProject,
         getProjects,
         openProject,
