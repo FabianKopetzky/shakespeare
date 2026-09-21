@@ -72,7 +72,7 @@ async function deleteEvent(name: string) {
         <h2>Events</h2>
         <Help
           title="Events"
-          messageHtml='<p>Text color variables are used to define colors that can color text within dialogues. You can use them to highlight special words within your text, such as <span class="text-primary">danger, hints</span> or <span class="text-primary">quest-relevant info</span>. Changing the color of the variable will also update all texts this variable was used for.<br><br>When compiling the stories, the actual color value will be baked into the text. If you want to reference the defined color variables in Unity, you can enable the setting <span class="text-primary">"Compile color variables"</span> in the settings to compile the defined text colors into the main file of the project.</p>' />
+          messageHtml="<p>Events can be used to <span class='text-primary'>execute your own logic in your C# code</span>. You can define an event signature here in Shakespeare and <span class='text-primary'>invoke events from event nodes</span> in your stories. In Unity, you can subscribe to events via their name and attach your own listeners to execute custom logic, such as <span class='text-primary'>starting quests, adding items or opening menus</span>.</p>" />
       </div>
       <UButton
         icon="material-symbols:add-box-sharp"
