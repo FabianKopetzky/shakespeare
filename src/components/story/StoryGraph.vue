@@ -1,14 +1,25 @@
 <template>
   <UContextMenu :items="paneMenuItems">
     <div
-      class="story-editor relative rounded-3xl overflow-hidden"
+      ref="editorRootEl"
+      class="story-editor relative rounded-none border border-accented overflow-hidden isolate"
       @contextmenu="rememberPanePos">
-      <!-- <div
-      v-if="story"
-      class="absolute top-4 left-4 p-4 z-20 bg-muted rounded-2xl">
-      <h3>{{ story.id }}</h3>
-      <span>{{ story.description }}</span>
-    </div> -->
+      <h1
+        class="absolute top-0 right-2 text-muted opacity-15 text-8xl uppercase max-w-200 truncate">
+        {{ story?.id }}
+      </h1>
+      <UButton
+        @click="router.push('/stories')"
+        square
+        class="absolute top-4 left-4 h-auto aspect-square z-10"
+        color="neutral"
+        variant="outline"
+        icon="material-symbols:arrow-back" />
+      <StoryToolBar
+        @add-node="(type: any) => addNodeFromToolbar(type)"
+        :nodes="availableNodeTypes"
+        :story-name="story?.id"
+        :node-count="story?.nodes.length ?? 0" />
       <VueFlow
         :nodes="flowNodes"
         :edges="flowEdges"
@@ -16,6 +27,11 @@
         :edge-types="edgeTypes"
         :apply-default="false"
         :delete-key-code="['Backspace', 'Delete']"
+        :connection-line-type="ConnectionLineType.Step"
+        :connection-line-style="{
+          stroke: 'var(--ui-text-muted)',
+          strokeWidth: 2.5,
+        }"
         :node-drag-threshold="4"
         :min-zoom="0.15"
         :max-zoom="2"
@@ -23,9 +39,22 @@
         @nodes-change="onNodesChange"
         @edges-change="onEdgesChange"
         @connect="onConnect"
+        @connect-start="onConnectStart"
+        @connect-end="onConnectEnd"
         @node-click="onNodeClick"
         @node-drag-stop="onNodeDragStop">
-        <Background variant="lines" :gap="50" pattern-color="#FFFFFF15" />
+        <Background
+          :variant="
+            settings.storyGraphPattern !== 'none'
+              ? (settings.storyGraphPattern as BackgroundVariantType)
+              : 'lines'
+          "
+          :bg-color="
+            settings.storyGraphPattern === 'none' ? 'var(--ui-bg-muted)' : ''
+          "
+          :gap="settings.storyGraphPatternGap"
+          :size="settings.storyGraphPatternSize"
+          pattern-color="var(--ui-bg-elevated)" />
         <Controls />
       </VueFlow>
     </div>
@@ -33,17 +62,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, markRaw, provide, ref } from "vue";
+import { computed, markRaw, provide, ref, nextTick } from "vue";
 import {
   VueFlow,
   useVueFlow,
   type Connection,
   type NodeChange,
   type EdgeChange,
+  ConnectionLineType,
   type NodeMouseEvent,
   type NodeDragEvent,
+  type OnConnectStartParams,
 } from "@vue-flow/core";
-import { Background } from "@vue-flow/background";
+import { Background, type BackgroundVariantType } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import type { ContextMenuItem } from "@nuxt/ui";
 import StoryEdge from "./StoryEdge.vue";
@@ -53,31 +84,45 @@ import {
   ENTRY_NODE_ID_KEY,
   STORY_EDITOR_ACTIONS_KEY,
 } from "../../composables/storyEditorKeys";
-import { useWidget } from "../../composables/widget.ts"; // adjust path to match your project
+import { useWidget } from "../../composables/widget.ts";
 import type { AnyStoryNode, Story } from "../../types/schema";
+import { storeToRefs } from "pinia";
+import { useContentStore } from "../../stores/content.ts";
+import { useRouter } from "vue-router";
 
 const props = defineProps<{ story: Story }>();
 const emit = defineEmits<{
-  // fired on node click - the actual dialogue / branch editor UI is not
-  // built yet, this is just the hook point for it.
   "open-node": [node: AnyStoryNode];
 }>();
 
 const { displayError } = useWidget();
+const { settings } = storeToRefs(useContentStore());
+
+const router = useRouter();
 
 const graph = useStoryGraph(() => props.story);
-const { applyNodeChanges, applyEdgeChanges, screenToFlowCoordinate } =
-  useVueFlow();
+const {
+  applyNodeChanges,
+  applyEdgeChanges,
+  screenToFlowCoordinate,
+  updateNodeInternals,
+  getNodes,
+  findNode,
+  addSelectedNodes,
+  removeSelectedNodes,
+  fitView,
+} = useVueFlow();
 
 const { flowNodes, flowEdges, availableNodeTypes } = graph;
-defineExpose({ updateNodeContent: graph.updateNodeContent });
+function updateNodeContent(id: string, content: Partial<AnyStoryNode>) {
+  graph.updateNodeContent(id, content);
+  nextTick(() => {
+    updateNodeInternals([id]);
+  });
+}
 
-// every registered node type renders through the same generic card -
-// adding a new node type never requires touching this map.
-// markRaw is required here: vue-flow stores nodeTypes/edgeTypes in its own
-// reactive store, and without markRaw, Vue will deep-wrap the component
-// definition object itself in a reactive proxy (harmless but wasteful, and
-// Vue warns about it).
+defineExpose({ updateNodeContent });
+
 const rawBaseNodeCard = markRaw(BaseNodeCard);
 const nodeTypes = Object.fromEntries(
   availableNodeTypes.map((def) => [def.type, rawBaseNodeCard]),
@@ -89,9 +134,6 @@ provide(
   computed(() => props.story?.entryNodeId ?? null),
 );
 
-// the node card's and edge's own nested context menus call these directly,
-// since they render deep inside <VueFlow> and don't have their own access
-// to `graph`.
 provide(STORY_EDITOR_ACTIONS_KEY, {
   deleteNode: graph.deleteNode,
   setEntryNode: graph.setEntryNode,
@@ -129,17 +171,10 @@ function onConnect(connection: Connection) {
     displayError("This node has no matching output pin for that connection.");
     return;
   }
-  // dragging a new wire from a pin that already has one simply overwrites
-  // the old target - there is only ever one live edge per output pin,
-  // since the pin *is* a targetId field under the hood.
+
   graph.connect(connection.source, connection.sourceHandle, connection.target);
 }
 
-// node-drag-threshold (above) already stops vue-flow from firing node-click
-// after a real drag in most cases, but it's a pixel-distance heuristic and
-// can still misfire depending on input device / trackpad jitter. Belt and
-// suspenders: explicitly remember which node just finished a drag and skip
-// the very next click for it.
 const justDraggedNodeId = ref<string | null>(null);
 
 function onNodeClick({ node }: NodeMouseEvent) {
@@ -151,39 +186,128 @@ function onNodeClick({ node }: NodeMouseEvent) {
 function onNodeDragStop({ node }: NodeDragEvent) {
   graph.updateNodePosition(node.id, { x: node.position.x, y: node.position.y });
   justDraggedNodeId.value = node.id;
-  // node-click (if the browser fires one for this gesture at all) always
-  // arrives right after drag-stop, in the same tick - clear the guard on
-  // the next tick so it doesn't block a later, genuine click.
+
   requestAnimationFrame(() => {
     if (justDraggedNodeId.value === node.id) justDraggedNodeId.value = null;
   });
 }
 
-// --- pane context menu ("create node") -----------------------------------
-//
-// Nodes and edges each carry their own nested UContextMenu now (see
-// BaseNodeCard.vue / StoryEdge.vue) - right-clicking one of them opens that
-// menu and the event never reaches this outer one, since their trigger
-// already marked it as handled. Right-clicking empty canvas falls through
-// to here.
+const NEW_NODE_PADDING = 60;
+const DEFAULT_NODE_HEIGHT = 160;
 
-// UContextMenu positions its popup from the real contextmenu event on its
-// trigger, so we don't control that - but we DO need the click position
-// ourselves, to know where in the story to drop a newly created node. This
-// listener runs alongside (not instead of) the menu's own trigger.
+function computeNextNodePosition(): { x: number; y: number } {
+  const nodes = getNodes.value;
+  if (!nodes.length) return { x: 0, y: 0 };
+
+  let maxBottom = -Infinity;
+  let leftMostX = Infinity;
+
+  for (const node of nodes) {
+    const height = node.dimensions?.height || DEFAULT_NODE_HEIGHT;
+    const bottom = node.position.y + height;
+    if (bottom > maxBottom) maxBottom = bottom;
+    if (node.position.x < leftMostX) leftMostX = node.position.x;
+  }
+
+  return {
+    x: leftMostX === Infinity ? 0 : leftMostX,
+    y: maxBottom + NEW_NODE_PADDING,
+  };
+}
+
+async function focusNode(id: string) {
+  await nextTick();
+  const node = findNode?.(id);
+  if (!node) return;
+
+  try {
+    removeSelectedNodes?.(getNodes.value);
+    addSelectedNodes?.([node]);
+    fitView?.({ nodes: [id], duration: 400, padding: 0.4, maxZoom: 1 });
+  } catch (err) {
+    console.warn("Could not focus new node", err);
+  }
+}
+
+function addNodeFromToolbar(type: any): void {
+  const { x, y } = computeNextNodePosition();
+  const newNode = graph.addNode(type, { x, y });
+  if (newNode) focusNode(newNode.id);
+}
+
+const editorRootEl = ref<HTMLElement | null>(null);
 const lastPanePos = ref({ x: 0, y: 0 });
+
 function rememberPanePos(event: MouseEvent) {
   lastPanePos.value = { x: event.clientX, y: event.clientY };
+
+  if (event.isTrusted) {
+    pendingConnectionSource.value = null;
+  }
+}
+
+function openPaneMenuAt(clientX: number, clientY: number) {
+  const el = editorRootEl.value;
+  if (!el) return;
+  el.dispatchEvent(
+    new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      clientX,
+      clientY,
+    }),
+  );
+}
+
+const connectionDragSource = ref<{
+  nodeId: string;
+  handleId: string | null;
+} | null>(null);
+const pendingConnectionSource = ref<{
+  nodeId: string;
+  handleId: string | null;
+} | null>(null);
+
+function onConnectStart({
+  nodeId,
+  handleId,
+}: { event?: MouseEvent } & OnConnectStartParams) {
+  connectionDragSource.value = nodeId
+    ? { nodeId, handleId: handleId ?? null }
+    : null;
+}
+
+function onConnectEnd(event?: MouseEvent | TouchEvent) {
+  const source = connectionDragSource.value;
+  connectionDragSource.value = null;
+  if (!source || !event) return;
+
+  const target = event.target as HTMLElement | null;
+  const droppedOnPane = !!target?.classList?.contains("vue-flow__pane");
+  if (!droppedOnPane) return;
+
+  const point = "changedTouches" in event ? event.changedTouches[0] : event;
+  if (!point) return;
+
+  pendingConnectionSource.value = source;
+  openPaneMenuAt(point.clientX, point.clientY);
 }
 
 const paneMenuItems = computed<ContextMenuItem[]>(() =>
   availableNodeTypes.map((def) => ({
     label: `Create ${def.label} node`,
-    icon: "i-lucide-plus",
+    icon: def.icon,
     onSelect: () => {
       const { x, y } = screenToFlowCoordinate(lastPanePos.value);
+      const source = pendingConnectionSource.value;
+      pendingConnectionSource.value = null;
+
       try {
-        graph.addNode(def.type, { x, y });
+        const newNode = graph.addNode(def.type, { x, y });
+        if (newNode && source?.handleId) {
+          graph.connect(source.nodeId, source.handleId, newNode.id);
+        }
       } catch (err) {
         displayError(`Could not create node: ${(err as Error).message}`);
       }
@@ -197,6 +321,6 @@ const paneMenuItems = computed<ContextMenuItem[]>(() =>
   width: 100%;
   height: 100%;
   min-height: 600px;
-  background: #0b1221;
+  background: var(--ui-bg-muted);
 }
 </style>

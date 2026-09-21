@@ -38,10 +38,6 @@ function onCancel() {
   <UModal v-model:open="open" :title="title">
     <template #body>
       <div class="flex flex-row gap-4 items-start">
-        <UIcon
-          :name="icon"
-          class="text-2xl mt-1"
-          :class="`text-${color}-500`" />
         <p>{{ description }}</p>
       </div>
     </template>

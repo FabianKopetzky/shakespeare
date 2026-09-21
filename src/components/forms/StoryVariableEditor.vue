@@ -1,52 +1,165 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { useContentStore } from "../../stores/content.ts";
 import type { StoryVariable } from "../../types/schema.ts";
 import StoryVariableItem from "./StoryVariableItem.vue";
 import StoryVariableInput from "./StoryVariableInput.vue";
+import { storeToRefs } from "pinia";
+import { useCompiler } from "../../composables/compiler.ts";
+import { useAppStore } from "../../stores/app.ts";
+import { useProjectHandler } from "../../composables/projectHandler.ts";
 
-const { storyVariables } = useContentStore();
+const { storyVariables, dialogues, storyNodes, settings } =
+  storeToRefs(useContentStore());
+const { resolveStoryVariable } = useCompiler();
 const addStoryVariableModalOpen = ref<boolean>(false);
 
-function addNewVariable(variable: StoryVariable) {
-  storyVariables.push(variable);
-}
-function editVariable(variable: StoryVariable) {
-  const idx = storyVariables.findIndex((v) => v.name == variable.name);
-  if (idx >= 0 && idx < storyVariables.length) {
-    storyVariables[idx] = variable;
+const { isNativeApp, currentProjectPath } = storeToRefs(useAppStore());
+const { saveCurrentProject } = useProjectHandler();
+
+async function addNewVariable(variable: StoryVariable) {
+  storyVariables.value.push(variable);
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
   }
 }
-function deleteVariable(name: string) {
-  const idx = storyVariables.findIndex((v) => v.name == name);
-  if (idx >= 0) {
-    storyVariables.splice(idx, 1);
+async function editVariable(variable: StoryVariable) {
+  const idx = storyVariables.value.findIndex((v) => v.name == variable.name);
+  if (idx >= 0 && idx < storyVariables.value.length) {
+    storyVariables.value[idx] = variable;
+  }
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
+  }
+}
+async function deleteVariable(name: string) {
+  const idx = storyVariables.value.findIndex((v) => v.name == name);
+  if (idx < 0) return;
+
+  const toDelete = storyVariables.value[idx];
+
+  // clean up variable
+  for (const dialogue of dialogues.value) {
+    for (const sentence of dialogue?.sentences ?? []) {
+      for (const key of Object.keys(sentence.translations)) {
+        sentence.translations[key] = resolveStoryVariable(
+          sentence.translations[key],
+          toDelete.name,
+          toDelete.defaultValue,
+        );
+      }
+    }
+  }
+
+  for (const nodeKey of Object.keys(storyNodes.value)) {
+    const node = storyNodes.value[nodeKey];
+    switch (node.type) {
+      case "branch":
+        for (const branch of node.branches) {
+          for (const key of Object.keys(branch.labels)) {
+            branch.labels[key] = resolveStoryVariable(
+              branch.labels[key],
+              toDelete.name,
+              toDelete.defaultValue,
+            );
+          }
+        }
+        break;
+      case "operation":
+        if (node.operation?.variableName === toDelete.name) {
+          node.operation = null;
+        }
+        break;
+      case "event":
+        for (const arg of node.args) {
+          if (arg.kind === "variable" && arg.value === toDelete.name) {
+            arg.kind = "literal";
+            arg.value = toDelete.defaultValue;
+          }
+        }
+        break;
+      case "condition":
+        for (const clause of node.condition ?? []) {
+          const comparison = clause.comparison;
+          if (
+            comparison.left.kind === "variable" &&
+            comparison.left.value === toDelete.name
+          ) {
+            comparison.left.value = toDelete.defaultValue;
+            comparison.left.kind = "literal";
+          }
+          if (
+            comparison.right.kind === "variable" &&
+            comparison.right.value === toDelete.name
+          ) {
+            comparison.right.value = toDelete.defaultValue;
+            comparison.right.kind = "literal";
+          }
+        }
+        break;
+    }
+  }
+
+  storyVariables.value.splice(idx, 1);
+
+  await nextTick();
+  if (settings.value.autoSaveProject && isNativeApp) {
+    await saveCurrentProject(
+      currentProjectPath.value,
+      settings.value.showAutoSaveMessages,
+    );
   }
 }
 </script>
 
 <template>
-  <h2>Story Variables</h2>
-
-  <template v-if="storyVariables.length > 0">
-    <div v-for="variable in storyVariables" :key="variable.name">
-      <StoryVariableItem
-        @edit="editVariable"
-        @delete="deleteVariable"
-        :variable="variable" />
+  <div>
+    <div class="flex flex-col lg:flex-row gap-2 justify-between mb-12">
+      <div
+        class="flex flex-row gap-2 items-center justify-between lg:justify-start">
+        <h2>Story Variables</h2>
+        <Help
+          title="Story Variables"
+          messageHtml='<p>Story variables hold the state of your project and stories globally. They are used for <span class="text-primary">templating</span> in your dialogue sentences and are responsible for <span class="text-primary">logic</span> in your stories.<span class="text-primary">Branches, Conditions</span> and <span class="text-primary">story nodes</span> use story variables to execute logic.<br><br>Story variables can be mutated in the Shakespeare editor using <span class="text-primary">Operation nodes</span>.<br><br>Story variables can also be read and mutated inside of Unity. Use the <span class="text-primary">GetVariable&lt;T&gt;</span> and <span class="text-primary">SetVariable&lt;T&gt;</span> methods of your <span class="text-primary">ShakespeareCore</span> instance to access variables at runtime.</p>' />
+      </div>
+      <UButton
+        icon="material-symbols:add-box-sharp"
+        @click="addStoryVariableModalOpen = true"
+        >New Variable</UButton
+      >
     </div>
-  </template>
-  <template v-else>
-    <p>There are no story variables defined...</p>
-  </template>
 
-  <USeparator class="my-8" />
+    <template v-if="storyVariables.length > 0">
+      <div class="flex flex-col gap-2">
+        <div v-for="variable in storyVariables" :key="variable.name">
+          <StoryVariableItem
+            @edit="editVariable"
+            @delete="deleteVariable"
+            :variable="variable" />
+        </div>
+      </div>
+    </template>
+    <template v-else>
+      <div class="flex flex-col items-center justify-center text-muted">
+        <UIcon name="mingcute:empty-box-fill" class="w-12 h-12" />
+        <span>No story variables defined</span>
+      </div>
+    </template>
 
-  <UButton @click="addStoryVariableModalOpen = true">Create new</UButton>
-
-  <StoryVariableInput
-    v-model:open="addStoryVariableModalOpen"
-    @submit="addNewVariable"
-    :variable="undefined"
-    mode="Create" />
+    <StoryVariableInput
+      v-model:open="addStoryVariableModalOpen"
+      @submit="addNewVariable"
+      :variable="undefined"
+      mode="Create" />
+  </div>
 </template>

@@ -1,11 +1,161 @@
 <template>
-  <div>
-    <div class="flex flex-row justify-between">
-      <h1>Settings</h1>
-      <p>Preferenecs</p>
+  <div class="h-full">
+    <div class="flex flex-row justify-between items-start">
+      <div>
+        <h1>Settings</h1>
+        <div class="max-w-150">
+          <span class="self-end text-dimmed text-balance"
+            >Manage preferences of this project. Settings are stored per
+            project. Some settings are only available in the native app and will
+            not work on the web!</span
+          >
+        </div>
+      </div>
+      <UButton
+        icon="material-symbols:reset-wrench-sharp"
+        @click="resetConfirmOpen = true"
+        >Reset to default</UButton
+      >
+      <ConfirmDialog
+        v-model:open="resetConfirmOpen"
+        title="Reset settings?"
+        description="Your project settings are about to be reset to their default. The Unity streaming assets path will remain unchanged. Are you sure you want to proceed?"
+        @confirm="resetSettings()" />
     </div>
-    <USeparator class="h-6" orientation="horizontal" />
-    <div class="flex flex-col gap-2"></div>
+    <div class="w-full h-0.5 bg-accented mt-12 mb-6" />
+
+    <PageSection title="Unity" />
+
+    <div class="flex flex-col gap-2 w-[50%]">
+      <UFormField class="w-full" label="Unity Streaming Assets Path">
+        <div class="flex flex-row items-center gap-4">
+          <UInput
+            :disabled="!isNativeApp"
+            class="w-full"
+            v-model="settings.unityStreamingAssetsPath" />
+          <Help
+            title="Streaming Assets Path"
+            messageHtml='<p>Provide the base path to the <span class="text-primary">StreamingAssets</span> folder of your unity project. The folder should be located at the base of the project:<br><br> <code class="text-primary">YourProject/Assets/StreamingAssets</code><br><br> Shakespeare will then infer the correct main and story path from the project structure. Make sure your project is configured correctly.</p>' />
+        </div>
+      </UFormField>
+      <div class="flex flex-row items-center justify-between gap-4 w-full">
+        <UCheckbox
+          size="xl"
+          label="Compile text colors"
+          v-model="settings.compileTextColors" />
+        <Help
+          title="Compile text colors"
+          messageHtml='<p>If checked, <span class="text-primary">Text Color Variables</span> will be compiled and included in the <code class="text-primary">main.json</code> file and therefore accessable over the <span class="text-primary">Shakespeare Core Instance</span>. This enables you to use your color definitons from Shakespeare in other parts of your project as well.</p>' />
+      </div>
+    </div>
+
+    <PageSection title="Editor" />
+
+    <div class="flex flex-col gap-2 w-[50%] mt-4">
+      <div class="flex flex-row items-center justify-between gap-4 w-full">
+        <UCheckbox
+          size="xl"
+          label="Warn before discarding editor changes"
+          v-model="settings.warnBeforeDiscarding" />
+      </div>
+      <div class="flex flex-row items-center justify-between gap-4 w-full">
+        <UCheckbox
+          :disabled="!isNativeApp"
+          size="xl"
+          label="Auto-save project"
+          v-model="settings.autoSaveProject" />
+        <Help
+          title="Auto Save"
+          messageHtml='<p>If checked, your project will be <span class="text-primary">saved automatically</span> whenever you confirm changes in your project:<br><ul><li>When you create new objects</li><li>When you edit objects</li><li>When you modify story flows</li></ul></p>' />
+      </div>
+      <div
+        v-if="settings.autoSaveProject"
+        class="flex flex-row items-center justify-between gap-4 w-full">
+        <UCheckbox
+          :disabled="!isNativeApp"
+          size="xl"
+          label="Show auto-save messages"
+          v-model="settings.showAutoSaveMessages" />
+      </div>
+      <div class="flex flex-row items-center justify-between gap-4 w-full">
+        <UCheckbox
+          :disabled="!isNativeApp"
+          size="xl"
+          label="Warn before quitting app"
+          v-model="settings.warnBeforeClosing" />
+      </div>
+      <div class="flex flex-row items-center justify-between gap-4 w-full">
+        <UCheckbox
+          size="xl"
+          label="Show missing translations"
+          v-model="settings.showMissingTranslations" />
+      </div>
+    </div>
+
+    <PageSection title="Appearance" />
+
+    <div class="flex flex-col gap-2 w-[50%]">
+      <UFormField class="w-full" label="Story graph pattern">
+        <USelect
+          class="w-full"
+          :items="[
+            {
+              value: 'lines',
+              label: 'Lines',
+              icon: 'material-symbols:table-rows-narrow-sharp',
+            },
+            {
+              value: 'dots',
+              label: 'Dots',
+              icon: 'material-symbols:more-horiz',
+            },
+          ]"
+          v-model="settings.storyGraphPattern" />
+      </UFormField>
+      <UFormField
+        v-show="settings.storyGraphPattern === 'dots'"
+        class="w-full mt-2"
+        label="Story graph dot size">
+        <div class="flex flex-row justify-start items-center gap-4">
+          <span class="w-9">{{ settings.storyGraphPatternSize }}</span>
+          <USlider
+            :min="1"
+            :max="8"
+            :step="0.2"
+            v-model="settings.storyGraphPatternSize" />
+        </div>
+      </UFormField>
+      <UFormField
+        v-show="settings.storyGraphPattern === 'lines'"
+        class="w-full mt-2"
+        label="Story graph line gap">
+        <div class="flex flex-row justify-start items-center gap-4">
+          <span class="w-9">{{ settings.storyGraphPatternGap }}</span>
+          <USlider
+            :min="20"
+            :max="120"
+            :step="1"
+            v-model="settings.storyGraphPatternGap" />
+        </div>
+      </UFormField>
+    </div>
+    <div class="h-12" />
   </div>
 </template>
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { storeToRefs } from "pinia";
+import { useContentStore } from "../stores/content";
+import defaultSettings from "../utils/settings";
+import ConfirmDialog from "../components/forms/ConfirmDialog.vue";
+import { ref } from "vue";
+import PageSection from "../components/widget/PageSection.vue";
+import { useAppStore } from "../stores/app.ts";
+
+const { settings } = storeToRefs(useContentStore());
+const { isNativeApp } = storeToRefs(useAppStore());
+const resetConfirmOpen = ref<boolean>(false);
+function resetSettings(): void {
+  const unityPath = settings.value.unityStreamingAssetsPath;
+  settings.value = { ...defaultSettings, unityStreamingAssetsPath: unityPath };
+}
+</script>

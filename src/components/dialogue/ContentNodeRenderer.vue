@@ -19,9 +19,11 @@ const { textColors } = useContentStore();
 <template>
   <template v-for="(node, i) in nodes" :key="i">
     <span v-if="node.type === 'text'">{{ node.value }}</span>
-    <span v-else-if="node.type === 'variable'" class="dialogue-variable-chip">
+    <code
+      v-else-if="node.type === 'variable'"
+      class="dialogue-variable-chip bg-primary/10">
       {{ placeholderForVariable(node.name, variables) }}
-    </span>
+    </code>
     <strong v-else-if="node.type === 'bold'">
       <ContentNodeRenderer :nodes="node.children" :variables="variables" />
     </strong>
@@ -46,9 +48,7 @@ const { textColors } = useContentStore();
   display: inline-block;
   padding: 0 0.375rem;
   margin: 0 1px;
-  border-radius: 0.25rem;
-  background: rgba(59, 130, 246, 0.15);
-  color: #3b82f6;
+  color: var(--ui-primary);
   font-weight: 600;
   font-size: 0.9em;
 }

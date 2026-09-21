@@ -4,46 +4,64 @@
     :dismissible="false"
     class="w-[40vw] min-w-100 max-w-none">
     <template #header>
-      <div class="flex flex-row justify-between items-center w-full">
-        <p class="text-lg font-bold">Edit dialogue node</p>
-        <div class="flex flex-row gap-2">
-          <UButton
-            color="neutral"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="close">
-            <UIcon class="size-12" name="material-symbols:close" />
-          </UButton>
-          <UButton
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="save">
-            <UIcon class="size-12" name="material-symbols:check" />
-          </UButton>
-        </div>
-      </div>
+      <SlideoverHeader
+        title="Edit dialogue node"
+        @close="close"
+        :save-content="save" />
     </template>
     <template #body>
       <div class="h-full">
-        <div v-if="dialogueNode" class="mb-4">
-          <span>Plays the following dialogue node:</span>
+        <SlideoverSection label="Properties" />
+
+        <div class="flex flex-col justify-start items-start">
+          <UFormField
+            class="w-full"
+            label="Dialogue"
+            help="The dialogue that will be played by this node">
+            <div class="flex flex-row gap-2 w-full">
+              <USelectMenu
+                class="w-full flex-1"
+                v-model="dialogueNodeId"
+                :items="dialogueNodeItems"
+                placeholder="Select dialogue to play" />
+              <UButton
+                color="neutral"
+                variant="outline"
+                icon="material-symbols:add-box-sharp"
+                @click="openCreateView">
+                New
+              </UButton>
+            </div>
+          </UFormField>
+        </div>
+        <div v-if="dialogueNode" class="mt-8">
+          <SlideoverSection label="Dialogue" />
           <div
-            class="bg-elevated mt-2 p-2 rounded-xl flex flex-col justify-start items-start">
-            <span class="font-bold">{{ dialogueNodeId }}</span>
+            class="bg-muted mt-2 p-4 rounded-none border-accented border flex flex-col justify-start items-start">
+            <div class="flex flex-row items-center justify-start gap-2">
+              <UIcon name="material-symbols:forum-sharp" class="size-5" />
+              <span class="font-semibold">{{ dialogueNodeId }}</span>
+            </div>
             <span class="text-muted">{{
               dialogueNode.description || "No description provided"
             }}</span>
-            <UButton variant="subtle" class="mt-2" @click="openEditView">
-              Edit
-            </UButton>
+            <div class="flex flex-row gap-2">
+              <UButton
+                variant="subtle"
+                color="neutral"
+                class="mt-2"
+                @click="openEditView">
+                Edit
+              </UButton>
+              <UButton
+                variant="subtle"
+                color="neutral"
+                class="mt-2"
+                @click="openReadView">
+                Preview
+              </UButton>
+            </div>
           </div>
-        </div>
-        <div class="flex flex-col justify-start items-start">
-          <span class="font-bold mb-2">Change dialogue to play</span>
-          <USelectMenu
-            class="self-stretch"
-            placeholder="Select dialogue node"
-            :items="dialogueNodeItems"
-            v-model="dialogueNodeId" />
-          <UButton class="mt-4" @click="openCreateView">Create new</UButton>
         </div>
       </div>
     </template>
@@ -106,6 +124,12 @@ function openEditView() {
   dialogueEditorNode.value = dialogueNode.value;
   dialogueEditorOpen.value = true;
 }
+function openReadView() {
+  if (!dialogueNode.value) return;
+  dialogueEditorMode.value = "Read";
+  dialogueEditorNode.value = dialogueNode.value;
+  dialogueEditorOpen.value = true;
+}
 
 function openCreateView() {
   dialogueEditorMode.value = "Create";
@@ -134,18 +158,20 @@ watch(isOpen, (open) => {
   }
 });
 
-function save(): void {
+function save(): boolean {
   const node: AnyStoryNode = storyNodes[props.storyNodeId];
   if (!node) {
     displayError(
       `An error occurred: Node "${props.storyNodeId}" does not exist (anymore)`,
     );
-    return;
+    return false;
   }
 
   updateStoryNode();
   emit("onsave", props.storyNodeId);
   isOpen.value = false;
+
+  return true;
 }
 function close(): void {
   isOpen.value = false;

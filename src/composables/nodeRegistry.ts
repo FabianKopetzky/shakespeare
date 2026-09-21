@@ -1,31 +1,20 @@
 import type { AnyStoryNode, StoryNode, BranchNode, ConditionNode, RandomNode, OperationNode, EventNode } from "../types/schema";
 import { useConditionUtils } from "../utils/conditionUtils";
 
-const { conditionToString, operationToString } = useConditionUtils();
+const { conditionToString, operationToString, eventInvokationToString } = useConditionUtils();
 
 export type OutputPin = {
   id: string; // unique per node, used as the vue-flow source handle id
   label?: string; // shown next to the pin, e.g. a branch's label
 };
-
-/**
- * Everything the editor needs to know about a node type, without knowing
- * anything about *how* it's rendered. All node types share the same visual
- * shell (BaseNodeCard) - to add a new node type later:
- *   1. add its shape to `AnyStoryNode` in types/schema.ts
- *   2. write one `registerNodeType(...)` call below
- * Nothing else in the editor (canvas, drag, connect, delete, context menu)
- * needs to change.
- */
 export interface NodeTypeDefinition<T extends AnyStoryNode = AnyStoryNode> {
   type: T["type"];
-  label: string; // type badge text, e.g. "Story", "Branch"
-  color: string; // header accent color for this node type
+  label: string;
+  color: string;
+  icon: string;
   createDefault: (id: string, position: { x: number; y: number }) => T;
   getTitle: (node: T) => string;
-  // one output pin per possible outgoing connection. StoryNode has exactly
-  // one; BranchNode has one per branch. A node type with no outputs (e.g. a
-  // future "End" node) can just return [].
+  
   getOutputs: (node: T) => OutputPin[];
   getTargetId: (node: T, handleId: string) => string | null;
   setTargetId: (node: T, handleId: string, targetId: string | null) => void;
@@ -56,7 +45,8 @@ export function useNodeRegistry() {
 registerNodeType<StoryNode>({
   type: "story",
   label: "Dialogue",
-  color: "#4c7ef3",
+  color: "#61A8CC",
+  icon: 'material-symbols:forum-sharp',
   createDefault: (id, position) => ({
     id,
     type: "story",
@@ -75,12 +65,13 @@ registerNodeType<StoryNode>({
 registerNodeType<BranchNode>({
   type: "branch",
   label: "Branch",
-  color: "#f2a341",
+  color: "#E0975C",
+  icon: 'material-symbols:arrow-split',
   createDefault: (id, position) => ({
     id,
     type: "branch",
     position,
-    branches: [],
+    branches: []
   }),
   getTitle: (node) =>
     node.branches.length === 1
@@ -102,7 +93,8 @@ registerNodeType<BranchNode>({
 registerNodeType<ConditionNode>({
   type: "condition",
   label: "Condition",
-  color: "#59B774",
+  color: "#61CC61",
+  icon: 'material-symbols:help-center-sharp',
   createDefault: (id, position) => ({
     id,
     type: "condition",
@@ -120,22 +112,31 @@ registerNodeType<ConditionNode>({
   },
 });
 
+
 registerNodeType<RandomNode>({
   type: "random",
   label: "Random",
-  color: "#9E55B5",
+  color: "#A161CC",
+  icon: 'famicons:dice-sharp',
   createDefault: (id, position) => ({
     id,
     type: "random",
     position,
-    branches: []
+    branches: [
+      {
+        id: crypto.randomUUID(),
+        targetId: null,
+        weight: 1
+      }
+    ]
   }),
-  getTitle: (node) => node.branches.length > 0 ? `Selects one of ${node.branches.length} at random` : 'No random branches assigned',
-  getOutputs: (node) =>
-      node.branches.map((branch, index) => ({
+  getTitle: (node) => node.branches.length > 0 ? `Selects one of ${node.branches.length} branches at random` : 'No random branches assigned',
+  getOutputs: (node) => {
+      const total = (node.branches ?? []).reduce((sum, b) => sum + (b.weight || 0), 0);
+      return node.branches.map((branch) => ({
         id: branch.id,
-        label: `Branch ${index + 1}`,
-      } as OutputPin)),
+        label: `${total <= 0 ? 0 : ((branch.weight / total) * 100).toFixed(1)}%`,
+      } as OutputPin)) },
     getTargetId: (node, handleId) =>
       node.branches.find((b) => b.id === handleId)?.targetId ?? null,
     setTargetId: (node, handleId, targetId) => {
@@ -147,7 +148,8 @@ registerNodeType<RandomNode>({
 registerNodeType<OperationNode>({
   type: "operation",
   label: "Operation",
-  color: "#FF5659",
+  color: "#CC6161",
+  icon: 'material-symbols:settings-sharp',
   createDefault: (id, position) => ({
     id,
     type: "operation",
@@ -166,14 +168,17 @@ registerNodeType<OperationNode>({
 registerNodeType<EventNode>({
   type: "event",
   label: "Event",
-  color: "#FF96DD",
+  color: "#E2D16C",
+  icon: 'ic:sharp-electric-bolt',
   createDefault: (id, position) => ({
     id,
     type: "event",
     position,
     targetId: null,
+    event: null,
+    args: []
   }),
-  getTitle: (node) => "Invokes event",
+  getTitle: (node) => node.event ? eventInvokationToString(node.event, node.args) : 'No event invokation assigned',
   getOutputs: () => [{ id: "out", label: 'On Finish' }],
   getTargetId: (node) => node.targetId,
   setTargetId: (node, _handleId, targetId) => {

@@ -1,13 +1,17 @@
 //* DIALOGUES
 export type DialogueSentence = {
-  key: string | number; // crypto random uuid, assigned when created during runtime — shared across languages
-  translations: Record<string, string>; // languageCode -> raw markup content for that language
+  key: string | number, // crypto random uuid, assigned when created during runtime — shared across languages
+  translations: Record<string, string>, // languageCode -> raw markup content for that language
+
+  fields: CustomFields
 };
 
 export type DialogueNode = {
-  id: string;
-  description: string;
-  sentences: DialogueSentence[];
+  id: string,
+  description: string,
+  sentences: DialogueSentence[],
+
+  fields: CustomFields
 } | undefined;
 
 //* STORY
@@ -15,7 +19,9 @@ export type Story = {
   id: string, // created by player, must be unique
   description: string, // internal editor description
   entryNodeId: string | null,
-  nodes: string[] // array of all uuids of the nodes in a story
+  nodes: string[], // array of all uuids of the nodes in a story
+
+  fields: CustomFields
 } | undefined;
 //* STORY NODE TYPES
 
@@ -53,6 +59,8 @@ export type OperationNode = StoryNodeBase & {
 
 export type EventNode = StoryNodeBase & {
   type: "event",
+  event: string | null,
+  args: EventArg[]
   targetId: string | null // references another node in the story
 }
 
@@ -73,21 +81,23 @@ export type Branch = {
   id: string | number, // random uuid of the branch
   labels: Record<string, string>, // labels for the different languages for the choice
   targetId: string | null, // the dialogue target
-  condition: Condition | null // condition that this branch will be rendered
+  condition: Condition | null, // condition that this branch will be rendered
+
+  fields: CustomFields
 }
 
 export type RandomBranch = {
   id: string | number, // random uuid of the branch
-  chance: number, // chance of this branch activating
+  weight: number, // weight of this branch
   targetId: string | null, // the dialogue target
 }
 
 export type StoryVariable = {
   name: string, // unique identifier
-  type: StoryVariableType,
+  type: DataType,
   defaultValue: number | string | boolean
 }
-export type StoryVariableType = 'Integer' | 'String' | 'Boolean'
+export type DataType = 'Integer' | 'String' | 'Boolean'
 
 //* CONDITION UTILS
 export type ComparisonOperator = '==' | '!=' | '<' | '>' | '<=' | '>='
@@ -98,15 +108,15 @@ export type Operand =
   | { kind: 'literal' | 'variable'; value: number | string | boolean }
 
 export type Comparison = {
-  left: Operand
-  operator: ComparisonOperator
+  left: Operand,
+  operator: ComparisonOperator,
   right: Operand
 }
 
 // Each clause pairs a comparison with the operator that links it to the NEXT clause.
 // The last clause in the array has no connector.
 export type ConditionClause = {
-  comparison: Comparison
+  comparison: Comparison,
   connector?: LogicalOperator
 }
 
@@ -124,15 +134,68 @@ export type OperatonTarget = {
   value: string | number | boolean // if type is variable, this holds the variable name
 }
 
+export type CustomFieldModel = 'dialogue' | 'dialogue_sentence' | 'branch' | 'story';
+
+export type CustomFieldSchema = {
+  name: string,
+  label: string,
+  type: DataType,
+  defaultValue: number | string | boolean,
+  model: CustomFieldModel
+}
+export type CustomFields = {
+  data: { name: string, value: number | string | boolean }[]
+}
+
+//* EVENTS
+
+export type EventParam = {
+  name: string,
+  type: DataType
+}
+export type Event = {
+  name: string,
+  params: EventParam[]
+}
+export type EventArg = {
+  name: string,
+  value: number | boolean | string
+  kind: 'literal' | 'variable'
+}
+
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened
 
 //* DATA  MODEL
 export type Language = {
   code: string,
   display: string,
+  icon?: string,
   isDefault: boolean
 }
 export type TextColor = {
   name: string, // color variable name identifier
   hex: string // hex of the color
+}
+
+//* SETTINGS
+
+export type Preferences = {
+  unityStreamingAssetsPath: string,
+  compileTextColors: boolean,
+  warnBeforeDiscarding: boolean,
+  warnBeforeClosing: boolean,
+  autoSaveProject: boolean,
+  showAutoSaveMessages: boolean,
+  showMissingTranslations: boolean,
+  
+  storyGraphPattern: string,
+  storyGraphPatternSize: number,
+  storyGraphPatternGap: number,
+}
+
+//* META
+export type MetaData = {
+  createdAt: string,
+  lastEdited: string,
+  version: string
 }

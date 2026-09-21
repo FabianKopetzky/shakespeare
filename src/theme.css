@@ -1,44 +1,62 @@
 @layer base {
   h1 {
+    font-family: var(--font-serif);
     font-size: var(--h1-size);
     font-weight: var(--h1-weight);
     line-height: var(--h1-line-height);
     letter-spacing: var(--h1-letter-spacing);
+
+    color: var(--ui-text);
   }
 
   h2 {
+    font-family: var(--font-serif);
     font-size: var(--h2-size);
     font-weight: var(--h2-weight);
     line-height: var(--h2-line-height);
     letter-spacing: var(--h2-letter-spacing);
+
+    color: var(--ui-text);
   }
 
   h3 {
+    font-family: var(--font-serif);
     font-size: var(--h3-size);
     font-weight: var(--h3-weight);
     line-height: var(--h3-line-height);
     letter-spacing: var(--h3-letter-spacing);
+
+    color: var(--ui-text);
   }
 
   h4 {
+    font-family: var(--font-serif);
     font-size: var(--h4-size);
     font-weight: var(--h4-weight);
     line-height: var(--h4-line-height);
     letter-spacing: var(--h4-letter-spacing);
+
+    color: var(--ui-text);
   }
 
   h5 {
+    font-family: var(--font-serif);
     font-size: var(--h5-size);
     font-weight: var(--h5-weight);
     line-height: var(--h5-line-height);
     letter-spacing: var(--h5-letter-spacing);
+
+    color: var(--ui-text);
   }
 
   h6 {
+    font-family: var(--font-serif);
     font-size: var(--h6-size);
     font-weight: var(--h6-weight);
     line-height: var(--h6-line-height);
     letter-spacing: var(--h6-letter-spacing);
+
+    color: var(--ui-text);
   }
 
   p {
@@ -52,6 +70,12 @@
     line-height: var(--body-line-height);
     letter-spacing: var(--body-letter-spacing);
   }
+  code {
+    font-size: var(--body-size);
+    line-height: var(--body-line-height);
+    letter-spacing: var(--body-letter-spacing);
+    font-family: var(--font-mono);
+  }
   strong {
     font-size: var(--body-size);
     font-weight: var(700);
@@ -59,46 +83,47 @@
     letter-spacing: var(--body-letter-spacing);
   }
   @theme {
-    --font-sans: "Kameron", system-ui, sans-serif;
-    --font-mono: monospace;
+    --font-sans: "Google Sans Flex", system-ui, sans-serif;
+    --font-serif: "Alegreya SC", system-ui, sans-serif;
+    --font-mono: "Google Sans Code", monospace;
 
     /* Type Scale */
-    --display-lg-size: clamp(1.959rem, calc(1.577rem + 1.909vw), 3.008rem);
+    --display-lg-size: clamp(2.155rem, calc(1.735rem + 2.1vw), 3.309rem);
     --display-lg-weight: 800;
     --display-lg-line-height: 1.47;
     --display-lg-letter-spacing: 0.015em;
 
-    --display-md-size: clamp(1.801rem, calc(1.502rem + 1.492vw), 2.622rem);
+    --display-md-size: clamp(1.981rem, calc(1.652rem + 1.641vw), 2.884rem);
     --display-md-weight: 800;
     --display-md-line-height: 1.47;
     --display-md-letter-spacing: 0.015em;
 
-    --h1-size: clamp(1.656rem, calc(1.427rem + 1.143vw), 2.284rem);
+    --h1-size: clamp(1.822rem, calc(1.57rem + 1.257vw), 2.512rem);
     --h1-weight: 700;
     --h1-line-height: 1.47;
     --h1-letter-spacing: 0.02em;
 
-    --h2-size: clamp(1.399rem, calc(1.278rem + 0.609vw), 1.734rem);
+    --h2-size: clamp(1.539rem, calc(1.406rem + 0.67vw), 1.907rem);
     --h2-weight: 600;
     --h2-line-height: 1.47;
     --h2-letter-spacing: 0.02em;
 
-    --h3-size: clamp(1.287rem, calc(1.205rem + 0.409vw), 1.511rem);
+    --h3-size: clamp(1.416rem, calc(1.326rem + 0.45vw), 1.662rem);
     --h3-weight: 600;
     --h3-line-height: 1.52;
     --h3-letter-spacing: 0.025em;
 
-    --h4-size: clamp(1.183rem, calc(1.134rem + 0.244vw), 1.317rem);
+    --h4-size: clamp(1.301rem, calc(1.247rem + 0.268vw), 1.449rem);
     --h4-weight: 500;
     --h4-line-height: 1.52;
     --h4-letter-spacing: 0.025em;
 
-    --h5-size: clamp(1.134rem, calc(1.1rem + 0.173vw), 1.229rem);
+    --h5-size: clamp(1.247rem, calc(1.21rem + 0.19vw), 1.352rem);
     --h5-weight: 500;
     --h5-line-height: 1.52;
     --h5-letter-spacing: 0.03em;
 
-    --h6-size: clamp(1.088rem, calc(1.066rem + 0.109vw), 1.148rem);
+    --h6-size: clamp(1.197rem, calc(1.173rem + 0.12vw), 1.263rem);
     --h6-weight: 500;
     --h6-line-height: 1.52;
     --h6-letter-spacing: 0.03em;
@@ -138,4 +163,44 @@
     --overline-line-height: 1.57;
     --overline-letter-spacing: 0.03em;
   }
+}
+:root {
+  --ui-bg: #1b1815;
+  --ui-bg-muted: #151310;
+  --ui-bg-elevated: #292521;
+  --ui-bg-accented: #453d34;
+  --ui-bg-inverted: #ffe3c7;
+
+  --ui-text-dimmed: #827969;
+  --ui-text-muted: #655e52;
+  --ui-text-toned: #dbba7a;
+  /* --ui-text: #ebe4d8; */
+  --ui-text: #dbceb5;
+  --ui-text-highlighted: #fff7e8;
+  --ui-text-inverted: #231f1d;
+  /* --ui-text-header: #dbceb5; */
+
+  --ui-border: #1b1815;
+  --ui-border-muted: #2b2622;
+  --ui-border-accented: #4e4134;
+  --ui-border-inverted: #dac1a9;
+
+  --ui-primary: #d7934a;
+  --ui-secondary: #bdaa7d;
+  --ui-success: #9adb79;
+  --ui-info: #dbceb5;
+  --ui-warning: #d6c253;
+  --ui-error: #db6666;
+  --ui-neutral: #796b5e;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: var(--text-color-inverted);
+}
+
+ul {
+  list-style: square;
+  margin-left: 2rem;
+  margin-top: 1rem;
 }

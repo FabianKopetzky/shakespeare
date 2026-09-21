@@ -1,6 +1,7 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
-import type { AnyStoryNode, DialogueNode, Language, Story, StoryVariable, TextColor } from "../types/schema";
+import type { AnyStoryNode, CustomFieldSchema, DialogueNode, Language, Story, StoryVariable, TextColor, Event, Preferences, MetaData } from "../types/schema";
+import defaultSettings from "../utils/settings";
 
 export const useContentStore = defineStore('content', () => {
   
@@ -10,8 +11,15 @@ export const useContentStore = defineStore('content', () => {
   const dialogues = ref<DialogueNode[]>([]);
   const stories = ref<Story[]>([]);
   const storyNodes = ref<Record<string, AnyStoryNode>>({});
-  const languages = ref<Language[]>([{code: 'default', display: 'English', isDefault: true}]);
+  const languages = ref<Language[]>([{ code: 'default', display: 'English', icon: 'flagpack:gb-ukm', isDefault: true }]);
   const textColors = ref<TextColor[]>([]);
   const storyVariables = ref<StoryVariable[]>([]);
-  return { dialogues, stories, storyNodes, languages, textColors, storyVariables, projectTitle, projectAuthor }
+  const customFields = ref<CustomFieldSchema[]>([]);
+  const events = ref<Event[]>([]);
+  
+
+  const settings = ref<Preferences>(structuredClone(defaultSettings));
+  const meta = ref<MetaData>();
+
+  return { dialogues, stories, storyNodes, languages, textColors, storyVariables, customFields, events, projectTitle, projectAuthor, settings, meta }
 })

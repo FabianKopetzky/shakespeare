@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import type {
-  FormMode,
-  StoryVariable,
-  StoryVariableType,
-} from "../../types/schema";
+import type { FormMode, StoryVariable, DataType } from "../../types/schema";
 import { useWidget } from "../../composables/widget";
 import { useContentStore } from "../../stores/content";
 import { useConditionUtils } from "../../utils/conditionUtils";
+import { storeToRefs } from "pinia";
 
 interface Props {
   mode: FormMode;
@@ -17,27 +14,27 @@ const props = defineProps<Props>();
 const open = defineModel<boolean>("open", { default: false });
 
 const { displayError } = useWidget();
-const { storyVariables } = useContentStore();
+const { storyVariables } = storeToRefs(useContentStore());
 
 const variableName = ref<string>("");
-const variableType = ref<StoryVariableType>("Integer");
+const variableType = ref<DataType>("Integer");
 const variableDefault = ref<number | string | boolean>(0);
 
 const { typeMeta } = useConditionUtils();
 
-const typeOptions = (Object.keys(typeMeta) as StoryVariableType[]).map((t) => ({
+const typeOptions = (Object.keys(typeMeta) as DataType[]).map((t) => ({
   label: typeMeta[t].label,
   value: t,
   icon: typeMeta[t].icon,
 }));
 
-function defaultForType(type: StoryVariableType): number | string | boolean {
+function defaultForType(type: DataType): number | string | boolean {
   if (type === "Integer") return 0;
   if (type === "Boolean") return false;
   return "";
 }
 
-function onTypeChange(type: StoryVariableType) {
+function onTypeChange(type: DataType) {
   variableType.value = type;
   variableDefault.value = defaultForType(type);
 }
@@ -70,10 +67,12 @@ function submit() {
     displayError("Variable name cannot be empty");
     return;
   }
-  if (!/^[A-Za-z0-9_]+$/.test(variableName.value)) {
-    displayError(
-      "Only alphanumeric values and '_' are allowed a variable name",
-    );
+  if (variableName.value.length >= 30) {
+    displayError("Variable name cannot be larger than 29 characters");
+    return;
+  }
+  if (!/^[A-Za-z0-9]+$/.test(variableName.value)) {
+    displayError("Only alphanumeric values are allowed in a variable name");
     return;
   }
   if (!variableType.value || variableType.value.length <= 0) {
@@ -90,7 +89,7 @@ function submit() {
 
   if (
     props.mode === "Create" &&
-    storyVariables.find((v) => v.name == variableName.value)
+    storyVariables.value.find((v) => v.name == variableName.value)
   ) {
     displayError("A variable with this name already exists!");
     return;
@@ -144,6 +143,7 @@ function clear() {
             :disabled="props.mode !== 'Create'"
             :model-value="variableType"
             :items="typeOptions"
+            :leading-icon="typeMeta[variableType].icon"
             value-key="value"
             label-key="label"
             @update:model-value="onTypeChange" />

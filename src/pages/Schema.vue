@@ -1,54 +1,70 @@
 <template>
-  <div>
-    <div class="flex flex-row justify-between">
+  <div class="h-full flex flex-col">
+    <div>
       <h1>Schema</h1>
-      <span class="self-end"
-        >Allows you define custom data entries and extend dialogue and story
-        models.</span
+      <span class="self-end text-dimmed text-balance"
+        >Define variables & events, add languages and extend the data models
+        with your own custom fields.</span
       >
     </div>
-    <USeparator class="h-6" orientation="horizontal" />
-    <UTabs :items="sections">
+    <div class="w-full h-0.5 bg-accented mt-12 mb-6" />
+    <UTabs
+      :items="sections"
+      class="flex-1 min-h-0"
+      :ui="{ content: 'flex-1 min-h-0' }">
       <template #model>
-        <p>Model</p>
+        <div class="h-full overflow-y-auto mt-8">
+          <CustomFieldEditor />
+        </div>
       </template>
-      <template #templating>
-        <TextColorEditor />
+      <template #events>
+        <div class="h-full overflow-y-auto mt-8">
+          <EventEditor />
+        </div>
       </template>
       <template #languages>
-        <LanguageEditor />
+        <div class="h-full overflow-y-auto mt-8">
+          <LanguageEditor />
+        </div>
       </template>
       <template #variables>
-        <StoryVariableEditor />
+        <div class="h-full overflow-y-auto mt-8 flex flex-row gap-12">
+          <StoryVariableEditor class="flex-5" />
+          <div class="bg-accented w-0.5"></div>
+          <TextColorEditor class="flex-4" />
+        </div>
       </template>
     </UTabs>
   </div>
 </template>
+
 <script setup lang="ts">
+import CustomFieldEditor from "../components/forms/CustomFieldEditor.vue";
+import EventEditor from "../components/forms/EventEditor.vue";
 import LanguageEditor from "../components/forms/LanguageEditor.vue";
 import StoryVariableEditor from "../components/forms/StoryVariableEditor.vue";
 import TextColorEditor from "../components/forms/TextColorEditor.vue";
 
 const sections = [
   {
-    label: "Model Extensions",
-    icon: "proicons:database-add",
-    slot: "model",
-  },
-  {
-    label: "Templating",
-    icon: "tabler:template-filled",
-    slot: "templating",
-  },
-  {
     label: "Languages",
-    icon: "lucide:languages",
+    icon: "material-symbols:translate",
     slot: "languages",
   },
   {
     label: "Variables",
-    icon: "mdi:variable",
+    icon: "material-symbols:code-xml-sharp",
     slot: "variables",
+  },
+  {
+    label: "Events",
+    icon: "ic:sharp-electric-bolt",
+    slot: "events",
+  },
+  {
+    label: "Model Extensions",
+    icon: "mdi:database-plus",
+    slot: "model",
   },
 ];
 </script>

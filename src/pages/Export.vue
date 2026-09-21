@@ -1,63 +1,181 @@
 <template>
-  <div>
-    <div class="flex flex-row justify-between">
+  <div class="h-full">
+    <div>
       <h1>Export</h1>
-      <p>Save and compile your project!</p>
+      <span class="self-end text-dimmed text-balance"
+        >Save, download and compile your project for Unity. Also bulk import
+        translations with .csv files!</span
+      >
     </div>
-    <USeparator class="h-6" orientation="horizontal" />
-    <div class="flex flex-col gap-2">
-      <div>
-        <h2>Export project</h2>
-        <p>
-          Save your project in one file that you can import again later or share
-          between people!
-        </p>
-        <UButton @click="exportProject">Export project</UButton>
-      </div>
-      <div>
-        <h2>Compile files</h2>
-        <p>Compile your files and export directly to Unity!</p>
-        <UButton @click="tryDownloadStories">Download stories</UButton>
-        <UButton @click="tryDownloadMain">Download project</UButton>
+    <div class="w-full h-0.5 bg-accented mt-12 mb-6" />
+
+    <PageSection title="Project" />
+
+    <div class="flex flex-col gap-2 mt-4 w-[70%]">
+      <p>
+        Download the project file to the
+        <span class="text-primary">Downloads</span> folder of your device.
+      </p>
+      <span class="text-dimmed text-sm"
+        >The project file is a single .json file containing your entire project.
+        You can backup this file to create a backup of your project or share it
+        with team members.
+        <span v-if="isNativeApp" class="text-dimmed text-sm"
+          >The project file also sits at
+          <span class="text-primary text-sm">{{ currentProjectPath }}</span> on
+          your machine. Shakespeare loads it from there.
+        </span></span
+      >
+
+      <div class="flex flex-row gap-4 mt-8">
+        <UButton
+          color="primary"
+          variant="solid"
+          icon="material-symbols:download-sharp"
+          class="w-fit"
+          @click="exportProject"
+          >Download project file</UButton
+        >
+        <UButton
+          v-if="isNativeApp"
+          color="secondary"
+          variant="soft"
+          icon="material-symbols:folder-open-sharp"
+          >Open project location</UButton
+        >
       </div>
     </div>
+    <PageSection title="Compile" />
+
+    <div class="flex flex-col gap-2 mt-4 w-[70%]">
+      <p>
+        Compiling your project means splitting your stories and translations
+        into multiple .json files and structuring them so that the
+        <span class="text-primary">Shakespeare Unity Package</span> can load and
+        process them.
+      </p>
+      <span class="text-dimmed text-sm"
+        >Compiling creates a project main file called
+        <span class="text-dimmed text-sm">main.json</span> and a file for every
+        story for every translation. This allows Unity to only load data that is
+        actually required into memory. Do not rename the generated files!</span
+      >
+      <p class="mt-8">
+        Compile and download the files to the
+        <span class="text-primary">Downloads</span> folder.
+      </p>
+      <div class="flex flex-row gap-4">
+        <UButton
+          color="primary"
+          variant="solid"
+          icon="material-symbols:build-sharp"
+          class="w-fit"
+          @click="compileAndDownloadAll"
+          >Compile & download all</UButton
+        >
+        <UButton
+          @click="downloadCompiledProject"
+          color="secondary"
+          variant="soft"
+          >Only project main</UButton
+        >
+        <UButton
+          @click="downloadCompiledStories"
+          color="secondary"
+          variant="soft"
+          >Only stories</UButton
+        >
+      </div>
+
+      <p v-if="isNativeApp" class="mt-8">
+        Compile and build the files directly into your Unity project. Configure
+        the
+        <span class="text-primary">Unity Streaming Assets Path</span> in the
+        project settings.
+      </p>
+      <div v-if="isNativeApp" class="flex flex-row gap-4">
+        <UButton
+          color="primary"
+          variant="solid"
+          icon="material-symbols:construction"
+          class="w-fit"
+          @click="compileAndBuildAll"
+          >Compile & build all</UButton
+        >
+        <UButton @click="buildProject" color="secondary" variant="soft"
+          >Only project main</UButton
+        >
+        <UButton @click="buildStories" color="secondary" variant="soft"
+          >Only stories</UButton
+        >
+      </div>
+    </div>
+    <PageSection title="Translations" />
+    <div v-if="languages.length > 1" class="flex flex-col gap-2 mt-4 w-[70%]">
+      <p>
+        Export all translations into a single .csv file and edit them all at
+        once, give them to a translator or automatically translate them. Import
+        a translation file to automatically translate your project.
+      </p>
+      <div class="flex flex-row gap-4 mt-8">
+        <UButton
+          color="primary"
+          variant="solid"
+          icon="material-symbols:table-edit-sharp"
+          class="w-fit"
+          @click="exportTranslationsOpen = true"
+          >Export translations</UButton
+        >
+        <UButton
+          color="primary"
+          variant="solid"
+          icon="material-symbols:table-convert-sharp"
+          class="w-fit"
+          @click="importTranslationsOpen = true"
+          >Import translations</UButton
+        >
+      </div>
+    </div>
+    <div
+      v-else
+      class="flex flex-col flex-1 self-center items-center justify-center text-muted">
+      <UIcon name="mingcute:empty-box-fill" class="w-12 h-12" />
+      <span
+        >No translations in your project. You need at least one additional
+        language in your project to use the translation service.</span
+      >
+    </div>
+    <div class="h-12" />
   </div>
+  <ExportTranslationsDialog v-model:open="exportTranslationsOpen" />
+  <ImportTranslationsDialog v-model:open="importTranslationsOpen" />
 </template>
 <script setup lang="ts">
+import { storeToRefs } from "pinia";
 import { useProjectHandler } from "../composables/projectHandler";
-import { useWidget } from "../composables/widget";
+import { useAppStore } from "../stores/app";
+import { ref } from "vue";
 import { useContentStore } from "../stores/content";
+const {
+  exportProject,
+  downloadCompiledStories,
+  downloadCompiledProject,
+  buildProject,
+  buildStories,
+} = useProjectHandler();
 
-const { projectTitle } = useContentStore();
-const { exportProject, downloadCompiledStories, downloadCompiledProject } =
-  useProjectHandler();
-const { displayError, displaySuccess } = useWidget();
+const { isNativeApp, currentProjectPath } = storeToRefs(useAppStore());
+const { languages } = storeToRefs(useContentStore());
 
-// function tryCompileLanguage(lang: string): void {
-//   const res = compileLanguage(lang);
-//   if (res) displaySuccess(`Successfully compiled language '${lang}'`);
-//   else displayError(`An error occurred compiling language '${lang}'`);
-// }
-function tryDownloadStories(): void {
-  const res = downloadCompiledStories();
-  if (res)
-    displaySuccess(
-      `Successfully compiled stories for project '${projectTitle}'`,
-    );
-  else
-    displayError(
-      `An error occurred compiling stories for project '${projectTitle}'`,
-    );
+function compileAndDownloadAll(): void {
+  downloadCompiledProject();
+  downloadCompiledStories();
 }
-function tryDownloadMain(): void {
-  const res = downloadCompiledProject();
-  if (res)
-    displaySuccess(
-      `Successfully compiled main file for project '${projectTitle}'`,
-    );
-  else
-    displayError(
-      `An error occurred compiling main file for project '${projectTitle}'`,
-    );
+function compileAndBuildAll(): void {
+  buildProject();
+  buildStories();
 }
+
+const exportTranslationsOpen = ref<boolean>(false);
+const importTranslationsOpen = ref<boolean>(false);
 </script>

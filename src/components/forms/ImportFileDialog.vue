@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useProjectHandler } from "../../composables/projectHandler";
 import { useWidget } from "../../composables/widget";
 import { useRouter } from "vue-router";
@@ -13,22 +13,17 @@ const json = ref<any>(undefined);
 const { importProject } = useProjectHandler();
 const { displayError, displaySuccess } = useWidget();
 
-function onConfirm() {
-  if (!json) {
+async function onConfirm() {
+  if (!json.value) {
     displayError("Empty project file. Please try again with a valid file");
     return;
   }
 
-  const success = importProject(json.value);
-  if (!success) {
-    displayError(
-      "Could not parse project data. Please verify your project file",
-    );
-    return;
-  }
+  const res = await importProject(json.value);
+  if (!res) return;
 
   displaySuccess(`Successfully imported project ${json.value.projectTitle}`);
-  router.push("/dialogues");
+  router.push("/");
 
   open.value = false;
 }
@@ -46,6 +41,12 @@ async function handleFileUpload(file: File | null): Promise<void> {
     displayError("An error occurred importing your project");
   }
 }
+
+watch(open, (isOpen) => {
+  if (isOpen) {
+    json.value = undefined;
+  }
+});
 </script>
 
 <template>

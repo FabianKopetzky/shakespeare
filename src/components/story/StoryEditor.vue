@@ -1,56 +1,54 @@
 <template>
   <USlideover v-model:open="isOpen" :dismissible="false">
     <template #header>
-      <div class="flex flex-row justify-between items-center w-full">
-        <p class="text-lg font-bold">{{ editorTitle }}</p>
-        <div class="flex flex-row gap-2">
-          <UButton
-            color="neutral"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="close">
-            <UIcon class="size-12" name="material-symbols:close" />
-          </UButton>
-          <UButton
-            v-if="props.mode !== 'Read'"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="save">
-            <UIcon class="size-12" name="material-symbols:check" />
-          </UButton>
-        </div>
-      </div>
+      <SlideoverHeader
+        :title="editorTitle"
+        :mode="props.mode"
+        @close="close"
+        :save-content="save" />
     </template>
     <template #body>
       <div class="h-full">
-        <div class="mb-4">
-          <span class="font-bold">Story ID</span>
-          <UInput
-            v-model="storyKey"
-            icon="material-symbols:key-rounded"
-            :leading="true"
-            :maxlength="64"
-            :disabled="props.mode !== 'Create'"
-            class="w-full mt-2"
-            :class="{ 'opacity-40': props.mode === 'Update' }" />
-        </div>
-        <div class="mb-4">
-          <span class="font-bold"
-            >Description<span class="text-sm opacity-50">
-              (internal)</span
-            ></span
-          >
-          <UTextarea
-            v-model="storyDescription"
-            maxlength="400"
-            class="w-full mt-2" />
+        <SlideoverSection label="Properties" />
+        <div class="mb-4 flex flex-row justify-center items-start gap-4">
+          <UFormField class="flex-1" label="ID">
+            <UInput
+              v-model="storyKey"
+              :leading="true"
+              :maxlength="64"
+              :disabled="props.mode !== 'Create'"
+              class="w-full"
+              :class="{ 'opacity-40': props.mode === 'Update' }" />
+          </UFormField>
+          <UFormField class="flex-2" label="Description (internal)">
+            <UInput
+              v-model="storyDescription"
+              :disabled="props.mode === 'Read'"
+              maxlength="400"
+              class="w-full" />
+          </UFormField>
         </div>
 
-        <USeparator
-          class="h-4"
-          orientation="horizontal"
-          type="solid"
-          size="sm" />
-
-        <div class="mb-4 pl-8 mt-4"></div>
+        <div>
+          <div v-for="fieldSchema in getCustomFieldsForModel('story')">
+            <FieldInstanceInput
+              @submit="
+                (value) => {
+                  const field = customFields?.data?.find(
+                    (f) => f.name === fieldSchema.name,
+                  );
+                  if (field) {
+                    field.value = value;
+                  }
+                }
+              "
+              :schema="fieldSchema"
+              :default-value="
+                customFields?.data?.find((f) => f.name === fieldSchema.name)
+                  ?.value ?? undefined
+              " />
+          </div>
+        </div>
       </div>
     </template>
   </USlideover>
@@ -58,13 +56,22 @@
 
 <script setup lang="ts">
 import { computed, ref, nextTick, watch } from "vue";
-import type { FormMode, Story } from "../../types/schema.ts";
+import {
+  type CustomFields,
+  type FormMode,
+  type Story,
+} from "../../types/schema.ts";
 import { useContentStore } from "../../stores/content.ts";
 import { useWidget } from "../../composables/widget.ts";
 import { useRouter } from "vue-router";
+import { useCustomFieldsUtils } from "../../utils/customFieldsUtils.ts";
+import FieldInstanceInput from "../forms/FieldInstanceInput.vue";
 
 const { displayError } = useWidget();
 const router = useRouter();
+
+const { getCustomFieldsForModel, createDefaultFieldsForModel } =
+  useCustomFieldsUtils();
 
 interface Props {
   story?: Story;
@@ -78,12 +85,15 @@ watch(isOpen, (open) => {
   if (!open) return;
   storyKey.value = props.story?.id ?? "";
   storyDescription.value = props.story?.description ?? "";
+  customFields.value =
+    props.story?.fields ?? createDefaultFieldsForModel("story");
 });
 
 const { stories } = useContentStore();
 
 const storyKey = ref<string>("");
 const storyDescription = ref<string>("");
+const customFields = ref<CustomFields>();
 
 const editorTitle = computed(() => {
   switch (props.mode) {
@@ -96,27 +106,33 @@ const editorTitle = computed(() => {
   }
 });
 
-function save(): void {
+function save(): boolean {
   if (!storyKey.value || storyKey.value.length <= 0) {
     displayError("The ID of a story cannot be null!");
-    return;
+    return false;
+  }
+  if (storyKey.value.length >= 30) {
+    displayError("Story key cannot be larger than 29 characters");
+    return false;
   }
   if (!/^[A-Za-z0-9_]+$/.test(storyKey.value)) {
     displayError(
       "Only alphanumeric values and '_' are allowed for the story key!",
     );
-    return;
+    return false;
   }
   if (
     props.mode === "Create" &&
     stories.find((s) => s?.id === storyKey.value)
   ) {
     displayError(`A story with the ID "${storyKey.value}" already exists!`);
-    return;
+    return false;
   }
 
   upsertStory();
   isOpen.value = false;
+
+  return true;
 }
 function close(): void {
   isOpen.value = false;
@@ -126,8 +142,9 @@ async function upsertStory() {
   const newStory: Story = {
     id: storyKey.value,
     description: storyDescription.value,
-    entryNodeId: null,
-    nodes: [],
+    entryNodeId: props.story?.entryNodeId ?? null,
+    nodes: props.story?.nodes ?? [],
+    fields: customFields.value ?? createDefaultFieldsForModel("story"),
   };
 
   if (props.mode === "Update" && props.story) {

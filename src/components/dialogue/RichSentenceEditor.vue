@@ -1,3 +1,131 @@
+<template>
+  <div class="w-full flex flex-col">
+    <div
+      v-if="viewMode === 'edit'"
+      class="flex flex-row items-start justify-between mb-2 h-7 shrink-0">
+      <div class="flex flex-row gap-2 items-start">
+        <UTooltip text="Wrap selection in <b></b>">
+          <UButton
+            icon="material-symbols:format-bold"
+            variant="ghost"
+            color="neutral"
+            size="xs"
+            @mousedown.prevent
+            @click="applyBold" />
+        </UTooltip>
+        <UTooltip text="Wrap selection in <i></i>">
+          <UButton
+            icon="material-symbols:format-italic"
+            variant="ghost"
+            color="neutral"
+            size="xs"
+            @mousedown.prevent
+            @click="applyItalic" />
+        </UTooltip>
+
+        <UPopover>
+          <UTooltip text="Wrap selection in <color=#hex></color>">
+            <UButton
+              icon="material-symbols:format-color-text"
+              variant="ghost"
+              color="neutral"
+              size="xs" />
+          </UTooltip>
+          <template #content>
+            <div class="p-3 flex flex-col gap-3 w-56">
+              <UColorPicker v-model="pendingColor" format="hex" />
+              <div v-if="colors.length > 0" class="flex flex-wrap gap-2">
+                <UTooltip
+                  v-for="swatch in colors"
+                  :text="`Apply ${swatch.name}`"
+                  :delayDuration="50"
+                  :content="{
+                    side: 'top',
+                    sideOffset: 5,
+                    collisionPadding: 8,
+                  }">
+                  <button
+                    :key="swatch.name"
+                    type="button"
+                    class="w-6 h-6 hover:cursor-pointer"
+                    :style="{ backgroundColor: swatch.hex }"
+                    @click="applyColor(swatch.name, true)" />
+                </UTooltip>
+              </div>
+              <UButton
+                size="xs"
+                block
+                @mousedown.prevent
+                @click="applyColor(pendingColor, false)"
+                >Apply color</UButton
+              >
+            </div>
+          </template>
+        </UPopover>
+      </div>
+
+      <UDropdownMenu :items="actionMenuItems">
+        <UButton
+          icon="material-symbols:more-vert"
+          color="neutral"
+          variant="ghost"
+          size="xs" />
+      </UDropdownMenu>
+    </div>
+
+    <div
+      v-if="viewMode === 'edit'"
+      class="relative flex-1 min-h-0 flex flex-col">
+      <UTextarea
+        ref="textareaComponentRef"
+        :value="modelValue"
+        :placeholder="placeholder"
+        rows="3"
+        autoresize
+        class="w-full resize-none flex-1 min-h-full"
+        @input="onInput"
+        @keydown="onKeydown"
+        @keyup="onKeyup"
+        @click="updateAutocomplete"
+        @blur="closeAutocomplete" />
+
+      <div
+        v-if="autocomplete.visible"
+        class="absolute z-50 min-w-48 max-h-48 overflow-y-auto bg-muted border border-accented rounded-none shadow-lg p-1"
+        :style="{
+          top: `${autocomplete.top}px`,
+          left: `${autocomplete.left}px`,
+        }">
+        <button
+          v-for="(item, index) in autocomplete.items"
+          :key="item.name"
+          type="button"
+          class="flex justify-between gap-2 w-full px-2 py-1 rounded-nome text-left hover:bg-elevated/50"
+          :class="{ 'bg-elevated': index === autocomplete.activeIndex }"
+          @mousedown.prevent="acceptAutocomplete(index)">
+          <span class="text-xs">{{ item.name }}</span>
+          <span class="text-xs opacity-60">{{ item.type }}</span>
+        </button>
+      </div>
+
+      <p
+        v-if="liveWarnings.length > 0"
+        class="text-xs text-error-600 mt-1 shrink-0">
+        {{ liveWarnings[0]
+        }}<span v-if="liveWarnings.length > 1">
+          (+{{ liveWarnings.length - 1 }} more)</span
+        >
+      </p>
+    </div>
+
+    <div
+      v-else
+      class="flex-1 min-h-12 px-3 py-2 rounded-none! border-none! border-0! bg-muted! shadow-sm ring-1 ring-inset ring-[#4a3f30] focus:ring-1 focus:ring-inset focus:ring-[#4a3f30] outline-none transition-colors leading-relaxed">
+      <ContentNodeRenderer :nodes="previewNodes" :variables="variables" />
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref } from "vue";
 import type { StoryVariable, TextColor } from "../../types/schema";
@@ -5,47 +133,102 @@ import { useWidget } from "../../composables/widget.ts";
 import { parseContent, validateContent } from "../../utils/dialogueContent";
 import { getCaretCoordinates } from "../../utils/caretCoordinates";
 import ContentNodeRenderer from "./ContentNodeRenderer.vue";
-import { useContentStore } from "../../stores/content.ts";
 
 const HEX_PATTERN = /^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
-const { textColors } = useContentStore();
+
+// Shared shape for the "..." action menu, consumed by callers (e.g.
+// DialogueSentenceEditor / EditBranchNode) that inject extra items such as
+// branch conditions. Kept intentionally minimal/structural rather than
+// importing Nuxt UI's DropdownMenuItem type, so adjust if your UDropdownMenu
+// items type requires more fields (kbds, to, children, etc.).
+export interface SentenceActionMenuItem {
+  label: string;
+  icon?: string;
+  color?: "error" | "neutral" | "primary";
+  disabled?: boolean;
+  onSelect?: () => void;
+}
 
 interface Props {
   modelValue: string;
   variables: StoryVariable[];
   colors?: TextColor[];
   placeholder?: string;
-  viewMode: "edit" | "preview"; // now controlled by the parent (global toggle)
+  viewMode: "edit" | "preview";
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+  extraMenuItems?: SentenceActionMenuItem[][];
 }
 const props = withDefaults(defineProps<Props>(), {
   colors: () => [],
-  placeholder: "Type sentence content...",
+  placeholder: "Type your text here or type {{ to enter variables",
+  canMoveUp: true,
+  canMoveDown: true,
+  extraMenuItems: () => [],
 });
 
 const emit = defineEmits<{
   (e: "update:modelValue", value: string): void;
+  (e: "remove"): void;
+  (e: "move-up"): void;
+  (e: "move-down"): void;
 }>();
 
 const { displayError } = useWidget();
 
-const textareaRef = ref<HTMLTextAreaElement | null>(null);
+const textareaComponentRef = ref<{
+  textareaRef: HTMLTextAreaElement | null;
+} | null>(null);
+const textareaEl = computed(
+  () => textareaComponentRef.value?.textareaRef ?? null,
+);
 const pendingColor = ref<string>("#000000");
 
 const previewNodes = computed(() => parseContent(props.modelValue ?? ""));
 const liveWarnings = computed(() =>
-  validateContent(props.modelValue ?? "", props.variables),
+  validateContent(props.modelValue ?? "", props.variables, props.colors),
 );
+
+const actionMenuItems = computed<SentenceActionMenuItem[][]>(() => {
+  const groups: SentenceActionMenuItem[][] = [
+    [
+      {
+        label: "Move up",
+        icon: "material-symbols:arrow-upward",
+        disabled: !props.canMoveUp,
+        onSelect: () => emit("move-up"),
+      },
+      {
+        label: "Move down",
+        icon: "material-symbols:arrow-downward",
+        disabled: !props.canMoveDown,
+        onSelect: () => emit("move-down"),
+      },
+    ],
+  ];
+
+  if (props.extraMenuItems.length > 0) {
+    groups.push(...props.extraMenuItems);
+  }
+
+  groups.push([
+    {
+      label: "Remove",
+      icon: "material-symbols:delete-outline-sharp",
+      color: "error",
+      onSelect: () => emit("remove"),
+    },
+  ]);
+
+  return groups;
+});
 
 function updateValue(newValue: string) {
   emit("update:modelValue", newValue);
 }
 
-// --- toolbar helpers: these just insert/wrap plain syntax text, the same
-// syntax the user could type by hand. They're a convenience, not a
-// separate representation. ---
-
 function wrapSelection(before: string, after: string) {
-  const el = textareaRef.value;
+  const el = textareaEl.value;
   if (!el) return;
   const start = el.selectionStart;
   const end = el.selectionEnd;
@@ -65,7 +248,7 @@ function wrapSelection(before: string, after: string) {
 }
 
 function insertAtCursor(text: string) {
-  const el = textareaRef.value;
+  const el = textareaEl.value;
   if (!el) return;
   const start = el.selectionStart;
   const end = el.selectionEnd;
@@ -86,7 +269,7 @@ function applyItalic() {
   wrapSelection("<i>", "</i>");
 }
 function applyColor(value: string, isVariable: boolean) {
-  if (isVariable && !textColors.find((c) => c.name === value)) {
+  if (isVariable && !props.colors?.find((c) => c.name === value)) {
     displayError(`Text color ${value} does not exist.`);
     return;
   } else if (!isVariable && !HEX_PATTERN.test(value)) {
@@ -96,17 +279,6 @@ function applyColor(value: string, isVariable: boolean) {
   wrapSelection(`<color=${value}>`, "</color>");
 }
 
-const variableMenuValue = ref<string | null>(null);
-const variableMenuItems = computed(() =>
-  props.variables.map((v) => ({ label: v.name, value: v.name })),
-);
-function onVariableMenuSelect(name: string | null) {
-  if (!name) return;
-  insertAtCursor(`{{ ${name} }}`);
-  variableMenuValue.value = null;
-}
-
-// --- "{{" autocomplete, driven off the textarea's own selection/caret ---
 const autocomplete = reactive({
   visible: false,
   items: [] as StoryVariable[],
@@ -122,7 +294,7 @@ function closeAutocomplete() {
 }
 
 function updateAutocomplete() {
-  const el = textareaRef.value;
+  const el = textareaEl.value;
   if (!el) return closeAutocomplete();
 
   const caret = el.selectionStart;
@@ -149,7 +321,7 @@ function updateAutocomplete() {
 
 function acceptAutocomplete(index: number = autocomplete.activeIndex) {
   const item = autocomplete.items[index];
-  const el = textareaRef.value;
+  const el = textareaEl.value;
   if (!item || !el) return;
 
   const value = props.modelValue ?? "";
@@ -191,111 +363,11 @@ function onKeydown(e: KeyboardEvent) {
     closeAutocomplete();
   }
 }
+
+function onKeyup(e: KeyboardEvent) {
+  if (["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(e.key)) {
+    return;
+  }
+  updateAutocomplete();
+}
 </script>
-
-<template>
-  <div class="w-full">
-    <div
-      v-if="viewMode === 'edit'"
-      class="flex flex-row gap-2 items-center mb-2">
-      <UTooltip text="Wrap selection in <b></b>">
-        <UButton
-          icon="material-symbols:format-bold"
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          @click="applyBold" />
-      </UTooltip>
-      <UTooltip text="Wrap selection in <i></i>">
-        <UButton
-          icon="material-symbols:format-italic"
-          variant="ghost"
-          color="neutral"
-          size="xs"
-          @click="applyItalic" />
-      </UTooltip>
-      <UPopover>
-        <UTooltip text="Wrap selection in <color=#hex></color>">
-          <UButton
-            icon="material-symbols:format-color-text"
-            variant="ghost"
-            color="neutral"
-            size="xs" />
-        </UTooltip>
-        <template #content>
-          <div class="p-3 flex flex-col gap-3 w-56">
-            <UColorPicker v-model="pendingColor" format="hex" />
-            <div v-if="colors.length > 0" class="flex flex-wrap gap-2">
-              <button
-                v-for="swatch in colors"
-                :key="swatch.name"
-                type="button"
-                class="w-6 h-6 rounded-full border border-gray-300"
-                :style="{ backgroundColor: swatch.hex }"
-                :title="swatch.name"
-                @click="applyColor(swatch.name, true)" />
-            </div>
-            <UButton size="xs" block @click="applyColor(pendingColor, false)"
-              >Apply color</UButton
-            >
-          </div>
-        </template>
-      </UPopover>
-
-      <USelectMenu
-        v-model="variableMenuValue"
-        :items="variableMenuItems"
-        value-key="value"
-        placeholder="Insert variable"
-        icon="material-symbols:data-object"
-        class="w-44 ml-auto"
-        @update:model-value="onVariableMenuSelect" />
-    </div>
-
-    <div v-if="viewMode === 'edit'" class="relative">
-      <textarea
-        ref="textareaRef"
-        :value="modelValue"
-        :placeholder="placeholder"
-        rows="3"
-        class="w-full px-3 py-2 border border-gray-300 rounded-md outline-none leading-relaxed resize-y focus:border-blue-500"
-        @input="onInput"
-        @keydown="onKeydown"
-        @keyup="updateAutocomplete"
-        @click="updateAutocomplete"
-        @blur="closeAutocomplete" />
-
-      <div
-        v-if="autocomplete.visible"
-        class="absolute z-50 min-w-48 max-h-48 overflow-y-auto bg-black border border-gray-300 rounded-md shadow-lg p-1"
-        :style="{
-          top: `${autocomplete.top}px`,
-          left: `${autocomplete.left}px`,
-        }">
-        <button
-          v-for="(item, index) in autocomplete.items"
-          :key="item.name"
-          type="button"
-          class="flex justify-between gap-2 w-full px-2 py-1 rounded text-left hover:bg-blue-500/10"
-          :class="{ 'bg-blue-500/10': index === autocomplete.activeIndex }"
-          @mousedown.prevent="acceptAutocomplete(index)">
-          <span class="text-xs">{{ item.name }}</span>
-          <span class="text-xs opacity-60">{{ item.name }}</span>
-        </button>
-      </div>
-
-      <p v-if="liveWarnings.length > 0" class="text-xs text-error-600 mt-1">
-        {{ liveWarnings[0]
-        }}<span v-if="liveWarnings.length > 1">
-          (+{{ liveWarnings.length - 1 }} more)</span
-        >
-      </p>
-    </div>
-
-    <div
-      v-else
-      class="px-3 py-2 border border-gray-300 rounded-md min-h-12 leading-relaxed">
-      <ContentNodeRenderer :nodes="previewNodes" :variables="variables" />
-    </div>
-  </div>
-</template>

@@ -50,6 +50,10 @@ function submit() {
     displayError("Color name cannot be empty!");
     return;
   }
+  if (colorName.value.length >= 20) {
+    displayError("Variable name cannot be larger than 19 characters");
+    return;
+  }
   if (!NAME_PATTERN.test(colorName.value)) {
     displayError(
       "Color name can only contain letters and numbers, and must start with a letter!",
@@ -90,7 +94,7 @@ function clear() {
 <template>
   <UModal
     v-model:open="open"
-    :title="props.mode === 'Create' ? 'Add color' : 'Edit color'">
+    :title="props.mode === 'Create' ? 'Add text color' : 'Edit text color'">
     <template #body>
       <div class="flex flex-col gap-4 items-start">
         <UFormField
@@ -102,13 +106,13 @@ function clear() {
             :disabled="props.mode !== 'Create'"
             v-model="colorName" />
         </UFormField>
-        <UFormField class="w-full" label="Hex" help="e.g. #A1B2C3">
+        <UFormField class="w-full">
           <div class="flex flex-row gap-2 items-center">
             <UPopover :content="{ updatePositionStrategy: 'optimized' }">
               <UButton
                 variant="outline"
                 color="neutral"
-                class="w-8 h-8 p-0 rounded-full"
+                class="w-8 h-8 p-0"
                 :style="{
                   backgroundColor: HEX_PATTERN.test(colorHex)
                     ? colorHex

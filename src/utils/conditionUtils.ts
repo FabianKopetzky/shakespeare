@@ -1,4 +1,4 @@
-import type { Condition, Operation, StoryVariableType } from "../types/schema";
+import type { Condition, Operation, DataType, CustomFieldModel, Event, EventArg } from "../types/schema";
 
 export function useConditionUtils() {
   function conditionToString(condition: Condition): string {
@@ -25,15 +25,31 @@ export function useConditionUtils() {
         return '=';
     }
   }
+  function eventToString(event: Event): string {
+    return `${event.name} ${event.params && event.params.length > 0 ? `(${event.params.map(p => p.type).join(', ')})` : ''}`
+  }
+  function eventInvokationToString(event: string, args: EventArg[]): string {
+    return `Invoke ${event}${args && args.length > 0 ? `(${args.map(a => a.value).join(', ')})` : ''}`
+  }
 
   const typeMeta: Record<
-    StoryVariableType,
+    DataType,
     { icon: string; color: "info" | "secondary" | "success"; label: string }
     > = {
-    Integer: { icon: "i-lucide-hash", color: "info", label: "Integer" },
-    String: { icon: "i-lucide-type", color: "secondary", label: "String" },
-    Boolean: { icon: "i-lucide-toggle-left", color: "success", label: "Boolean" },
+    Integer: { icon: "material-symbols:numbers", color: "info", label: "Integer" },
+    String: { icon: "material-symbols:title", color: "secondary", label: "String" },
+    Boolean: { icon: "material-symbols:toggle-on", color: "success", label: "Boolean" },
   };
 
-  return { conditionToString, typeMeta, operationToString };
+  const fieldMeta: Record<
+    CustomFieldModel,
+    { icon: string; color: "info" | "secondary" | "success"; label: string }
+    > = {
+    dialogue: { icon: "material-symbols:forum-sharp", color: "info", label: "Dialogue" },
+    dialogue_sentence: { icon: "material-symbols:format-paragraph", color: "secondary", label: "Dialogue Sentence" },
+    branch: { icon: "material-symbols:arrow-split", color: "success", label: "Branch" },
+    story: { icon: "material-symbols:import-contacts-sharp", color: "success", label: "Story" },
+  };
+
+  return { conditionToString, typeMeta, fieldMeta, operationToString, eventToString, eventInvokationToString };
 }

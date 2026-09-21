@@ -26,19 +26,32 @@ function confirmDelete(): void {
 </script>
 
 <template>
-  <div class="flex flex-row gap-4 justify-start items-center">
-    <span
-      class="inline-block w-5 h-5 rounded-full border border-gray-300"
-      :style="{ backgroundColor: props.color.hex }" />
-    <p>
-      <span class="font-bold mr-4">{{ props.color.name }}</span>
-      <code class="ml-4 text-gray-500">{{ props.color.hex }}</code>
-    </p>
-    <UButton @click="editorOpen = true" icon="material-symbols:edit" />
-    <UButton
-      @click="showDeleteConfirm = true"
-      icon="material-symbols:delete"
-      color="error" />
+  <div class="flex flex-row gap-4 h-10 justify-start items-center bg-elevated">
+    <div
+      :style="{ backgroundColor: props.color.hex }"
+      class="h-full w-auto aspect-square" />
+    <div class="flex flex-row gap-4 h-full w-full items-center justify-between">
+      <p>
+        <span class="font-semibold">{{ props.color.name }}</span>
+        <code class="ml-4 text-dimmed">{{ props.color.hex }}</code>
+      </p>
+      <div class="flex flex-row">
+        <UButton
+          @click="editorOpen = true"
+          variant="ghost"
+          color="secondary"
+          class="aspect-square h-10 w-auto"
+          :ui="{ base: 'flex items-center justify-center' }"
+          icon="material-symbols:edit-sharp" />
+        <UButton
+          @click="showDeleteConfirm = true"
+          variant="ghost"
+          icon="material-symbols:delete-outline-sharp"
+          class="aspect-square h-10 w-auto"
+          :ui="{ base: 'flex items-center justify-center' }"
+          color="secondary" />
+      </div>
+    </div>
   </div>
   <TextColorInput
     v-model:open="editorOpen"
@@ -49,9 +62,9 @@ function confirmDelete(): void {
   <ConfirmDialog
     v-model:open="showDeleteConfirm"
     title="Delete text color"
-    :description="`Are you sure you want to delete '${props.color.name}'? This cannot be undone.`"
+    :description="`Are you sure you want to delete '${props.color.name}'? All references of this color will be replaced by the hex value. This cannot be undone.`"
     confirm-label="Delete"
     color="error"
-    icon="material-symbols:delete-outline"
+    icon="material-symbols:delete-outline-sharp"
     @confirm="confirmDelete" />
 </template>

@@ -3,6 +3,7 @@ import { ref } from "vue";
 import type { Language } from "../../types/schema";
 import LanguageInput from "./LanguageInput.vue";
 import ConfirmDialog from "./ConfirmDialog.vue";
+import { defaultLanguageIcon } from "../../utils/languageIcons.ts";
 
 interface Props {
   language: Language;
@@ -27,17 +28,33 @@ function confirmDelete(): void {
 </script>
 
 <template>
-  <div class="flex flex-row gap-4 justify-start items-center">
-    <p>
-      <span class="font-bold mr-4">{{ props.language.code }}</span
-      >{{ props.language.display }}
-    </p>
-    <UButton @click="editorOpen = true" icon="material-symbols:edit" />
-    <UButton
-      v-if="deletable"
-      @click="showDeleteConfirm = true"
-      icon="material-symbols:delete"
-      color="error" />
+  <div class="flex flex-row gap-4 h-10 justify-start items-center bg-elevated">
+    <div class="flex flex-row gap-4 h-full w-full items-center justify-between">
+      <div class="flex flex-row gap-2 items-center justify-start ml-2">
+        <UIcon
+          class="h-6 w-auto aspect-square"
+          :name="language.icon ?? defaultLanguageIcon" />
+        <span class="font-semibold">{{ props.language.display }}</span>
+        <span class="ml-2 text-dimmed">{{ props.language.code }}</span>
+      </div>
+      <div class="flex flex-row">
+        <UButton
+          @click="editorOpen = true"
+          variant="ghost"
+          color="secondary"
+          class="aspect-square h-10 w-auto"
+          :ui="{ base: 'flex items-center justify-center' }"
+          icon="material-symbols:edit-sharp" />
+        <UButton
+          v-if="props.deletable"
+          @click="showDeleteConfirm = true"
+          variant="ghost"
+          icon="material-symbols:delete-outline-sharp"
+          class="aspect-square h-10 w-auto"
+          :ui="{ base: 'flex items-center justify-center' }"
+          color="secondary" />
+      </div>
+    </div>
   </div>
   <LanguageInput
     v-model:open="editorOpen"
@@ -51,6 +68,6 @@ function confirmDelete(): void {
     :description="`Are you sure you want to delete '${props.language.display}' (${props.language.code})? This cannot be undone.`"
     confirm-label="Delete"
     color="error"
-    icon="material-symbols:delete-outline"
+    icon="material-symbols:delete-outline-sharp"
     @confirm="confirmDelete" />
 </template>

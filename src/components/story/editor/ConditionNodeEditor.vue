@@ -4,34 +4,39 @@
     :dismissible="false"
     class="w-[40vw] min-w-100 max-w-none">
     <template #header>
-      <div class="flex flex-row justify-between items-center w-full">
-        <p class="text-lg font-bold">Edit condition node</p>
-        <div class="flex flex-row gap-2">
-          <UButton
-            color="neutral"
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="close">
-            <UIcon class="size-12" name="material-symbols:close" />
-          </UButton>
-          <UButton
-            class="rounded-full h-10 w-10 flex justify-center items-center"
-            @click="save">
-            <UIcon class="size-12" name="material-symbols:check" />
-          </UButton>
-        </div>
-      </div>
+      <SlideoverHeader
+        title="Edit condition node"
+        @close="close"
+        :save-content="save" />
     </template>
     <template #body>
-      <div class="h-full flex flex-col justify-start items-start gap-2">
-        <div v-if="condition" class="mb-4">
-          <span>Checks if the following condition is met:</span>
-          <div
-            class="bg-elevated mt-2 p-2 rounded-xl flex flex-col justify-start items-start">
-            <span class="font-bold">{{ conditionToString(condition) }}</span>
+      <div class="h-full">
+        <SlideoverSection label="Properties" />
+        <div
+          class="bg-muted mt-2 p-4 rounded-none border-accented border flex flex-col justify-start items-start">
+          <div class="flex flex-row items-center justify-start gap-2">
+            <UIcon name="material-symbols:help-center-sharp" class="size-5" />
+            <span class="font-semibold">Current condition</span>
           </div>
+          <span v-if="condition" class="mt-2">{{
+            conditionToString(condition)
+          }}</span>
+          <span v-else class="text-dimmed"
+            >No condition assigned. Node will always execute 'false'</span
+          >
+          <UButton
+            variant="subtle"
+            color="neutral"
+            class="mt-2"
+            :icon="
+              condition
+                ? 'material-symbols:edit-sharp'
+                : 'material-symbols:add-box-sharp'
+            "
+            @click="editorOpen = true">
+            {{ condition ? "Edit" : "Add" }}
+          </UButton>
         </div>
-        <span v-else>No condition assigned, result will always be false</span>
-        <UButton @click="editorOpen = true">Edit condition</UButton>
       </div>
     </template>
   </USlideover>
@@ -72,7 +77,6 @@ const condition = ref<Condition | null>();
 const editorOpen = ref<boolean>(false);
 
 function onUpdateCondition(c: Condition | null) {
-  console.log("saved condition:", c);
   condition.value = c;
 }
 
@@ -89,18 +93,20 @@ watch(isOpen, (open) => {
   }
 });
 
-function save(): void {
+function save(): boolean {
   const node: AnyStoryNode = storyNodes[props.conditionNodeId];
   if (!node) {
     displayError(
       `An error occurred: Node "${props.conditionNodeId}" does not exist (anymore)`,
     );
-    return;
+    return false;
   }
 
   updateConditionNode();
   emit("onsave", props.conditionNodeId);
   isOpen.value = false;
+
+  return true;
 }
 function close(): void {
   isOpen.value = false;

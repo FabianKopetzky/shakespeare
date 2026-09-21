@@ -1,3 +1,64 @@
+<template>
+  <div class="w-full mt-3">
+    <div
+      class="w-full"
+      :class="isSplit ? 'grid grid-cols-2 gap-4 items-stretch' : ''">
+      <div class="flex flex-col">
+        <RichSentenceEditor
+          v-model="currentContent"
+          class="flex-1"
+          :variables="variables"
+          :colors="colors"
+          :view-mode="viewMode"
+          :can-move-up="canMoveUp"
+          :can-move-down="canMoveDown"
+          :extra-menu-items="extraMenuItems"
+          @remove="emit('remove')"
+          @move-up="emit('move-up')"
+          @move-down="emit('move-down')" />
+      </div>
+      <div v-if="isSplit" class="flex flex-col">
+        <div
+          v-if="props.viewMode === 'edit'"
+          class="h-7 mb-2 shrink-0"
+          aria-hidden="true" />
+        <SentenceContentDisplay
+          class="flex-1"
+          :content="referenceContent"
+          :variables="variables" />
+      </div>
+    </div>
+
+    <div
+      v-if="!props.excludeCustomFields && sentenceFieldSchemas.length > 0"
+      v-show="viewMode === 'edit'"
+      class="flex flex-row flex-wrap gap-3 mt-2">
+      <div
+        v-for="fieldSchema in sentenceFieldSchemas"
+        :key="fieldSchema.name"
+        class="min-w-40 flex-1">
+        <FieldInstanceInput
+          @submit="
+            (value) => {
+              const field = props.sentence.fields?.data?.find(
+                (f) => f.name === fieldSchema.name,
+              );
+              if (field) {
+                field.value = value;
+              }
+            }
+          "
+          :schema="fieldSchema"
+          :default-value="
+            props.sentence.fields?.data?.find(
+              (f) => f.name === fieldSchema.name,
+            )?.value ?? undefined
+          " />
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { computed } from "vue";
 import type {
@@ -5,20 +66,47 @@ import type {
   StoryVariable,
   TextColor,
 } from "../../types/schema";
-import RichSentenceEditor from "./RichSentenceEditor.vue";
+import RichSentenceEditor, {
+  type SentenceActionMenuItem,
+} from "./RichSentenceEditor.vue";
 import SentenceContentDisplay from "./SentenceContentDisplay.vue";
+import FieldInstanceInput from "../forms/FieldInstanceInput.vue";
+import { useCustomFieldsUtils } from "../../utils/customFieldsUtils.ts";
 
 interface Props {
   sentence: DialogueSentence;
   currentLanguage: string;
   referenceLanguage: string | null;
+
   isSplit: boolean;
   variables: StoryVariable[];
   colors: TextColor[];
   viewMode: "edit" | "preview";
+
+  excludeCustomFields?: boolean;
+
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+
+  extraMenuItems?: SentenceActionMenuItem[][];
 }
-const props = defineProps<Props>();
-const emit = defineEmits<{ (e: "remove"): void }>();
+const props = withDefaults(defineProps<Props>(), {
+  excludeCustomFields: false,
+  canMoveUp: true,
+  canMoveDown: true,
+  extraMenuItems: () => [],
+});
+const emit = defineEmits<{
+  (e: "remove"): void;
+  (e: "move-up"): void;
+  (e: "move-down"): void;
+}>();
+
+const { getCustomFieldsForModel } = useCustomFieldsUtils();
+
+const sentenceFieldSchemas = computed(() =>
+  getCustomFieldsForModel("dialogue_sentence"),
+);
 
 const currentContent = computed<string>({
   get: () => props.sentence.translations[props.currentLanguage] ?? "",
@@ -33,40 +121,3 @@ const referenceContent = computed<string>(() =>
     : "",
 );
 </script>
-
-<template>
-  <UContextMenu
-    :items="[
-      {
-        label: 'Remove',
-        icon: 'mdi:trash',
-        color: 'error' as const,
-        onSelect: () => emit('remove'),
-      },
-    ]">
-    <div class="w-full mt-3" :class="isSplit ? 'grid grid-cols-2 gap-3' : ''">
-      <div
-        v-if="isSplit"
-        class="rounded-md border border-gray-200 dark:border-gray-700 p-2 bg-gray-50 dark:bg-gray-800/40">
-        <p class="text-xs font-semibold opacity-60 mb-1 uppercase">
-          Reference ({{ referenceLanguage }})
-        </p>
-        <SentenceContentDisplay
-          :content="referenceContent"
-          :variables="variables" />
-      </div>
-      <div>
-        <p
-          v-if="isSplit"
-          class="text-xs font-semibold opacity-60 mb-1 uppercase">
-          {{ currentLanguage }}
-        </p>
-        <RichSentenceEditor
-          v-model="currentContent"
-          :variables="variables"
-          :colors="colors"
-          :view-mode="viewMode" />
-      </div>
-    </div>
-  </UContextMenu>
-</template>
