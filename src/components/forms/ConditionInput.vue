@@ -8,21 +8,26 @@ import type {
   LogicalOperator,
   StoryVariable,
   DataType,
+  ComputedProperty,
+  Argument,
 } from "../../types/schema";
 import { useWidget } from "../../composables/widget";
 import { useConditionUtils } from "../../utils/conditionUtils";
 import { useContentStore } from "../../stores/content";
 import StoryVariableInput from "./StoryVariableInput.vue";
+import ComputedPropertyInput from "./ComputedPropertyInput.vue";
+import ComputedPropertyArgsInput from "./ComputedPropertyArgsInput.vue";
 
 interface Props {
   variables: StoryVariable[];
+  computedProperties: ComputedProperty[];
   condition?: Condition;
 }
 const props = defineProps<Props>();
 const open = defineModel<boolean>("open", { default: false });
 
 const { displayError } = useWidget();
-const { storyVariables } = useContentStore();
+const { storyVariables, computedProperties } = useContentStore();
 
 const emit = defineEmits<{
   (e: "submit", condition: Condition | null): void;
@@ -31,14 +36,17 @@ const emit = defineEmits<{
 const { typeMeta } = useConditionUtils();
 
 const LITERAL_SENTINEL = "__literal__";
-const CREATE_SENTINEL = "__create__";
+const CREATE_VARIABLE_SENTINEL = "__create_variable__";
+const CREATE_COMPUTED_SENTINEL = "__create_computed__";
 
-type OperandKind = "literal" | "variable";
+type OperandKind = "literal" | "variable" | "computed";
 
 interface OperandForm {
   kind: OperandKind;
   variableName: string | (string | number | boolean);
   literalValue: string;
+  propertyName: string;
+  args: Argument[];
 }
 
 interface ClauseForm {
@@ -71,8 +79,20 @@ function operatorOptions(clause: ClauseForm) {
 const connectorOptions: LogicalOperator[] = ["AND", "OR"];
 const typeOptions: DataType[] = ["Integer", "String", "Boolean"];
 
+function defaultForType(type: DataType): number | string | boolean {
+  if (type === "Integer") return 0;
+  if (type === "Boolean") return false;
+  return "";
+}
+
 function emptyOperand(): OperandForm {
-  return { kind: "literal", variableName: "", literalValue: "" };
+  return {
+    kind: "literal",
+    variableName: "",
+    literalValue: "",
+    propertyName: "",
+    args: [],
+  };
 }
 
 function emptyClause(): ClauseForm {
@@ -94,14 +114,35 @@ function variableType(
   return props.variables.find((v) => v.name === name)?.type;
 }
 
+function computedPropertyType(name: string): DataType | undefined {
+  return props.computedProperties.find((c) => c.name === name)?.returnType;
+}
+
 function operandToForm(operand: Operand): OperandForm {
   if (operand.kind === "variable") {
-    return { kind: "variable", variableName: operand.value, literalValue: "" };
+    return {
+      kind: "variable",
+      variableName: operand.value,
+      literalValue: "",
+      propertyName: "",
+      args: [],
+    };
+  }
+  if (operand.kind === "computed") {
+    return {
+      kind: "computed",
+      variableName: "",
+      literalValue: "",
+      propertyName: operand.value,
+      args: operand.args.map((a) => ({ ...a })),
+    };
   }
   return {
     kind: "literal",
     variableName: "",
     literalValue: String(operand.value),
+    propertyName: "",
+    args: [],
   };
 }
 
@@ -113,8 +154,16 @@ function inferValueType(comparison: {
     const t = variableType(comparison.left.value);
     if (t) return t;
   }
+  if (comparison.left.kind === "computed") {
+    const t = computedPropertyType(comparison.left.value);
+    if (t) return t;
+  }
   if (comparison.right.kind === "variable") {
     const t = variableType(comparison.right.value);
+    if (t) return t;
+  }
+  if (comparison.right.kind === "computed") {
+    const t = computedPropertyType(comparison.right.value);
     if (t) return t;
   }
   const literal =
@@ -166,14 +215,27 @@ function lockedType(clause: ClauseForm): DataType | undefined {
   if (clause.left.kind === "variable" && clause.left.variableName) {
     return variableType(clause.left.variableName);
   }
+  if (clause.left.kind === "computed" && clause.left.propertyName) {
+    return computedPropertyType(clause.left.propertyName);
+  }
   if (clause.right.kind === "variable" && clause.right.variableName) {
     return variableType(clause.right.variableName);
+  }
+  if (clause.right.kind === "computed" && clause.right.propertyName) {
+    return computedPropertyType(clause.right.propertyName);
   }
   return undefined;
 }
 
 function isValueTypeEditable(clause: ClauseForm): boolean {
   return lockedType(clause) === undefined;
+}
+
+function hasParams(propertyName: string): boolean {
+  return (
+    (props.computedProperties.find((c) => c.name === propertyName)?.params
+      .length ?? 0) > 0
+  );
 }
 
 function operandItems(clause: ClauseForm) {
@@ -183,15 +245,15 @@ function operandItems(clause: ClauseForm) {
     icon: "material-symbols:edit-sharp",
   };
 
-  const createItem = {
-    label: "Variable",
-    value: CREATE_SENTINEL,
+  const createVariableItem = {
+    label: "New variable",
+    value: CREATE_VARIABLE_SENTINEL,
     icon: "material-symbols:add-box-sharp",
   };
 
   const createComputedItem = {
-    label: "Computed",
-    value: CREATE_SENTINEL,
+    label: "New computed property",
+    value: CREATE_COMPUTED_SENTINEL,
     icon: "material-symbols:add-box-sharp",
   };
 
@@ -199,17 +261,33 @@ function operandItems(clause: ClauseForm) {
     .filter((v) => v.type === clause.valueType)
     .map((v) => ({
       label: v.name,
-      value: v.name,
+      value: `var:${v.name}`,
       icon: typeMeta[v.type].icon,
     }));
 
-  return [[literalItem, createItem, createComputedItem], [...variableItems]];
+  const computedItems = props.computedProperties
+    .filter((c) => c.returnType === clause.valueType)
+    .map((c) => ({
+      label: c.name,
+      value: `computed:${c.name}`,
+      icon: "material-symbols:functions",
+    }));
+
+  return [
+    [literalItem, createVariableItem, createComputedItem],
+    variableItems,
+    computedItems,
+  ];
 }
 
 function operandSelection(operand: OperandForm): string {
-  return operand.kind === "variable"
-    ? operand.variableName?.toString()
-    : LITERAL_SENTINEL;
+  if (operand.kind === "variable") {
+    return `var:${operand.variableName?.toString() ?? ""}`;
+  }
+  if (operand.kind === "computed") {
+    return `computed:${operand.propertyName}`;
+  }
+  return LITERAL_SENTINEL;
 }
 
 function reconcileOperator(clause: ClauseForm) {
@@ -231,6 +309,8 @@ function applyVariableToOperand(
 
   operand.kind = "variable";
   operand.variableName = variableName;
+  operand.propertyName = "";
+  operand.args = [];
   const type = variableType(variableName);
   if (!type) return;
 
@@ -239,8 +319,58 @@ function applyVariableToOperand(
 
   if (other.kind === "variable" && other.variableName) {
     if (variableType(other.variableName) !== type) other.variableName = "";
-  } else {
+  } else if (other.kind === "computed" && other.propertyName) {
+    if (computedPropertyType(other.propertyName) !== type) {
+      other.kind = "literal";
+      other.propertyName = "";
+      other.args = [];
+      other.literalValue = type === "Boolean" ? "true" : "";
+    }
+  } else if (other.kind === "literal") {
     other.literalValue = type === "Boolean" ? "true" : "";
+  }
+}
+
+function defaultComputedArgs(def: ComputedProperty): Argument[] {
+  return def.params.map((param) => ({
+    name: param.name,
+    kind: "literal",
+    value: defaultForType(param.type),
+  }));
+}
+
+function applyComputedPropertyToOperand(
+  clause: ClauseForm,
+  side: "left" | "right",
+  propertyName: string,
+) {
+  const operand = clause[side];
+  const other = side === "left" ? clause.right : clause.left;
+
+  const def = props.computedProperties.find((c) => c.name === propertyName);
+  if (!def) return;
+
+  operand.kind = "computed";
+  operand.propertyName = propertyName;
+  operand.variableName = "";
+  operand.args = defaultComputedArgs(def);
+
+  clause.valueType = def.returnType;
+  reconcileOperator(clause);
+
+  if (other.kind === "variable" && other.variableName) {
+    if (variableType(other.variableName) !== def.returnType) {
+      other.variableName = "";
+    }
+  } else if (other.kind === "computed" && other.propertyName) {
+    if (computedPropertyType(other.propertyName) !== def.returnType) {
+      other.kind = "literal";
+      other.propertyName = "";
+      other.args = [];
+      other.literalValue = def.returnType === "Boolean" ? "true" : "";
+    }
+  } else if (other.kind === "literal") {
+    other.literalValue = def.returnType === "Boolean" ? "true" : "";
   }
 }
 
@@ -268,6 +398,61 @@ function onVariableCreated(variable: StoryVariable) {
   pendingTarget.value = null;
 }
 
+const createComputedPropertyOpen = ref(false);
+const pendingComputedTarget = ref<{
+  clause: ClauseForm;
+  side: "left" | "right";
+} | null>(null);
+
+function openCreateComputedProperty(
+  clause: ClauseForm,
+  side: "left" | "right",
+) {
+  pendingComputedTarget.value = { clause, side };
+  createComputedPropertyOpen.value = true;
+}
+
+function onComputedPropertyCreated(property: ComputedProperty) {
+  computedProperties.push(property);
+
+  if (pendingComputedTarget.value) {
+    applyComputedPropertyToOperand(
+      pendingComputedTarget.value.clause,
+      pendingComputedTarget.value.side,
+      property.name,
+    );
+  }
+  pendingComputedTarget.value = null;
+}
+
+const editArgsOpen = ref(false);
+const editArgsProperty = ref<ComputedProperty | undefined>(undefined);
+const editArgsValues = ref<Argument[]>([]);
+const pendingArgsTarget = ref<{
+  clause: ClauseForm;
+  side: "left" | "right";
+} | null>(null);
+
+function openEditArgs(clause: ClauseForm, side: "left" | "right") {
+  const operand = clause[side];
+  const def = props.computedProperties.find(
+    (c) => c.name === operand.propertyName,
+  );
+  if (!def) return;
+
+  pendingArgsTarget.value = { clause, side };
+  editArgsProperty.value = def;
+  editArgsValues.value = operand.args.map((a) => ({ ...a }));
+  editArgsOpen.value = true;
+}
+
+function onArgsSubmit(newArgs: Argument[]) {
+  if (pendingArgsTarget.value) {
+    pendingArgsTarget.value.clause[pendingArgsTarget.value.side].args = newArgs;
+  }
+  pendingArgsTarget.value = null;
+}
+
 function onSelectOperand(
   clause: ClauseForm,
   side: "left" | "right",
@@ -278,16 +463,31 @@ function onSelectOperand(
   if (value === LITERAL_SENTINEL) {
     operand.kind = "literal";
     operand.variableName = "";
+    operand.propertyName = "";
+    operand.args = [];
     operand.literalValue = clause.valueType === "Boolean" ? "true" : "";
     return;
   }
 
-  if (value === CREATE_SENTINEL) {
+  if (value === CREATE_VARIABLE_SENTINEL) {
     openCreateVariable(clause, side);
     return;
   }
 
-  applyVariableToOperand(clause, side, value);
+  if (value === CREATE_COMPUTED_SENTINEL) {
+    openCreateComputedProperty(clause, side);
+    return;
+  }
+
+  if (value.startsWith("var:")) {
+    applyVariableToOperand(clause, side, value.slice(4));
+    return;
+  }
+
+  if (value.startsWith("computed:")) {
+    applyComputedPropertyToOperand(clause, side, value.slice(9));
+    return;
+  }
 }
 
 function onSelectValueType(clause: ClauseForm, type: DataType) {
@@ -310,10 +510,43 @@ function toOperand(operand: OperandForm, valueType: DataType): Operand {
   if (operand.kind === "variable") {
     return { kind: "variable", value: operand.variableName };
   }
+  if (operand.kind === "computed") {
+    return {
+      kind: "computed",
+      value: operand.propertyName,
+      args: operand.args.map((a) => ({ ...a })),
+    };
+  }
   return {
     kind: "literal",
     value: parseLiteral(operand.literalValue, valueType),
   };
+}
+
+function validateComputedArgs(
+  def: ComputedProperty | undefined,
+  args: Argument[],
+): string | null {
+  if (!def) return "Selected computed property no longer exists";
+
+  for (const param of def.params) {
+    const arg = args.find((a) => a.name === param.name);
+    if (!arg) {
+      return `Parameter "${param.name}" of "${def.name}" is not configured`;
+    }
+
+    if (arg.kind === "literal") {
+      if (arg.value === "" || arg.value === undefined || arg.value === null) {
+        return `Parameter "${param.name}" of "${def.name}" must have a value`;
+      }
+      if (param.type === "Integer" && isNaN(Number(arg.value))) {
+        return `Parameter "${param.name}" of "${def.name}" must be a valid number`;
+      }
+    } else if (!arg.value || arg.value === "") {
+      return `No variable selected for parameter "${param.name}" of "${def.name}"`;
+    }
+  }
+  return null;
 }
 
 function validate(): boolean {
@@ -322,6 +555,22 @@ function validate(): boolean {
       if (side.kind === "variable" && !side.variableName) {
         displayError("Every variable operand must have a variable selected!");
         return false;
+      }
+      if (side.kind === "computed") {
+        if (!side.propertyName) {
+          displayError(
+            "Every computed property operand must have a property selected!",
+          );
+          return false;
+        }
+        const def = props.computedProperties.find(
+          (c) => c.name === side.propertyName,
+        );
+        const error = validateComputedArgs(def, side.args);
+        if (error) {
+          displayError(error);
+          return false;
+        }
       }
       if (side.kind === "literal" && side.literalValue === "") {
         displayError("Every literal operand must have a value!");
@@ -338,6 +587,24 @@ function validate(): boolean {
     }
   }
   return true;
+}
+
+function formatArgValue(arg: Argument): string {
+  return arg.value !== "" && arg.value !== undefined && arg.value !== null
+    ? arg.value.toString()
+    : "<?>";
+}
+
+function operandDisplay(operand: OperandForm): string {
+  if (operand.kind === "literal") {
+    return operand.literalValue ? operand.literalValue : "<?>";
+  }
+  if (operand.kind === "variable") {
+    return operand.variableName ? operand.variableName.toString() : "<?>";
+  }
+  if (!operand.propertyName) return "<?>";
+  const argsStr = operand.args.map((a) => formatArgValue(a)).join(", ");
+  return `${operand.propertyName}(${argsStr})`;
 }
 
 function submit() {
@@ -407,7 +674,7 @@ function clearCondition() {
               </UBadge>
               <div class="flex flex-row gap-2 items-center justify-end">
                 <span>{{
-                  `${clause.left.kind === "literal" ? (clause.left.literalValue ? clause.left.literalValue : "<?>") : clause.left.variableName ? clause.left.variableName.toString() : "<?>"} ${clause.operator} ${clause.right.kind === "literal" ? (clause.right.literalValue ? clause.right.literalValue : "<?>") : clause.right.variableName ? clause.right.variableName.toString() : "<?>"}`
+                  `${operandDisplay(clause.left)} ${clause.operator} ${operandDisplay(clause.right)}`
                 }}</span>
                 <UButton
                   icon="material-symbols:delete-outline-sharp"
@@ -444,6 +711,16 @@ function clearCondition() {
                       placeholder="Value"
                       class="w-24" />
                   </template>
+
+                  <UButton
+                    v-else-if="
+                      clause.left.kind === 'computed' &&
+                      hasParams(clause.left.propertyName)
+                    "
+                    variant="outline"
+                    color="neutral"
+                    icon="material-symbols:tune"
+                    @click="openEditArgs(clause, 'left')" />
                 </div>
               </div>
 
@@ -483,6 +760,16 @@ function clearCondition() {
                       placeholder="Value"
                       class="w-24" />
                   </template>
+
+                  <UButton
+                    v-else-if="
+                      clause.right.kind === 'computed' &&
+                      hasParams(clause.right.propertyName)
+                    "
+                    variant="outline"
+                    color="neutral"
+                    icon="material-symbols:tune"
+                    @click="openEditArgs(clause, 'right')" />
                 </div>
               </div>
             </div>
@@ -530,4 +817,17 @@ function clearCondition() {
     mode="Create"
     :variable="undefined"
     @submit="onVariableCreated" />
+
+  <ComputedPropertyInput
+    v-model:open="createComputedPropertyOpen"
+    mode="Create"
+    :computed-property="undefined"
+    @submit="onComputedPropertyCreated" />
+
+  <ComputedPropertyArgsInput
+    v-model:open="editArgsOpen"
+    :computed-property="editArgsProperty"
+    :args="editArgsValues"
+    :variables="props.variables"
+    @submit="onArgsSubmit" />
 </template>

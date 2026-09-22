@@ -116,7 +116,7 @@
                   value-key="value"
                   label-key="label"
                   placeholder="Select a variable" />
-                <span v-else class="text-sm text-error italic">
+                <span v-else class="text-sm text-dimmed">
                   No variables of type "{{
                     typeMeta[paramType(arg.name)!].label
                   }}" available

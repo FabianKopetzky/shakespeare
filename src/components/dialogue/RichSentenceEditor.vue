@@ -136,11 +136,6 @@ import ContentNodeRenderer from "./ContentNodeRenderer.vue";
 
 const HEX_PATTERN = /^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
 
-// Shared shape for the "..." action menu, consumed by callers (e.g.
-// DialogueSentenceEditor / EditBranchNode) that inject extra items such as
-// branch conditions. Kept intentionally minimal/structural rather than
-// importing Nuxt UI's DropdownMenuItem type, so adjust if your UDropdownMenu
-// items type requires more fields (kbds, to, children, etc.).
 export interface SentenceActionMenuItem {
   label: string;
   icon?: string;
@@ -247,20 +242,20 @@ function wrapSelection(before: string, after: string) {
   });
 }
 
-function insertAtCursor(text: string) {
-  const el = textareaEl.value;
-  if (!el) return;
-  const start = el.selectionStart;
-  const end = el.selectionEnd;
-  const value = props.modelValue ?? "";
-  const newValue = value.slice(0, start) + text + value.slice(end);
-  updateValue(newValue);
-  const pos = start + text.length;
-  nextTick(() => {
-    el.focus();
-    el.setSelectionRange(pos, pos);
-  });
-}
+// function insertAtCursor(text: string) {
+//   const el = textareaEl.value;
+//   if (!el) return;
+//   const start = el.selectionStart;
+//   const end = el.selectionEnd;
+//   const value = props.modelValue ?? "";
+//   const newValue = value.slice(0, start) + text + value.slice(end);
+//   updateValue(newValue);
+//   const pos = start + text.length;
+//   nextTick(() => {
+//     el.focus();
+//     el.setSelectionRange(pos, pos);
+//   });
+// }
 
 function applyBold() {
   wrapSelection("<b>", "</b>");

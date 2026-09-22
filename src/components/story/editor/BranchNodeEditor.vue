@@ -205,6 +205,7 @@
     v-model:open="conditionEditorOpen"
     :variables="storyVariables"
     :condition="editingCondition"
+    :computed-properties="computedProperties"
     @submit="onConditionSubmit" />
 </template>
 
@@ -229,8 +230,13 @@ import { useCustomFieldsUtils } from "../../../utils/customFieldsUtils.ts";
 import FieldInstanceInput from "../../forms/FieldInstanceInput.vue";
 
 const { displayError } = useWidget();
-const { storyNodes, languages, textColors, storyVariables } =
-  storeToRefs(useContentStore());
+const {
+  storyNodes,
+  languages,
+  textColors,
+  storyVariables,
+  computedProperties,
+} = storeToRefs(useContentStore());
 const { conditionToString } = useConditionUtils();
 
 const { getCustomFieldsForModel, createDefaultFieldsForModel } =

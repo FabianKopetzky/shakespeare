@@ -59,7 +59,7 @@
         title="Events"
         :count="events.length" />
       <StatsCard
-        icon="material-symbols:calculate-sharp"
+        icon="material-symbols:functions"
         title="Computed"
         :count="computedProperties.length" />
       <StatsCard
