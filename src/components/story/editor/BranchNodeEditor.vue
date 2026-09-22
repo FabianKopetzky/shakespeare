@@ -106,6 +106,7 @@
                 :reference-language="isSplit ? referenceLanguageCode : null"
                 :is-split="isSplit"
                 :variables="storyVariables"
+                :computed-properties="computedProperties"
                 :colors="textColors"
                 :view-mode="viewMode"
                 :exclude-custom-fields="true"
@@ -434,9 +435,12 @@ function validateAllBranches(): string[] {
     }
     Object.entries(branch.labels).forEach(([code, content]) => {
       if (!content) return;
-      validateContent(content, storyVariables.value, textColors.value).forEach(
-        (err) => errors.push(`Branch ${index + 1} (${code}): ${err}`),
-      );
+      validateContent(
+        content,
+        storyVariables.value,
+        textColors.value,
+        computedProperties.value,
+      ).forEach((err) => errors.push(`Branch ${index + 1} (${code}): ${err}`));
     });
   });
 

@@ -98,12 +98,12 @@
         }">
         <button
           v-for="(item, index) in autocomplete.items"
-          :key="item.name"
+          :key="`${item.kind}:${item.name}`"
           type="button"
           class="flex justify-between gap-2 w-full px-2 py-1 rounded-nome text-left hover:bg-elevated/50"
           :class="{ 'bg-elevated': index === autocomplete.activeIndex }"
           @mousedown.prevent="acceptAutocomplete(index)">
-          <span class="text-xs">{{ item.name }}</span>
+          <span class="text-xs">{{ item.label }}</span>
           <span class="text-xs opacity-60">{{ item.type }}</span>
         </button>
       </div>
@@ -121,14 +121,22 @@
     <div
       v-else
       class="flex-1 min-h-12 px-3 py-2 rounded-none! border-none! border-0! bg-muted! shadow-sm ring-1 ring-inset ring-[#4a3f30] focus:ring-1 focus:ring-inset focus:ring-[#4a3f30] outline-none transition-colors leading-relaxed">
-      <ContentNodeRenderer :nodes="previewNodes" :variables="variables" />
+      <ContentNodeRenderer
+        :nodes="previewNodes"
+        :variables="variables"
+        :computedProperties="computedProperties" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref } from "vue";
-import type { StoryVariable, TextColor } from "../../types/schema";
+import type {
+  ComputedProperty,
+  DataType,
+  StoryVariable,
+  TextColor,
+} from "../../types/schema";
 import { useWidget } from "../../composables/widget.ts";
 import { parseContent, validateContent } from "../../utils/dialogueContent";
 import { getCaretCoordinates } from "../../utils/caretCoordinates";
@@ -147,6 +155,7 @@ export interface SentenceActionMenuItem {
 interface Props {
   modelValue: string;
   variables: StoryVariable[];
+  computedProperties?: ComputedProperty[];
   colors?: TextColor[];
   placeholder?: string;
   viewMode: "edit" | "preview";
@@ -155,8 +164,10 @@ interface Props {
   extraMenuItems?: SentenceActionMenuItem[][];
 }
 const props = withDefaults(defineProps<Props>(), {
+  computedProperties: () => [],
   colors: () => [],
-  placeholder: "Type your text here or type {{ to enter variables",
+  placeholder:
+    "Type your text here, type {{ to enter variables and type {{ c: to type computed properties",
   canMoveUp: true,
   canMoveDown: true,
   extraMenuItems: () => [],
@@ -181,7 +192,12 @@ const pendingColor = ref<string>("#000000");
 
 const previewNodes = computed(() => parseContent(props.modelValue ?? ""));
 const liveWarnings = computed(() =>
-  validateContent(props.modelValue ?? "", props.variables, props.colors),
+  validateContent(
+    props.modelValue ?? "",
+    props.variables,
+    props.colors,
+    props.computedProperties,
+  ),
 );
 
 const actionMenuItems = computed<SentenceActionMenuItem[][]>(() => {
@@ -274,9 +290,17 @@ function applyColor(value: string, isVariable: boolean) {
   wrapSelection(`<color=${value}>`, "</color>");
 }
 
+interface AutocompleteItem {
+  kind: "variable" | "computed";
+  name: string;
+  label: string;
+  type: DataType;
+  property?: ComputedProperty;
+}
+
 const autocomplete = reactive({
   visible: false,
-  items: [] as StoryVariable[],
+  items: [] as AutocompleteItem[],
   activeIndex: 0,
   top: 0,
   left: 0,
@@ -288,19 +312,42 @@ function closeAutocomplete() {
   autocomplete.visible = false;
 }
 
+function computedSignature(property: ComputedProperty): string {
+  const paramNames = property.params.map((p) => p.name).join(",");
+  return `c:${property.name}(${paramNames})`;
+}
+
 function updateAutocomplete() {
   const el = textareaEl.value;
   if (!el) return closeAutocomplete();
 
   const caret = el.selectionStart;
   const textBeforeCaret = el.value.slice(0, caret);
-  const match = /\{\{\s*([A-Za-z0-9]*)$/.exec(textBeforeCaret);
+  const match = /\{\{\s*(c:)?([A-Za-z0-9_]*)$/.exec(textBeforeCaret);
   if (!match) return closeAutocomplete();
 
-  const query = match[1].toLowerCase();
-  const items = props.variables.filter((v) =>
-    v.name.toLowerCase().startsWith(query),
-  );
+  const isComputed = match[1] === "c:";
+  const query = match[2].toLowerCase();
+
+  const items: AutocompleteItem[] = isComputed
+    ? props.computedProperties
+        .filter((c) => c.name.toLowerCase().startsWith(query))
+        .map((c) => ({
+          kind: "computed",
+          name: c.name,
+          label: computedSignature(c),
+          type: c.returnType,
+          property: c,
+        }))
+    : props.variables
+        .filter((v) => v.name.toLowerCase().startsWith(query))
+        .map((v) => ({
+          kind: "variable",
+          name: v.name,
+          label: v.name,
+          type: v.type,
+        }));
+
   if (items.length === 0) return closeAutocomplete();
 
   autocomplete.items = items;
@@ -314,13 +361,36 @@ function updateAutocomplete() {
   autocomplete.visible = true;
 }
 
+function buildInsertion(item: AutocompleteItem): {
+  insertion: string;
+  caretPos: number;
+} {
+  if (item.kind === "variable") {
+    const insertion = `{{ ${item.name} }}`;
+    return { insertion, caretPos: insertion.length };
+  }
+
+  const property = item.property!;
+  if (property.params.length === 0) {
+    const insertion = `{{ c:${property.name}() }}`;
+    return { insertion, caretPos: insertion.length };
+  }
+
+  const paramsText = property.params.map((p) => `${p.name}:`).join(",");
+  const prefix = `{{ c:${property.name}(`;
+  const insertion = `${prefix}${paramsText}) }}`;
+  // Land the caret right after the first "param:" so the value can be typed immediately.
+  const caretPos = `${prefix}${property.params[0].name}:`.length;
+  return { insertion, caretPos };
+}
+
 function acceptAutocomplete(index: number = autocomplete.activeIndex) {
   const item = autocomplete.items[index];
   const el = textareaEl.value;
   if (!item || !el) return;
 
   const value = props.modelValue ?? "";
-  const insertion = `{{ ${item.name} }}`;
+  const { insertion, caretPos } = buildInsertion(item);
   const newValue =
     value.slice(0, autocomplete.matchStart) +
     insertion +
@@ -328,7 +398,7 @@ function acceptAutocomplete(index: number = autocomplete.activeIndex) {
   updateValue(newValue);
   closeAutocomplete();
 
-  const pos = autocomplete.matchStart + insertion.length;
+  const pos = autocomplete.matchStart + caretPos;
   nextTick(() => {
     el.focus();
     el.setSelectionRange(pos, pos);
