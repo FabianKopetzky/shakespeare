@@ -184,7 +184,13 @@ function operandItems(clause: ClauseForm) {
   };
 
   const createItem = {
-    label: "New",
+    label: "Variable",
+    value: CREATE_SENTINEL,
+    icon: "material-symbols:add-box-sharp",
+  };
+
+  const createComputedItem = {
+    label: "Computed",
     value: CREATE_SENTINEL,
     icon: "material-symbols:add-box-sharp",
   };
@@ -197,7 +203,7 @@ function operandItems(clause: ClauseForm) {
       icon: typeMeta[v.type].icon,
     }));
 
-  return [[literalItem, createItem], [...variableItems]];
+  return [[literalItem, createItem, createComputedItem], [...variableItems]];
 }
 
 function operandSelection(operand: OperandForm): string {

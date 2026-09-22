@@ -146,23 +146,24 @@ function clear() {
 <template>
   <UModal
     v-model:open="open"
-    :title="props.mode === 'Create' ? 'Add event' : 'Edit event'">
+    :title="
+      props.mode === 'Create'
+        ? 'Add computed property'
+        : 'Edit computed property'
+    ">
     <template #body>
       <div class="flex flex-col gap-4 justify-start items-start">
         <UFormField
           class="w-full"
-          label="Event name"
-          help="Unique identifier of the event.">
+          label="Computed property name"
+          help="Unique identifier of the computed property.">
           <UInput
             class="w-full"
             :disabled="props.mode !== 'Create'"
             v-model="propertyName" />
         </UFormField>
 
-        <UFormField
-          class="w-full"
-          label="Return type"
-          help="The data type this computed property returns.">
+        <UFormField class="w-full" label="Return type">
           <USelect
             class="w-full"
             :disabled="props.mode !== 'Create'"
@@ -237,7 +238,7 @@ function clear() {
   </UModal>
   <ConfirmDialog
     v-model:open="showCreateConfirm"
-    title="Create event?"
+    title="Create computed property?"
     :description="`Are you sure you want to create '${propertyName}' with the configured signature? You cannot edit a computed property schema afterwards.`"
     confirm-label="Create"
     color="primary"

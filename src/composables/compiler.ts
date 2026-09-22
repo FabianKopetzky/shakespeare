@@ -49,6 +49,7 @@ export function useCompiler() {
             storyVariables: contentStore.storyVariables,
             customFields: contentStore.customFields,
             events: contentStore.events,
+            computedProperties: contentStore.computedProperties,
 
             meta: { ...contentStore.meta, lastEdited: currentDate, version: SHAKESPEARE_VERSION },
             settings: contentStore.settings
