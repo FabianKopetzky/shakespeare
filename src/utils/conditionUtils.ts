@@ -1,4 +1,4 @@
-import type { Condition, Operation, DataType, CustomFieldModel, Event, EventArg } from "../types/schema";
+import type { Condition, Operation, DataType, CustomFieldModel, Event, Argument } from "../types/schema";
 
 export function useConditionUtils() {
   function conditionToString(condition: Condition): string {
@@ -28,7 +28,7 @@ export function useConditionUtils() {
   function eventToString(event: Event): string {
     return `${event.name} ${event.params && event.params.length > 0 ? `(${event.params.map(p => p.type).join(', ')})` : ''}`
   }
-  function eventInvokationToString(event: string, args: EventArg[]): string {
+  function eventInvokationToString(event: string, args: Argument[]): string {
     return `Invoke ${event}${args && args.length > 0 ? `(${args.map(a => a.value).join(', ')})` : ''}`
   }
 

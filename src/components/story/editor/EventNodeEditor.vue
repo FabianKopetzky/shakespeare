@@ -140,7 +140,7 @@ import { computed, ref, watch } from "vue";
 import type {
   AnyStoryNode,
   EventNode,
-  EventArg,
+  Argument,
   Event,
   DataType,
 } from "../../../types/schema.ts";
@@ -164,7 +164,7 @@ const isOpen = defineModel<boolean>("isOpen", { required: true });
 
 const node = ref<EventNode>();
 const eventName = ref<string | null>(null);
-const args = ref<EventArg[]>([]);
+const args = ref<Argument[]>([]);
 const targetId = ref<string | null>(null);
 
 const createEventModalOpen = ref<boolean>(false);
@@ -195,8 +195,8 @@ function defaultForType(type: DataType): number | string | boolean {
 
 function buildArgs(
   def: Event | null | undefined,
-  existing?: EventArg[],
-): EventArg[] {
+  existing?: Argument[],
+): Argument[] {
   if (!def) return [];
   return def.params.map((param) => {
     const found = existing?.find((a) => a.name === param.name);
@@ -230,7 +230,7 @@ function onEventCreated(newEvent: Event) {
   args.value = buildArgs(newEvent);
 }
 
-function setArgKind(arg: EventArg, kind: "literal" | "variable") {
+function setArgKind(arg: Argument, kind: "literal" | "variable") {
   if (arg.kind === kind) return;
   arg.kind = kind;
   const type = paramType(arg.name);

@@ -60,7 +60,7 @@ export type OperationNode = StoryNodeBase & {
 export type EventNode = StoryNodeBase & {
   type: "event",
   event: string | null,
-  args: EventArg[]
+  args: Argument[]
   targetId: string | null // references another node in the story
 }
 
@@ -149,18 +149,27 @@ export type CustomFields = {
 
 //* EVENTS
 
-export type EventParam = {
+export type Parameter = {
   name: string,
   type: DataType
 }
 export type Event = {
   name: string,
-  params: EventParam[]
+  params: Parameter[]
 }
-export type EventArg = {
+export type Argument = {
   name: string,
   value: number | boolean | string
   kind: 'literal' | 'variable'
+}
+
+//* COMPUTED PROPERTIES
+
+// reuse parameters and arguments from events
+export type ComputedProperty = {
+  name: string,
+  params: Parameter[],
+  returnType: DataType
 }
 
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened

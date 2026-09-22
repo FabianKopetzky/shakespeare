@@ -128,6 +128,7 @@ export function useProjectHandler() {
                 contentStore.storyVariables = [];
                 contentStore.customFields = [];
                 contentStore.events = [];
+                contentStore.computedProperties = [];
 
                 appStore.projectLoaded = true;
                 return true;
@@ -158,6 +159,7 @@ export function useProjectHandler() {
             contentStore.storyVariables = project.storyVariables ?? [];
             contentStore.customFields = project.customFields ?? [];
             contentStore.events = project.events ?? [];
+            contentStore.computedProperties = project.computedProperties ?? [];
 
             appStore.projectLoaded = true;
             return true;

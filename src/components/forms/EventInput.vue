@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import type { FormMode, Event, EventParam, DataType } from "../../types/schema";
+import type { FormMode, Event, DataType, Parameter } from "../../types/schema";
 import { useWidget } from "../../composables/widget";
 import { useContentStore } from "../../stores/content";
 import { useConditionUtils } from "../../utils/conditionUtils";
@@ -17,7 +17,7 @@ const { displayError } = useWidget();
 const { events } = storeToRefs(useContentStore());
 
 const eventName = ref<string>("");
-const params = ref<EventParam[]>([]);
+const params = ref<Parameter[]>([]);
 
 const showCreateConfirm = ref<boolean>(false);
 
