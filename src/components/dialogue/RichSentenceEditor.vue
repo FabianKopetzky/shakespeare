@@ -110,9 +110,9 @@
 
       <p
         v-if="liveWarnings.length > 0"
-        class="text-xs text-error-600 mt-1 shrink-0">
+        class="text-xs text-error mt-1 shrink-0">
         {{ liveWarnings[0]
-        }}<span v-if="liveWarnings.length > 1">
+        }}<span v-if="liveWarnings.length > 1" class="text-xs text-error">
           (+{{ liveWarnings.length - 1 }} more)</span
         >
       </p>

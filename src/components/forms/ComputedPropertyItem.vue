@@ -86,7 +86,7 @@ function confirmDelete(): void {
   <ConfirmDialog
     v-model:open="showDeleteConfirm"
     title="Delete computed property"
-    :description="`Are you sure you want to delete '${props.computedProperty.name}'? All references in conditions will be reset. This cannot be undone.`"
+    :description="`Are you sure you want to delete '${props.computedProperty.name}'? All references in conditions will be reset to the types default value and all text references will be replaced with '[unknown property]'. This cannot be undone.`"
     confirm-label="Delete"
     color="error"
     icon="material-symbols:delete-outline-sharp"

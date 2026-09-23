@@ -20,6 +20,14 @@ export function useCompiler() {
         const regex = new RegExp(`\\{\\{\\s*${variable}\\s*\\}\\}`, 'g');
         return text.replace(regex, String(value));
     }
+    function resolveComputedProperty(text: string, propertyName: string, value: string | number | boolean): string {
+        const escapedName = propertyName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const pattern = new RegExp(
+            `\\{\\{\\s*c:${escapedName}\\([^)]*\\)\\s*\\}\\}`,
+            'g'
+        );
+        return text.replace(pattern, String(value));
+    }
     function compileCustomFields(fields: CustomFields): any {
         if(!fields.data || fields.data.length <= 0) return null;
         const entries = fields.data.map(field => {
@@ -164,6 +172,7 @@ export function useCompiler() {
     return {
         resolveColorVariable,
         resolveStoryVariable,
+        resolveComputedProperty,
         getProjectData,
         compileStories,
         compileProjectMain
