@@ -60,7 +60,7 @@ export type OperationNode = StoryNodeBase & {
 export type EventNode = StoryNodeBase & {
   type: "event",
   event: string | null,
-  args: EventArg[]
+  args: Argument[]
   targetId: string | null // references another node in the story
 }
 
@@ -106,6 +106,7 @@ export type LogicalOperator = 'AND' | 'OR'
 // An operand is either a literal value or a reference to another StoryVariable
 export type Operand =
   | { kind: 'literal' | 'variable'; value: number | string | boolean }
+  | { kind: 'computed'; value: string; args: Argument[] } // value = computed property name
 
 export type Comparison = {
   left: Operand,
@@ -149,18 +150,27 @@ export type CustomFields = {
 
 //* EVENTS
 
-export type EventParam = {
+export type Parameter = {
   name: string,
   type: DataType
 }
 export type Event = {
   name: string,
-  params: EventParam[]
+  params: Parameter[]
 }
-export type EventArg = {
+export type Argument = {
   name: string,
   value: number | boolean | string
   kind: 'literal' | 'variable'
+}
+
+//* COMPUTED PROPERTIES
+
+// reuse parameters and arguments from events
+export type ComputedProperty = {
+  name: string,
+  params: Parameter[],
+  returnType: DataType
 }
 
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened

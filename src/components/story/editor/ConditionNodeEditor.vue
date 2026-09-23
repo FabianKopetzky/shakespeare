@@ -44,6 +44,7 @@
     v-model:open="editorOpen"
     @submit="onUpdateCondition"
     :condition="condition ?? undefined"
+    :computed-properties="computedProperties"
     :variables="storyVariables" />
 </template>
 
@@ -58,9 +59,11 @@ import { useContentStore } from "../../../stores/content.ts";
 import { useWidget } from "../../../composables/widget.ts";
 import ConditionInput from "../../forms/ConditionInput.vue";
 import { useConditionUtils } from "../../../utils/conditionUtils.ts";
+import { storeToRefs } from "pinia";
 
 const { displayError } = useWidget();
-const { storyNodes, storyVariables } = useContentStore();
+const { storyNodes, storyVariables, computedProperties } =
+  storeToRefs(useContentStore());
 const { conditionToString } = useConditionUtils();
 
 interface Props {
@@ -82,7 +85,7 @@ function onUpdateCondition(c: Condition | null) {
 
 watch(isOpen, (open) => {
   if (!open) return;
-  const n: AnyStoryNode = storyNodes[props.conditionNodeId];
+  const n: AnyStoryNode = storyNodes.value[props.conditionNodeId];
   if (n?.type === "condition") {
     node.value = n;
 
@@ -94,7 +97,7 @@ watch(isOpen, (open) => {
 });
 
 function save(): boolean {
-  const node: AnyStoryNode = storyNodes[props.conditionNodeId];
+  const node: AnyStoryNode = storyNodes.value[props.conditionNodeId];
   if (!node) {
     displayError(
       `An error occurred: Node "${props.conditionNodeId}" does not exist (anymore)`,
@@ -113,7 +116,7 @@ function close(): void {
 }
 
 function updateConditionNode() {
-  (storyNodes[props.conditionNodeId] as ConditionNode).condition =
+  (storyNodes.value[props.conditionNodeId] as ConditionNode).condition =
     condition.value ?? null;
 }
 </script>

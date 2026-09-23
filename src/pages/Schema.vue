@@ -18,8 +18,10 @@
         </div>
       </template>
       <template #events>
-        <div class="h-full overflow-y-auto mt-8">
-          <EventEditor />
+        <div class="h-full overflow-y-auto mt-8 flex flex-row gap-12">
+          <EventEditor class="flex-1" />
+          <div class="bg-accented w-0.5"></div>
+          <ComputedPropertyEditor class="flex-1" />
         </div>
       </template>
       <template #languages>
@@ -39,6 +41,7 @@
 </template>
 
 <script setup lang="ts">
+import ComputedPropertyEditor from "../components/forms/ComputedPropertyEditor.vue";
 import CustomFieldEditor from "../components/forms/CustomFieldEditor.vue";
 import EventEditor from "../components/forms/EventEditor.vue";
 import LanguageEditor from "../components/forms/LanguageEditor.vue";
@@ -57,7 +60,7 @@ const sections = [
     slot: "variables",
   },
   {
-    label: "Events",
+    label: "Events & Properties",
     icon: "ic:sharp-electric-bolt",
     slot: "events",
   },

@@ -106,6 +106,7 @@
                 :reference-language="isSplit ? referenceLanguageCode : null"
                 :is-split="isSplit"
                 :variables="storyVariables"
+                :computed-properties="computedProperties"
                 :colors="textColors"
                 :view-mode="viewMode"
                 :exclude-custom-fields="true"
@@ -205,6 +206,7 @@
     v-model:open="conditionEditorOpen"
     :variables="storyVariables"
     :condition="editingCondition"
+    :computed-properties="computedProperties"
     @submit="onConditionSubmit" />
 </template>
 
@@ -229,8 +231,13 @@ import { useCustomFieldsUtils } from "../../../utils/customFieldsUtils.ts";
 import FieldInstanceInput from "../../forms/FieldInstanceInput.vue";
 
 const { displayError } = useWidget();
-const { storyNodes, languages, textColors, storyVariables } =
-  storeToRefs(useContentStore());
+const {
+  storyNodes,
+  languages,
+  textColors,
+  storyVariables,
+  computedProperties,
+} = storeToRefs(useContentStore());
 const { conditionToString } = useConditionUtils();
 
 const { getCustomFieldsForModel, createDefaultFieldsForModel } =
@@ -428,9 +435,12 @@ function validateAllBranches(): string[] {
     }
     Object.entries(branch.labels).forEach(([code, content]) => {
       if (!content) return;
-      validateContent(content, storyVariables.value, textColors.value).forEach(
-        (err) => errors.push(`Branch ${index + 1} (${code}): ${err}`),
-      );
+      validateContent(
+        content,
+        storyVariables.value,
+        textColors.value,
+        computedProperties.value,
+      ).forEach((err) => errors.push(`Branch ${index + 1} (${code}): ${err}`));
     });
   });
 

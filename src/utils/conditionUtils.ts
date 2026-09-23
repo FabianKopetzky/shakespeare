@@ -1,16 +1,24 @@
-import type { Condition, Operation, DataType, CustomFieldModel, Event, EventArg } from "../types/schema";
+import type { Condition, Operation, DataType, CustomFieldModel, Event, Argument, Operand } from "../types/schema";
 
 export function useConditionUtils() {
-  function conditionToString(condition: Condition): string {
-    let str = "";
-
-    for(const clause of condition) {
-      str += `${clause.comparison.left.value?.toString()} ${clause.comparison.operator} ${clause.comparison.right.value?.toString()}`;
-      if(clause.connector) str += ` ${clause.connector} `;
-    }
-
-    return str;
+  function operandToString(operand: Operand): string {
+  if (operand.kind === "computed") {
+    const args = operand.args.map((a) => a.value?.toString()).join(", ");
+    return `${operand.value}(${args})`;
   }
+  return operand.value?.toString() ?? "";
+}
+
+function conditionToString(condition: Condition): string {
+  let str = "";
+
+  for (const clause of condition) {
+    str += `${operandToString(clause.comparison.left)} ${clause.comparison.operator} ${operandToString(clause.comparison.right)}`;
+    if (clause.connector) str += ` ${clause.connector} `;
+  }
+
+  return str;
+}
 
   function operationToString(operation: Operation): string {
     return `${operation.variableName} ${operationActionToString(operation.action)} ${operation.target.value}`;
@@ -28,7 +36,7 @@ export function useConditionUtils() {
   function eventToString(event: Event): string {
     return `${event.name} ${event.params && event.params.length > 0 ? `(${event.params.map(p => p.type).join(', ')})` : ''}`
   }
-  function eventInvokationToString(event: string, args: EventArg[]): string {
+  function eventInvokationToString(event: string, args: Argument[]): string {
     return `Invoke ${event}${args && args.length > 0 ? `(${args.map(a => a.value).join(', ')})` : ''}`
   }
 

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia"
 import { ref } from "vue"
-import type { AnyStoryNode, CustomFieldSchema, DialogueNode, Language, Story, StoryVariable, TextColor, Event, Preferences, MetaData } from "../types/schema";
+import type { AnyStoryNode, CustomFieldSchema, DialogueNode, Language, Story, StoryVariable, TextColor, Event, Preferences, MetaData, ComputedProperty } from "../types/schema";
 import defaultSettings from "../utils/settings";
 
 export const useContentStore = defineStore('content', () => {
@@ -16,10 +16,11 @@ export const useContentStore = defineStore('content', () => {
   const storyVariables = ref<StoryVariable[]>([]);
   const customFields = ref<CustomFieldSchema[]>([]);
   const events = ref<Event[]>([]);
+  const computedProperties = ref<ComputedProperty[]>([]);
   
 
   const settings = ref<Preferences>(structuredClone(defaultSettings));
   const meta = ref<MetaData>();
 
-  return { dialogues, stories, storyNodes, languages, textColors, storyVariables, customFields, events, projectTitle, projectAuthor, settings, meta }
+  return { dialogues, stories, storyNodes, languages, textColors, storyVariables, customFields, events, computedProperties, projectTitle, projectAuthor, settings, meta }
 })
