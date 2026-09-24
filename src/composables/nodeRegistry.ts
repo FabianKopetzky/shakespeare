@@ -1,4 +1,4 @@
-import type { AnyStoryNode, StoryNode, BranchNode, ConditionNode, RandomNode, OperationNode, EventNode } from "../types/schema";
+import type { AnyStoryNode, StoryNode, BranchNode, ConditionNode, RandomNode, OperationNode, EventNode, SwitchNode } from "../types/schema";
 import { useConditionUtils } from "../utils/conditionUtils";
 
 const { conditionToString, operationToString, eventInvokationToString } = useConditionUtils();
@@ -184,4 +184,37 @@ registerNodeType<EventNode>({
   setTargetId: (node, _handleId, targetId) => {
     node.targetId = targetId;
   },
+});
+
+registerNodeType<SwitchNode>({
+  type: "switch",
+  label: "Switch",
+  color: "#E06BDC",
+  icon: 'carbon:switch',
+  createDefault: (id, position) => ({
+    id,
+    type: "switch",
+    position,
+    switchValue: undefined,
+    cases: [
+      {
+        id: crypto.randomUUID(),
+        isDefault: true,
+        value: 0,
+        targetId: null
+      }
+    ]
+  }),
+  getTitle: (node) => node.cases.length > 0 ? `Selects the matching case (${node.cases.length} cases)` : 'No cases defined',
+  getOutputs: (node) => {
+      return node.cases.map((c) => ({
+        id: c.id,
+        label: `${c.isDefault ? 'default' : `${c.value.toString().length > 5 ? c.value.toString().substring(0, 5) + '...' : c.value.toString()}`}`,
+      } as OutputPin)) },
+    getTargetId: (node, handleId) =>
+      node.cases.find((c) => c.id === handleId)?.targetId ?? null,
+    setTargetId: (node, handleId, targetId) => {
+      const c = node.cases.find((c) => c.id === handleId);
+      if (c) c.targetId = targetId;
+    },
 });
