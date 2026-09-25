@@ -1,5 +1,5 @@
 import { useContentStore } from "../stores/content";
-import type { AnyStoryNode, BranchNode, CustomFields, RandomNode, StoryNode } from "../types/schema";
+import type { AnyStoryNode, BranchNode, CustomFields, RandomNode, StoryNode, SwitchNode } from "../types/schema";
 import { SHAKESPEARE_VERSION } from "./projectHandler";
 
 export function useCompiler() {
@@ -146,6 +146,14 @@ export function useCompiler() {
                                     branches: randomBranches
                                 }
                                 nodes.push(randomNode);
+                                break;
+                            case 'switch':
+                                const cases = (nodeData as Partial<SwitchNode>).cases?.map(c => ({ isDefault: c.isDefault, value: c.value, targetId: c.targetId }));
+                                const switchNode = {
+                                    ...nodeData,
+                                    cases: cases
+                                }
+                                nodes.push(switchNode);
                                 break;
                             default:
                                 nodes.push(nodeData);

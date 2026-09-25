@@ -14,7 +14,7 @@ const props = defineProps<Props>();
 const open = defineModel<boolean>("open", { default: false });
 
 const { displayError } = useWidget();
-const { storyVariables } = storeToRefs(useContentStore());
+const { storyVariables, computedProperties } = storeToRefs(useContentStore());
 
 const variableName = ref<string>("");
 const variableType = ref<DataType>("Integer");
@@ -94,6 +94,13 @@ function submit() {
     storyVariables.value.find((v) => v.name == variableName.value)
   ) {
     displayError("A variable with this name already exists!");
+    return;
+  }
+  if (
+    props.mode === "Create" &&
+    computedProperties.value.find((v) => v.name == variableName.value)
+  ) {
+    displayError("A computed property with this name already exists!");
     return;
   }
 
