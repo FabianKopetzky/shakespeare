@@ -29,7 +29,19 @@
           v-for="(pin, index) in data.outputs"
           :key="pin.id"
           class="story-node__output-row">
-          <span class="story-node__output-label">{{ pin.label }}</span>
+          <span
+            class="story-node__output-label story-node__output-label--ghost"
+            aria-hidden="true">
+            {{ pin.label }}
+          </span>
+
+          <span
+            class="story-node__output-label story-node__output-label--visible"
+            :style="{
+              left: `${((index + 1) / (data.outputs.length + 1)) * 100}%`,
+            }">
+            {{ pin.label }}
+          </span>
 
           <Handle
             :id="pin.id"
@@ -140,6 +152,7 @@ const menuItems = computed<ContextMenuItem[]>(() => [
   flex-direction: row;
   justify-content: center;
   padding: 2px 0 7px;
+  margin-top: 6px;
 }
 
 .story-node__output-row {
@@ -154,6 +167,18 @@ const menuItems = computed<ContextMenuItem[]>(() => [
 .story-node__output-label {
   font-size: 10px;
   color: var(--text-color-dimmed);
+  white-space: nowrap;
+}
+
+.story-node__output-label--ghost {
+  visibility: hidden;
+}
+
+.story-node__output-label--visible {
+  position: absolute;
+  bottom: 14px;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .story-node__pin {
