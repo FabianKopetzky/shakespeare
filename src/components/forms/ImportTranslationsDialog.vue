@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { useProjectHandler } from "../../composables/projectHandler";
 import { useWidget } from "../../composables/widget";
-import { useRouter } from "vue-router";
 import { useTranslationMapping } from "../../composables/translationMapping";
 import { useContentStore } from "../../stores/content";
+import { storeToRefs } from "pinia";
 
-const { projectTitle } = useContentStore();
+const { projectTitle } = storeToRefs(useContentStore());
 
 const open = defineModel<boolean>("open", { default: false });
 const uploadedFile = ref<File | null>(null);
@@ -19,7 +18,7 @@ const placeholder = ref<string>("");
 const separator = ref<string>(";");
 watch(open, (isOpen) => {
   if (isOpen) {
-    placeholder.value = "";
+    placeholder.value = "<N/A>";
     separator.value = ";";
     csvRows.value = [];
   }
@@ -45,7 +44,9 @@ function onConfirm() {
 
   importTranslationMap(csvRows.value, placeholder.value, separator.value);
 
-  displaySuccess(`Successfully imported translation map for ${projectTitle}`);
+  displaySuccess(
+    `Successfully imported translation map for ${projectTitle.value}`,
+  );
 
   open.value = false;
 }
@@ -69,7 +70,7 @@ async function handleFileUpload(file: File | null): Promise<void> {
 <template>
   <UModal v-model:open="open" title="Import translation map">
     <template #body>
-      <div class="flex flex-row gap-2 w-full">
+      <div class="flex flex-row gap-2 w-full mb-4">
         <UFormField
           class="flex-2"
           label="Placeholder"
