@@ -79,6 +79,12 @@ async function deleteComputedProperty(name: string) {
           resolveComputedPropertyInCondition(toDelete, branch.condition);
         }
         break;
+      case "switch":
+        if (node.switchValue === toDelete.name) {
+          node.switchValue = undefined;
+          node.cases = node.cases.filter((c) => c.isDefault);
+        }
+        break;
       case "condition":
         resolveComputedPropertyInCondition(toDelete, node.condition);
         break;

@@ -52,12 +52,13 @@
     <PageSection title="Editor" />
 
     <div class="flex flex-col gap-2 w-[50%] mt-4">
-      <div class="flex flex-row items-center justify-between gap-4 w-full">
+      <!-- COMING IN NEW VERSION -->
+      <!-- <div class="flex flex-row items-center justify-between gap-4 w-full">
         <UCheckbox
           size="xl"
           label="Warn before discarding editor changes"
           v-model="settings.warnBeforeDiscarding" />
-      </div>
+      </div> -->
       <div class="flex flex-row items-center justify-between gap-4 w-full">
         <UCheckbox
           :disabled="!isNativeApp"
@@ -77,13 +78,14 @@
           label="Show auto-save messages"
           v-model="settings.showAutoSaveMessages" />
       </div>
-      <div class="flex flex-row items-center justify-between gap-4 w-full">
+      <!-- COMING IN NEW VERSION -->
+      <!-- <div class="flex flex-row items-center justify-between gap-4 w-full">
         <UCheckbox
           :disabled="!isNativeApp"
           size="xl"
           label="Warn before quitting app"
           v-model="settings.warnBeforeClosing" />
-      </div>
+      </div> -->
       <div class="flex flex-row items-center justify-between gap-4 w-full">
         <UCheckbox
           size="xl"

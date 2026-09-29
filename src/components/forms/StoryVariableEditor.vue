@@ -89,6 +89,12 @@ async function deleteVariable(name: string) {
           }
         }
         break;
+      case "switch":
+        if (node.switchValue === toDelete.name) {
+          node.switchValue = undefined;
+          node.cases = node.cases.filter((c) => c.isDefault);
+        }
+        break;
       case "condition":
         resolveStoryVariableInCondition(toDelete, node.condition);
         break;
