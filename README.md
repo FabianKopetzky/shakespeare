@@ -2,6 +2,8 @@
 
 Shakespeare is a web based story and dialogue editor that allows users to visually create story graphs, write dialogue and include logic in their stories like branches.
 
+Current version: 1.0.0
+
 ## Unity support
 
 Shakespeare compiles stories, logic and project data into structured JSON files. These files can be used anywhere, but are particularly optimized for implementing them in Unity. The **Shakespeare Unity Package** can read these files and handle them in game without any additional code needed.
@@ -46,3 +48,7 @@ After installing the dependencies, run `npm run dev`. The app will be available 
 
 **Run native app**<br>
 Make sure you have the rust compiler installed on your machine. Run `npm run tauri dev` and the app will open up. Additionally, it is available on `localhost:5173`.
+
+### Build
+
+Before building the project, make sure to configure `tauri.conf.json` in `src-tauri/` with the correct settings and version number. To build the project, simply run `npm run tauri build`. The output will appear in `src-tauri/target/release/bundle` (msi for windows).

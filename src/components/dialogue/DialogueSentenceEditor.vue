@@ -26,7 +26,8 @@
         <SentenceContentDisplay
           class="flex-1"
           :content="referenceContent"
-          :variables="variables" />
+          :variables="variables"
+          :computed-properties="computedProperties" />
       </div>
     </div>
 

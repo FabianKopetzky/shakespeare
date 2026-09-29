@@ -5,6 +5,7 @@ import type { ComputedArg, ContentNode } from "../../utils/dialogueContent";
 import { placeholderForVariable } from "../../utils/dialogueContent";
 import type { ComputedProperty, StoryVariable } from "../../types/schema";
 import { useContentStore } from "../../stores/content";
+import { storeToRefs } from "pinia";
 
 interface Props {
   nodes: ContentNode[];
@@ -14,7 +15,7 @@ interface Props {
 defineProps<Props>();
 
 const HEX_PATTERN = /^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
-const { textColors } = useContentStore();
+const { textColors } = storeToRefs(useContentStore());
 
 function formatComputed(name: string, args: ComputedArg[]): string {
   return `${name}(${args.map((a) => a.value).join(",")})`;
