@@ -74,9 +74,11 @@
     <div class="absolute bottom-0 right-0 w-full">
       <p class="text-xs text-muted text-right">
         *To use imported Shakespeare files in Unity, the Shakespeare Unity
-        package is required. Refer to the documentation for details. • Copyright
-        © {{ new Date(Date.now()).getFullYear() }} Fabian Kopetzky - all rights
-        reserved
+        package is required. Refer to the documentation for details. • v{{
+          SHAKESPEARE_VERSION
+        }}
+        • Copyright © {{ new Date(Date.now()).getFullYear() }} Fabian Kopetzky -
+        all rights reserved
       </p>
     </div>
   </div>
@@ -96,6 +98,7 @@ import { useAppStore } from "../../stores/app.ts";
 
 import { open } from "@tauri-apps/plugin-shell";
 import ProjectList from "../forms/ProjectList.vue";
+import { SHAKESPEARE_VERSION } from "../../composables/projectHandler.ts";
 
 const { isNativeApp } = storeToRefs(useAppStore());
 
