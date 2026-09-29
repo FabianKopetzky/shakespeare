@@ -59,6 +59,10 @@
         title="Events"
         :count="events.length" />
       <StatsCard
+        icon="material-symbols:functions"
+        title="Computed"
+        :count="computedProperties.length" />
+      <StatsCard
         icon="mdi:database-plus"
         title="Extensions"
         :count="customFields.length" />
@@ -160,6 +164,7 @@ const {
   storyNodes,
   languages,
   events,
+  computedProperties,
   textColors,
   customFields,
 } = storeToRefs(useContentStore());

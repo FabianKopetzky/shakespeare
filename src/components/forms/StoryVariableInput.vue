@@ -14,7 +14,7 @@ const props = defineProps<Props>();
 const open = defineModel<boolean>("open", { default: false });
 
 const { displayError } = useWidget();
-const { storyVariables } = storeToRefs(useContentStore());
+const { storyVariables, computedProperties } = storeToRefs(useContentStore());
 
 const variableName = ref<string>("");
 const variableType = ref<DataType>("Integer");
@@ -71,8 +71,10 @@ function submit() {
     displayError("Variable name cannot be larger than 29 characters");
     return;
   }
-  if (!/^[A-Za-z0-9]+$/.test(variableName.value)) {
-    displayError("Only alphanumeric values are allowed in a variable name");
+  if (!/^[A-Za-z0-9_]+$/.test(variableName.value)) {
+    displayError(
+      "Only alphanumeric values and '_' are allowed in a variable name",
+    );
     return;
   }
   if (!variableType.value || variableType.value.length <= 0) {
@@ -92,6 +94,13 @@ function submit() {
     storyVariables.value.find((v) => v.name == variableName.value)
   ) {
     displayError("A variable with this name already exists!");
+    return;
+  }
+  if (
+    props.mode === "Create" &&
+    computedProperties.value.find((v) => v.name == variableName.value)
+  ) {
+    displayError("A computed property with this name already exists!");
     return;
   }
 

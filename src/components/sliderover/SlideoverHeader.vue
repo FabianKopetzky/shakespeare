@@ -8,11 +8,7 @@
         class="h-12 w-12"
         :ui="{ base: 'flex items-center justify-center' }"
         icon="material-symbols:close"
-        @click="
-          props.mode === 'Read' || !settings.warnBeforeDiscarding
-            ? close
-            : (showCancelConfirmation = true)
-        ">
+        @click="close">
       </UButton>
       <UButton
         v-if="props.mode !== 'Read'"
@@ -32,7 +28,7 @@
     confirm-label="Discard changes"
     cancel-label="Back to editing"
     @cancel="showCancelConfirmation = false"
-    @confirm="close" />
+    @confirm="emit('close')" />
 </template>
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
@@ -76,6 +72,8 @@ async function save(): Promise<void> {
   }
 }
 function close(): void {
-  emit("close");
+  if (props.mode === "Read" || !settings.value.warnBeforeDiscarding)
+    emit("close");
+  else showCancelConfirmation.value = true;
 }
 </script>

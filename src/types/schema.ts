@@ -25,7 +25,7 @@ export type Story = {
 } | undefined;
 //* STORY NODE TYPES
 
-export type AnyStoryNode = StoryNode | BranchNode | ConditionNode | RandomNode | OperationNode | EventNode; // unison of all node types
+export type AnyStoryNode = StoryNode | BranchNode | ConditionNode | RandomNode | OperationNode | EventNode | SwitchNode; // unison of all node types
 
 export type StoryNodeBase = {
   id: string, // random uuid of the node
@@ -60,8 +60,20 @@ export type OperationNode = StoryNodeBase & {
 export type EventNode = StoryNodeBase & {
   type: "event",
   event: string | null,
-  args: EventArg[]
+  args: Argument[]
   targetId: string | null // references another node in the story
+}
+
+export type SwitchNode = StoryNodeBase & {
+  type: "switch",
+  cases: SwitchCase[],
+  switchValue: string | undefined // name of variable or computed property to switch
+}
+export type SwitchCase = {
+  id: string | number,
+  isDefault: boolean,
+  value: string | number | boolean,
+  targetId: string | null // refernces another node in the story
 }
 
 // a node that contains a condition and has two paths that can emerge from it - a true and false path. The node itself does not contain any dialogue information
@@ -106,6 +118,7 @@ export type LogicalOperator = 'AND' | 'OR'
 // An operand is either a literal value or a reference to another StoryVariable
 export type Operand =
   | { kind: 'literal' | 'variable'; value: number | string | boolean }
+  | { kind: 'computed'; value: string; args: Argument[] } // value = computed property name
 
 export type Comparison = {
   left: Operand,
@@ -149,18 +162,27 @@ export type CustomFields = {
 
 //* EVENTS
 
-export type EventParam = {
+export type Parameter = {
   name: string,
   type: DataType
 }
 export type Event = {
   name: string,
-  params: EventParam[]
+  params: Parameter[]
 }
-export type EventArg = {
+export type Argument = {
   name: string,
   value: number | boolean | string
   kind: 'literal' | 'variable'
+}
+
+//* COMPUTED PROPERTIES
+
+// reuse parameters and arguments from events
+export type ComputedProperty = {
+  name: string,
+  params: Parameter[],
+  returnType: DataType
 }
 
 export type FormMode = 'Create' | 'Read' | 'Update'; // how a dialogue or story node is opened

@@ -35,6 +35,11 @@
     @onsave="onNodeContentChange"
     :event-node-id="currentEventNode"
     v-model:is-open="eventNodeEditorOpen" />
+
+  <SwitchNodeEditor
+    @onsave="onNodeContentChange"
+    :switch-node-id="currentSwitchNode"
+    v-model:is-open="switchNodeEditorOpen" />
 </template>
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
@@ -84,6 +89,9 @@ const randomNodeEditorOpen = ref<boolean>(false);
 const currentEventNode = ref<string>("");
 const eventNodeEditorOpen = ref<boolean>(false);
 
+const currentSwitchNode = ref<string>("");
+const switchNodeEditorOpen = ref<boolean>(false);
+
 function onOpenNode(node: AnyStoryNode) {
   // reset all var
   resetOpenNodes();
@@ -106,6 +114,9 @@ function onOpenNode(node: AnyStoryNode) {
   } else if (node.type === "event") {
     currentEventNode.value = node.id;
     eventNodeEditorOpen.value = true;
+  } else if (node.type === "switch") {
+    currentSwitchNode.value = node.id;
+    switchNodeEditorOpen.value = true;
   }
 }
 

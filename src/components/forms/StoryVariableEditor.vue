@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref } from "vue";
 import { useContentStore } from "../../stores/content.ts";
-import type { StoryVariable } from "../../types/schema.ts";
+import type { Condition, StoryVariable } from "../../types/schema.ts";
 import StoryVariableItem from "./StoryVariableItem.vue";
 import StoryVariableInput from "./StoryVariableInput.vue";
 import { storeToRefs } from "pinia";
@@ -73,6 +73,7 @@ async function deleteVariable(name: string) {
               toDelete.defaultValue,
             );
           }
+          resolveStoryVariableInCondition(toDelete, branch.condition);
         }
         break;
       case "operation":
@@ -88,24 +89,14 @@ async function deleteVariable(name: string) {
           }
         }
         break;
-      case "condition":
-        for (const clause of node.condition ?? []) {
-          const comparison = clause.comparison;
-          if (
-            comparison.left.kind === "variable" &&
-            comparison.left.value === toDelete.name
-          ) {
-            comparison.left.value = toDelete.defaultValue;
-            comparison.left.kind = "literal";
-          }
-          if (
-            comparison.right.kind === "variable" &&
-            comparison.right.value === toDelete.name
-          ) {
-            comparison.right.value = toDelete.defaultValue;
-            comparison.right.kind = "literal";
-          }
+      case "switch":
+        if (node.switchValue === toDelete.name) {
+          node.switchValue = undefined;
+          node.cases = node.cases.filter((c) => c.isDefault);
         }
+        break;
+      case "condition":
+        resolveStoryVariableInCondition(toDelete, node.condition);
         break;
     }
   }
@@ -118,6 +109,29 @@ async function deleteVariable(name: string) {
       currentProjectPath.value,
       settings.value.showAutoSaveMessages,
     );
+  }
+}
+
+function resolveStoryVariableInCondition(
+  toDelete: StoryVariable,
+  condition: Condition | null,
+): void {
+  for (const clause of condition ?? []) {
+    const comparison = clause.comparison;
+    if (
+      comparison.left.kind === "variable" &&
+      comparison.left.value === toDelete.name
+    ) {
+      comparison.left.value = toDelete.defaultValue;
+      comparison.left.kind = "literal";
+    }
+    if (
+      comparison.right.kind === "variable" &&
+      comparison.right.value === toDelete.name
+    ) {
+      comparison.right.value = toDelete.defaultValue;
+      comparison.right.kind = "literal";
+    }
   }
 }
 </script>

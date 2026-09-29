@@ -143,6 +143,7 @@
             :reference-language="isSplit ? referenceLanguageCode : null"
             :is-split="isSplit"
             :variables="storyVariables"
+            :computed-properties="computedProperties"
             :colors="textColors"
             :view-mode="viewMode"
             :can-move-up="index > 0"
@@ -200,7 +201,7 @@ const emit = defineEmits<{
   (e: "onsave", id: string): void;
 }>();
 
-const { dialogues, languages, storyVariables, textColors } =
+const { dialogues, languages, storyVariables, textColors, computedProperties } =
   storeToRefs(useContentStore());
 
 const defaultLanguage = computed(() =>
@@ -322,8 +323,13 @@ function validateAllSentences(): string[] {
     }
     Object.entries(sentence.translations).forEach(([code, content]) => {
       if (!content) return;
-      validateContent(content, storyVariables.value, textColors.value).forEach(
-        (err) => errors.push(`Sentence ${index + 1} (${code}): ${err}`),
+      validateContent(
+        content,
+        storyVariables.value,
+        textColors.value,
+        computedProperties.value,
+      ).forEach((err) =>
+        errors.push(`Sentence ${index + 1} (${code}): ${err}`),
       );
     });
   });

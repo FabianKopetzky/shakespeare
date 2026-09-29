@@ -29,15 +29,18 @@
         <FlipCard
           icon="material-symbols:auto-stories-sharp"
           title="Create."
-          content="Plan and write interactive stories with an intuitive and easy-to-use story graph." />
+          content="Plan and write interactive stories with an intuitive and easy-to-use story graph."
+          backsideContent="Shakespeare offers a visual story graph where you can drag and drop nodes and connect them with lines to create a story flow - simple, intuitive and easy to maintain." />
         <FlipCard
           icon="material-symbols:code-sharp"
           title="Code."
-          content="Include variables, conditions and events in your story and communicate with your Unity code." />
+          content="Include variables, conditions and events in your story and communicate with your Unity code."
+          backsideContent="No custom unity code is required for basic functionality, but shakespeare allows you to communicate with your unity project in both directions to enable you to build a fully custom story for your game." />
         <FlipCard
           icon="material-symbols:build-sharp"
           title="Compile."
-          content="Import your stories to Unity* and bring them to life with just one click." />
+          content="Import your stories to Unity* and bring them to life with just one click."
+          backsideContent="Shakespeare generates .json files from your stories. The Shakespeare unity package can now read, parse and process the files. It also comes with premade components handling text rendering, branches and logic execution." />
       </div>
     </div>
     <div
@@ -71,9 +74,11 @@
     <div class="absolute bottom-0 right-0 w-full">
       <p class="text-xs text-muted text-right">
         *To use imported Shakespeare files in Unity, the Shakespeare Unity
-        package is required. Refer to the documentation for details. • Copyright
-        © {{ new Date(Date.now()).getFullYear() }} Fabian Kopetzky - all rights
-        reserved
+        package is required. Refer to the documentation for details. • v{{
+          SHAKESPEARE_VERSION
+        }}
+        • Copyright © {{ new Date(Date.now()).getFullYear() }} Fabian Kopetzky -
+        all rights reserved
       </p>
     </div>
   </div>
@@ -93,6 +98,7 @@ import { useAppStore } from "../../stores/app.ts";
 
 import { open } from "@tauri-apps/plugin-shell";
 import ProjectList from "../forms/ProjectList.vue";
+import { SHAKESPEARE_VERSION } from "../../composables/projectHandler.ts";
 
 const { isNativeApp } = storeToRefs(useAppStore());
 

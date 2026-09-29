@@ -7,9 +7,7 @@ export function useTranslationMapping() {
     const { downloadFile } = useProjectHandler();
     const { languages, dialogues, storyNodes, projectTitle } = storeToRefs(useContentStore());
 
-    function exportTranslationMap(placeholder: string, separator: string): void {
-
-        const languageCodes = languages.value.map(l => l.code);
+    function exportTranslationMap(placeholder: string, separator: string, languageCodes: string[]): void {
 
         const header: string = ['id', ...languageCodes].join(separator);
         const rows: string[] = [];

@@ -123,7 +123,7 @@ export default defineConfig({
           fileUpload: {
             slots: {
               base: [
-                'rounded-none! border-none! border-0! bg-muted! hover:bg-elevated! hover:cursor-pointer!',
+                'rounded-none! border border-solid! border-accented bg-muted! hover:bg-default! hover:cursor-pointer!',
                 disabledState,
               ]
             }

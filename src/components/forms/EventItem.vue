@@ -40,11 +40,11 @@ function confirmDelete(): void {
           class="ml-2 h-6 w-auto aspect-square"
           name="ic:sharp-electric-bolt" />
         <span class="font-semibold select-none">{{ props.event.name }}</span>
-        <span
+        <p
           v-if="props.event.params.length > 0"
-          class="text-dimmed select-none"
-          >({{ props.event.params.map((p) => p.name).join(", ") }})</span
-        >
+          class="text-dimmed select-none max-w-70 truncate">
+          ({{ props.event.params.map((p) => p.name).join(", ") }})
+        </p>
       </div>
       <div class="flex flex-row">
         <UButton

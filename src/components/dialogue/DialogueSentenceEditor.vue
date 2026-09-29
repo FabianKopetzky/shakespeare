@@ -8,6 +8,7 @@
           v-model="currentContent"
           class="flex-1"
           :variables="variables"
+          :computed-properties="computedProperties"
           :colors="colors"
           :view-mode="viewMode"
           :can-move-up="canMoveUp"
@@ -25,7 +26,8 @@
         <SentenceContentDisplay
           class="flex-1"
           :content="referenceContent"
-          :variables="variables" />
+          :variables="variables"
+          :computed-properties="computedProperties" />
       </div>
     </div>
 
@@ -62,6 +64,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type {
+  ComputedProperty,
   DialogueSentence,
   StoryVariable,
   TextColor,
@@ -80,6 +83,7 @@ interface Props {
 
   isSplit: boolean;
   variables: StoryVariable[];
+  computedProperties: ComputedProperty[];
   colors: TextColor[];
   viewMode: "edit" | "preview";
 

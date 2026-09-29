@@ -11,7 +11,7 @@ import { invoke } from "@tauri-apps/api/core";
 import defaultSettings from "../utils/settings";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 
-export const SHAKESPEARE_VERSION = "0.0 Beta";
+export const SHAKESPEARE_VERSION = "1.0.0";
 export interface ProjectFileEntry {
     name: string,
     path: string
@@ -128,6 +128,7 @@ export function useProjectHandler() {
                 contentStore.storyVariables = [];
                 contentStore.customFields = [];
                 contentStore.events = [];
+                contentStore.computedProperties = [];
 
                 appStore.projectLoaded = true;
                 return true;
@@ -158,6 +159,7 @@ export function useProjectHandler() {
             contentStore.storyVariables = project.storyVariables ?? [];
             contentStore.customFields = project.customFields ?? [];
             contentStore.events = project.events ?? [];
+            contentStore.computedProperties = project.computedProperties ?? [];
 
             appStore.projectLoaded = true;
             return true;

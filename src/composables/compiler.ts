@@ -1,5 +1,5 @@
 import { useContentStore } from "../stores/content";
-import type { AnyStoryNode, BranchNode, CustomFields, RandomNode, StoryNode } from "../types/schema";
+import type { AnyStoryNode, BranchNode, CustomFields, RandomNode, StoryNode, SwitchNode } from "../types/schema";
 import { SHAKESPEARE_VERSION } from "./projectHandler";
 
 export function useCompiler() {
@@ -19,6 +19,14 @@ export function useCompiler() {
     function resolveStoryVariable(text: string, variable: string, value: string | number | boolean): string {
         const regex = new RegExp(`\\{\\{\\s*${variable}\\s*\\}\\}`, 'g');
         return text.replace(regex, String(value));
+    }
+    function resolveComputedProperty(text: string, propertyName: string, value: string | number | boolean): string {
+        const escapedName = propertyName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const pattern = new RegExp(
+            `\\{\\{\\s*c:${escapedName}\\([^)]*\\)\\s*\\}\\}`,
+            'g'
+        );
+        return text.replace(pattern, String(value));
     }
     function compileCustomFields(fields: CustomFields): any {
         if(!fields.data || fields.data.length <= 0) return null;
@@ -49,6 +57,7 @@ export function useCompiler() {
             storyVariables: contentStore.storyVariables,
             customFields: contentStore.customFields,
             events: contentStore.events,
+            computedProperties: contentStore.computedProperties,
 
             meta: { ...contentStore.meta, lastEdited: currentDate, version: SHAKESPEARE_VERSION },
             settings: contentStore.settings
@@ -138,6 +147,14 @@ export function useCompiler() {
                                 }
                                 nodes.push(randomNode);
                                 break;
+                            case 'switch':
+                                const cases = (nodeData as Partial<SwitchNode>).cases?.map(c => ({ isDefault: c.isDefault, value: c.value, targetId: c.targetId }));
+                                const switchNode = {
+                                    ...nodeData,
+                                    cases: cases
+                                }
+                                nodes.push(switchNode);
+                                break;
                             default:
                                 nodes.push(nodeData);
                                 break;
@@ -163,6 +180,7 @@ export function useCompiler() {
     return {
         resolveColorVariable,
         resolveStoryVariable,
+        resolveComputedProperty,
         getProjectData,
         compileStories,
         compileProjectMain
