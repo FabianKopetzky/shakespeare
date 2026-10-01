@@ -1,6 +1,6 @@
 #!/bin/sh
 echo Building Vue project...
-npm run build
+npm run build:ghpages
 
 cd dist || exit
 echo Initializing temporary Git repo in dist...

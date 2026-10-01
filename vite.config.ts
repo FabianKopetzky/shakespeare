@@ -8,7 +8,8 @@ const disabledState =
   'data-[disabled]:opacity-50! data-[disabled]:cursor-not-allowed!'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode}) => ({
+  base: mode === 'ghpages' ? '/shakespeare/' : '/',
   plugins: [
     vue(), 
     ui(
@@ -170,4 +171,4 @@ export default defineConfig({
       }
     )
   ],
-})
+}))
