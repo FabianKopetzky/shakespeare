@@ -11,7 +11,7 @@ import { invoke } from "@tauri-apps/api/core";
 import defaultSettings from "../utils/settings";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 
-export const SHAKESPEARE_VERSION = "1.0.0";
+export const SHAKESPEARE_VERSION = "1.0.1";
 export interface ProjectFileEntry {
     name: string,
     path: string

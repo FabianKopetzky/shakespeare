@@ -65,10 +65,11 @@ export type EventNode = StoryNodeBase & {
 }
 
 export type SwitchNode = StoryNodeBase & {
-  type: "switch",
-  cases: SwitchCase[],
-  switchValue: string | undefined // name of variable or computed property to switch
-}
+    type: "switch";
+    switchValue?: string; // name of variable or computed property to switch
+    switchArgs?: Argument[];
+    cases: SwitchCase[];
+  }
 export type SwitchCase = {
   id: string | number,
   isDefault: boolean,
