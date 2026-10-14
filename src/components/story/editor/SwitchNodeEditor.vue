@@ -31,7 +31,16 @@
               class="h-8 items-center">
               {{ typeMeta[referencedDatatype].label }}
             </UBadge>
+            <UButton
+              v-if="computedHasParams"
+              variant="outline"
+              color="neutral"
+              icon="material-symbols:tune"
+              @click="openEditArgs" />
           </div>
+          <span v-if="computedHasParams" class="text-xs text-dimmed mt-1 block">
+            Arguments: {{ switchArgsSummary }}
+          </span>
         </UFormField>
 
         <template v-if="referencedDatatype">
@@ -88,6 +97,12 @@
       </div>
     </template>
   </USlideover>
+  <ComputedPropertyArgsInput
+    v-model:open="editArgsOpen"
+    :computed-property="referencedComputedProperty"
+    :args="switchArgs"
+    :variables="storyVariables"
+    @submit="onArgsSubmit" />
 </template>
 
 <script setup lang="ts">
@@ -97,11 +112,14 @@ import {
   type SwitchNode,
   type SwitchCase,
   type DataType,
+  type Argument,
+  type ComputedProperty,
 } from "../../../types/schema.ts";
 import { useContentStore } from "../../../stores/content.ts";
 import { useWidget } from "../../../composables/widget.ts";
 import { storeToRefs } from "pinia";
 import { useConditionUtils } from "../../../utils/conditionUtils.ts";
+import ComputedPropertyArgsInput from "../../forms/ComputedPropertyArgsInput.vue";
 
 const { displayError } = useWidget();
 const { storyNodes, storyVariables, computedProperties } =
@@ -120,9 +138,8 @@ const isOpen = defineModel<boolean>("isOpen", { required: true });
 const node = ref<SwitchNode>();
 const switchValue = ref<string | undefined>(undefined);
 
-// Same approach as the condition editor: the form holds every value as a
-// string (so the inputs can v-model it directly) and it is parsed into the
-// real type when saving.
+const switchArgs = ref<Argument[]>([]);
+
 interface CaseForm {
   id: string | number;
   isDefault: boolean;
@@ -141,13 +158,11 @@ watch(isOpen, (open) => {
 
     editorOpen.value = false;
 
-    // pre fill fields (copies, so closing without saving leaves the store alone)
     cases.value = n.cases ? n.cases.map(caseToForm) : [];
     switchValue.value = n.switchValue ?? undefined;
+    switchArgs.value = n.switchArgs ? n.switchArgs.map((a) => ({ ...a })) : [];
   }
 });
-
-// --- form <-> node conversion ------------------------------------------
 
 function caseToForm(c: SwitchCase): CaseForm {
   return {
@@ -176,17 +191,39 @@ function formToCase(c: CaseForm, type: DataType | undefined): SwitchCase {
   };
 }
 
-const switchTargets = computed(() => {
-  const variableItems = storyVariables.value.map((v) => ({
-    label: v.name,
-    value: v.name,
-    icon: typeMeta[v.type].icon,
+function defaultForType(type: DataType): number | string | boolean {
+  if (type === "Integer") return 0;
+  if (type === "Boolean") return false;
+  return "";
+}
+
+function defaultComputedArgs(def: ComputedProperty): Argument[] {
+  return def.params.map((param) => ({
+    name: param.name,
+    kind: "literal",
+    value: defaultForType(param.type),
   }));
+}
+
+function formatArgValue(arg: Argument): string {
+  return arg.value !== "" && arg.value !== undefined && arg.value !== null
+    ? arg.value.toString()
+    : "<?>";
+}
+
+const switchTargets = computed(() => {
+  const variableItems = storyVariables.value
+    .filter((v) => v.type !== "Boolean")
+    .map((v) => ({
+      label: v.name,
+      value: v.name,
+      icon: typeMeta[v.type].icon,
+    }));
 
   const computedItems = computedProperties.value
-    .filter((c) => c.params.length === 0)
+    .filter((c) => c.returnType !== "Boolean")
     .map((c) => ({
-      label: c.name,
+      label: c.params.length > 0 ? `${c.name} (...)` : c.name,
       value: c.name,
       icon: "material-symbols:functions",
     }));
@@ -206,9 +243,28 @@ const referencedDatatype = computed<DataType | undefined>(() => {
     ?.returnType;
 });
 
+const referencedComputedProperty = computed<ComputedProperty | undefined>(
+  () => {
+    if (!switchValue.value) return undefined;
+    return computedProperties.value.find((c) => c.name === switchValue.value);
+  },
+);
+
+const computedHasParams = computed<boolean>(
+  () => (referencedComputedProperty.value?.params.length ?? 0) > 0,
+);
+
+const switchArgsSummary = computed<string>(() =>
+  switchArgs.value.map((a) => formatArgValue(a)).join(", "),
+);
+
 function onSwitchValueChange(value: string | undefined): void {
   const previousType = referencedDatatype.value;
   switchValue.value = value;
+
+  const def = computedProperties.value.find((c) => c.name === value);
+  switchArgs.value =
+    def && def.params.length > 0 ? defaultComputedArgs(def) : [];
 
   const type = referencedDatatype.value;
   if (type === previousType) return;
@@ -219,6 +275,17 @@ function onSwitchValueChange(value: string | undefined): void {
   for (const c of cases.value) {
     if (!c.isDefault) c.literalValue = nextUnusedLiteral(type);
   }
+}
+
+const editArgsOpen = ref(false);
+
+function openEditArgs(): void {
+  if (!referencedComputedProperty.value) return;
+  editArgsOpen.value = true;
+}
+
+function onArgsSubmit(newArgs: Argument[]): void {
+  switchArgs.value = newArgs;
 }
 
 function defaultLiteral(type: DataType | undefined): string {
@@ -247,7 +314,6 @@ function nextUnusedLiteral(type: DataType | undefined): string {
   return defaultLiteral(type);
 }
 
-// A boolean can only ever match true or false
 const canAddCase = computed(() => {
   if (!referencedDatatype.value) return false;
   if (referencedDatatype.value === "Boolean") {
@@ -259,7 +325,6 @@ const canAddCase = computed(() => {
 const duplicateIds = computed<Set<string | number>>(() => {
   const byValue = new Map<string, (string | number)[]>();
   for (const c of cases.value) {
-    // empty values are reported separately when saving
     if (c.isDefault || String(c.literalValue) === "") continue;
     const key = comparableKey(c);
     byValue.set(key, [...(byValue.get(key) ?? []), c.id]);
@@ -299,12 +364,45 @@ function removeCase(id: string | number): void {
   cases.value = (cases.value ?? []).filter((c) => c.id !== id);
 }
 
-// --- saving ------------------------------------------------------------
+function validateComputedArgs(
+  def: ComputedProperty,
+  args: Argument[],
+): string | null {
+  for (const param of def.params) {
+    const arg = args.find((a) => a.name === param.name);
+    if (!arg) {
+      return `Parameter "${param.name}" of "${def.name}" is not configured`;
+    }
+
+    if (arg.kind === "literal") {
+      if (arg.value === "" || arg.value === undefined || arg.value === null) {
+        return `Parameter "${param.name}" of "${def.name}" must have a value`;
+      }
+      if (param.type === "Integer" && isNaN(Number(arg.value))) {
+        return `Parameter "${param.name}" of "${def.name}" must be a valid number`;
+      }
+    } else if (!arg.value || arg.value === "") {
+      return `No variable selected for parameter "${param.name}" of "${def.name}"`;
+    }
+  }
+  return null;
+}
 
 function validate(): boolean {
   if (!referencedDatatype.value) {
     displayError("Select a variable or computed property to switch on.");
     return false;
+  }
+
+  if (computedHasParams.value && referencedComputedProperty.value) {
+    const error = validateComputedArgs(
+      referencedComputedProperty.value,
+      switchArgs.value,
+    );
+    if (error) {
+      displayError(error);
+      return false;
+    }
   }
 
   if (!cases.value || cases.value.length <= 0) {
@@ -363,6 +461,9 @@ function updateSwitchNode() {
   const type = referencedDatatype.value;
   const target = storyNodes.value[props.switchNodeId] as SwitchNode;
   target.switchValue = switchValue.value;
+  target.switchArgs = computedHasParams.value
+    ? switchArgs.value.map((a) => ({ ...a }))
+    : undefined;
   target.cases = cases.value.map((c) => formToCase(c, type));
 }
 </script>
