@@ -2,7 +2,7 @@
 
 Shakespeare is a web based story and dialogue editor that allows users to visually create story graphs, write dialogue and include logic in their stories like branches.
 
-Current version: 1.0.0
+Current version: 1.0.2
 
 ## Unity support
 
